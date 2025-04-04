@@ -2,6 +2,27 @@
 
 Project template.
 
+## Local setup
+
+The project uses Exomiser as a library. However, Exomiser is not available from Maven central repository.
+Therefore, we must install Exomiser locally to be able to build the code.
+
+The installation proceeds as follows:
+
+```shell
+# First, let's check out Exomiser source code
+git clone https://github.com/exomiser/Exomiser.git
+
+# Check out the version we use
+cd Exomiser
+git checkout 14.1.0
+
+# Install Exomiser locally
+./mvnw install
+```
+
+This should install Exomiser into local Maven repository, and it should be possible to build the project.
+
 ## Run tests
 
 We use Maven Surefire plugin to run tests:
