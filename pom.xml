@@ -3,18 +3,18 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.p2gx.diboq</groupId>
-    <artifactId>DiBoq</artifactId>
+    <groupId>com.github.p2gx.boqa</groupId>
+    <artifactId>BOQA</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
     <modules>
-        <module>diboq-core</module>
-        <module>diboq-exomiser-adapter</module>
-        <module>diboq-cli</module>
+        <module>boqa-core</module>
+        <module>boqa-exomiser-adapter</module>
+        <module>boqa-cli</module>
     </modules>
 
-    <name>DiBoq</name>
-    <url>https://github.com/P2GX/DiBoq/</url>
+    <name>BOQA</name>
+    <url>https://github.com/P2GX/BOQA</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
