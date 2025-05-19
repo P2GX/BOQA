@@ -17,6 +17,9 @@ git clone https://github.com/exomiser/Exomiser.git
 cd Exomiser
 git checkout 14.1.0
 
+# Make mvnw executable
+chmod u+x mvnw
+
 # Install Exomiser locally
 ./mvnw install
 ```
