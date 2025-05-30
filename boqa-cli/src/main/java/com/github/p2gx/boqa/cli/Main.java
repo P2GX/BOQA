@@ -1,5 +1,6 @@
 package com.github.p2gx.boqa.cli;
 
+import com.github.p2gx.boqa.cli.cmd.BoqaCommand;
 import picocli.CommandLine;
 
 import java.util.concurrent.Callable;
@@ -24,6 +25,7 @@ public class Main implements Callable<Integer> {
             .parameters(fg_yellow)
             .optionParams(italic)
             .build();
+
     public static void main(String[] args) {
         if (args.length == 0) {
             // if the user doesn't pass any command or option, add -h to show help
@@ -31,13 +33,15 @@ public class Main implements Callable<Integer> {
         }
 
         CommandLine cline = new CommandLine(new Main())
-                .setColorScheme(COLOR_SCHEME);
+                .setColorScheme(COLOR_SCHEME)
+                .addSubcommand("run", new BoqaCommand());
         cline.setToggleBooleanFlags(false);
         System.exit(cline.execute(args));
     }
 
     @Override
     public Integer call() throws Exception {
+        // work done in subcommands
         return 0;
     }
 }

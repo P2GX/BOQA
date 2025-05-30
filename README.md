@@ -53,6 +53,12 @@ requires activation of the `release` profile:
 ./mvnw -Prelease package 
 ```
 
+## Input data
+
+1. Disease-phenotype associations: phenotype.hpoa
+
+2. HPO in JSON format: hpo.json
+
 ## TODO
 
 Add more information at some point. 
