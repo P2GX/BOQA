@@ -4,18 +4,17 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
-        name = "run",
-        aliases = {"R"},
+        name = "plain",
         mixinStandardHelpOptions = true,
         description = "Performs BOQA analysis as described in PMID:22843981, without taking annotation frequencies into account.",
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @CommandLine.Option(
-            names={"-p","--phenopackets"},
+            names={"-dp","--disease-phenotype-associations"},
             required = true,
-            description ="Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
-    private String phenopacketFile;
+            description ="Big HPO annotation file (phenotype.hpoa).")
+    private String phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
@@ -24,10 +23,10 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private String ontologyFile;
 
     @CommandLine.Option(
-            names={"-d","--disease-phenotype-associations"},
+            names = {"-p", "--phenopackets"},
             required = true,
-            description ="Big HPO annotation file (phenotype.hpoa).")
-    private String annotationFile;
+            description = "Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
+    private String phenopacketFile;
 
     @CommandLine.Option(
             names={"-a","--a-param"},
@@ -54,7 +53,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     public Integer call() throws Exception {
 
         // Prepare data structure for disease-phenotype associations
-        // Prepare data structure for HPO ontology
+        // Prepare data structure for HP ontology
         // Perform BOQA analysis
         // Report results
 

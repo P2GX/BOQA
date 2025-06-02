@@ -55,9 +55,27 @@ requires activation of the `release` profile:
 
 ## Input data
 
-1. Disease-phenotype associations: phenotype.hpoa
+In BOQA analyses, observed phenotypic features of individuals are compared
+with annotated disease-phenotype associations.
+We use the following HPO data sources:
 
-2. HPO in JSON format: hpo.json
+**1. Disease-phenotype associations: `phenotype.hpoa`**
+
+```
+wget -O phenotype.hpoa XXX
+```
+
+**2. HPO: `hp.json`**
+
+```
+wget -O hp.json XXX
+```
+
+**3. Phenotypic features observed in individuals: phenopackets from `phenopacket-store`**
+
+```
+wget -O phenopacket-store XXX
+```
 
 ## TODO
 

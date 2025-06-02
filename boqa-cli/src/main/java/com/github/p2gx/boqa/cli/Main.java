@@ -1,14 +1,13 @@
 package com.github.p2gx.boqa.cli;
 
 import com.github.p2gx.boqa.cli.cmd.BoqaCommand;
+import com.github.p2gx.boqa.cli.cmd.BlendedCommand;
 import picocli.CommandLine;
-
 import java.util.concurrent.Callable;
-
 import static picocli.CommandLine.Help.Ansi.Style.*;
 
 @CommandLine.Command(name = "boqa",
-        header = "Bayesian Ontology Query Analysis\n",
+        header = "Bayesian Ontology Query Analysis (BOQA)\n",
         mixinStandardHelpOptions = true,
         usageHelpWidth = Main.WIDTH,
         version = Main.VERSION,
@@ -17,7 +16,8 @@ public class Main implements Callable<Integer> {
 
     public static final String VERSION = "v0.1.0-SNAPSHOT";
     public static final int WIDTH = 120;
-    public static final String FOOTER = "Footer is here";
+    public static final String FOOTER = "The BOQA algorithm matches phenotypic features observed in patients " +
+            "with annotated disease-phenotype associations.";
 
     private static final CommandLine.Help.ColorScheme COLOR_SCHEME = new CommandLine.Help.ColorScheme.Builder()
             .commands(bold, fg_blue, underline)
@@ -34,7 +34,8 @@ public class Main implements Callable<Integer> {
 
         CommandLine cline = new CommandLine(new Main())
                 .setColorScheme(COLOR_SCHEME)
-                .addSubcommand("run", new BoqaCommand());
+                .addSubcommand("plain", new BoqaCommand())
+                .addSubcommand("blended", new BlendedCommand());
         cline.setToggleBooleanFlags(false);
         System.exit(cline.execute(args));
     }
