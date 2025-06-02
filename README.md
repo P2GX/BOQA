@@ -62,19 +62,27 @@ We use the following HPO data sources:
 **1. Disease-phenotype associations: `phenotype.hpoa`**
 
 ```
-wget -O phenotype.hpoa XXX
+mkdir -p data
+wget -O data/phenotype.hpoa https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/phenotype.hpoa
 ```
 
 **2. HPO: `hp.json`**
 
 ```
-wget -O hp.json XXX
+wget -O data/hp.json https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/hp.json
 ```
 
-**3. Phenotypic features observed in individuals: phenopackets from `phenopacket-store`**
+**3. Disease-gene associations: `phenotype.hpoa`**
 
 ```
-wget -O phenopacket-store XXX
+wget -O data/genes_to_disease.txt https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/genes_to_disease.txt
+```
+
+**4. Phenopackets containing phenotypic features observed in individuals: `phenopacket-store`**
+
+```
+wget -O data/all_phenopackets.zip https://github.com/monarch-initiative/phenopacket-store/releases/latest/download/all_phenopackets.zip
+unzip data/all_phenopackets.zip -d data
 ```
 
 ## TODO
