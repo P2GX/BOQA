@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.cli.cmd;
 
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
@@ -12,19 +14,19 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
-            required = true,
+            required = false,
             description ="Big HPO annotation file (phenotype.hpoa).")
     private String phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
-            required = true,
+            required = false,
             description ="HPO in JSON format.")
     private String ontologyFile;
 
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
-            required = true,
+            required = false,
             description = "Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
     private String phenopacketFile;
 
@@ -51,6 +53,13 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
+
+        Ontology hpo = getHpOntology();
+        HpoDiseases diseases = getDiseases(hpo);
+        for (var disease: diseases) {
+            disease.id();
+            //disease.
+        }
 
         // Prepare data structure for disease-phenotype associations
         // Prepare data structure for HP ontology
