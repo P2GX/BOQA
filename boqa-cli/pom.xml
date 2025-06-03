@@ -22,6 +22,11 @@
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.monarchinitiative.biodownload</groupId>
+            <artifactId>biodownload</artifactId>
+            <version>1.0.1</version>
+        </dependency>
     </dependencies>
 
 

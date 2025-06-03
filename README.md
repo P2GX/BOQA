@@ -57,26 +57,25 @@ requires activation of the `release` profile:
 
 In BOQA analyses, observed phenotypic features of individuals are compared
 with annotated disease-phenotype associations.
-We use the following HPO data sources:
+We use the following [HPO resources](https://github.com/obophenotype/human-phenotype-ontology):
 
 **1. Disease-phenotype associations: `phenotype.hpoa`**
 
-```
-mkdir -p data
-wget -O data/phenotype.hpoa https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/phenotype.hpoa
-```
-
 **2. HPO: `hp.json`**
 
-```
-wget -O data/hp.json https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/hp.json
-```
+**3. Disease-gene associations: `genes_to_disease.txt`**
 
-**3. Disease-gene associations: `phenotype.hpoa`**
+Use the following command to download these files from the latest release:
+```shell
+java -jar boqa-cli/target/boqa-cli-0.1.0-SNAPSHOT.jar download -d ./data 
+```
+The files are downloaded to a subdirectory `./data/latest_<time_stamp>`.
 
+To download a specific release, use the following command;
+```shell
+java -jar boqa-cli/target/boqa-cli-0.1.0-SNAPSHOT.jar download -d ./data -r v2025-05-06 
 ```
-wget -O data/genes_to_disease.txt https://github.com/obophenotype/human-phenotype-ontology/releases/latest/download/genes_to_disease.txt
-```
+The files are downloaded into a subdirectory of `./data` named after the release.
 
 **4. Phenopackets containing phenotypic features observed in individuals: `phenopacket-store`**
 

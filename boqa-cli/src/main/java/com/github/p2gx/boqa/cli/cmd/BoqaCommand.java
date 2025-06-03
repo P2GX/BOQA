@@ -1,7 +1,13 @@
 package com.github.p2gx.boqa.cli.cmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+
+import java.nio.file.Path;
 import java.util.concurrent.Callable;
+
+import com.github.p2gx.boqa.core.DiseaseDict;
 
 @CommandLine.Command(
         name = "plain",
@@ -9,24 +15,25 @@ import java.util.concurrent.Callable;
         description = "Performs BOQA analysis as described in PMID:22843981, without taking annotation frequencies into account.",
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
 
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
             required = true,
             description ="Big HPO annotation file (phenotype.hpoa).")
-    private String phenotypeAnnotationFile;
+    private Path phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
             required = true,
             description ="HPO in JSON format.")
-    private String ontologyFile;
+    private Path ontologyFile;
 
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
             required = true,
             description = "Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
-    private String phenopacketFile;
+    private Path phenopacketFile;
 
     @CommandLine.Option(
             names={"-a","--a-param"},
@@ -53,6 +60,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     public Integer call() throws Exception {
 
         // Prepare data structure for disease-phenotype associations
+        //DiseaseDict diseaseDict = new DiseaseDict(phenotypeAnnotationFile, ontologyFile);
         // Prepare data structure for HP ontology
         // Perform BOQA analysis
         // Report results
