@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import com.github.p2gx.boqa.core.DiseaseDict;
@@ -21,13 +22,13 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             names={"-dp","--disease-phenotype-associations"},
             required = true,
             description ="Big HPO annotation file (phenotype.hpoa).")
-    private Path phenotypeAnnotationFile;
+    private String phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
             required = true,
             description ="HPO in JSON format.")
-    private Path ontologyFile;
+    private String ontologyFile;
 
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
@@ -60,7 +61,12 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     public Integer call() throws Exception {
 
         // Prepare data structure for disease-phenotype associations
-        //DiseaseDict diseaseDict = new DiseaseDict(phenotypeAnnotationFile, ontologyFile);
+
+        DiseaseDict diseaseDict = new DiseaseDict(phenotypeAnnotationFile, ontologyFile);
+        List<String> terIdList = diseaseDict.get_disease_features("OMIM:604091");
+        System.out.println("OMIM:604091");
+        System.out.println(terIdList);
+
         // Prepare data structure for HP ontology
         // Perform BOQA analysis
         // Report results
