@@ -29,6 +29,6 @@ jobs:
           java-version: '21.0.1'
           distribution: 'temurin' 
     - name: Build with Maven
-      run: ./mvnw -pl boqa-cli,boqa-core -am -B --quiet --batch-mode package
+      run: ./mvnw -pl boqa-cli,boqa-core -am -B --quiet -Prelease --batch-mode package
     - name: Run CLI
       run: java -jar boqa-cli/target/boqa-cli-0.1.0-SNAPSHOT.jar --help
