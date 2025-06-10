@@ -1,0 +1,34 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "master", "develop" ]
+  pull_request:
+    branches: [ "master", "develop" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+          java-version: '21.0.1'
+          distribution: 'temurin' 
+    - name: Build with Maven
+      run: ./mvnw -pl boqa-cli,boqa-core -am -B --quiet -Prelease --batch-mode package
+    - name: Run CLI
+      run: java -jar boqa-cli/target/boqa-cli-0.1.0-SNAPSHOT.jar --help

@@ -26,6 +26,11 @@ chmod u+x mvnw
 
 This should install Exomiser into local Maven repository, and it should be possible to build the project.
 
+> **Note:** To only build the `boqa-cli` and `boqa-core` modules Exomiser is not needed. This can be done via
+```shell
+./mvnw -pl boqa-cli,boqa-core -am -Prelease package
+```
+
 ## Run tests
 
 We use Maven Surefire plugin to run tests:
