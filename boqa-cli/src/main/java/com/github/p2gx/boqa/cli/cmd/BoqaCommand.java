@@ -1,11 +1,13 @@
 package com.github.p2gx.boqa.cli.cmd;
 
+import com.github.p2gx.boqa.core.DiseaseDictParseIngest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import com.github.p2gx.boqa.core.DiseaseDict;
@@ -62,8 +64,8 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
         // Prepare data structure for disease-phenotype associations
 
-        DiseaseDict diseaseDict = new DiseaseDict(phenotypeAnnotationFile, ontologyFile);
-        List<String> terIdList = diseaseDict.get_disease_features("OMIM:604091");
+        DiseaseDict diseaseDict = new DiseaseDictParseIngest(phenotypeAnnotationFile);
+        Set<String> terIdList = diseaseDict.getIncludedDiseaseFeatures("OMIM:604091");
         System.out.println("OMIM:604091");
         System.out.println(terIdList);
 

@@ -1,30 +1,21 @@
 package com.github.p2gx.boqa.cli.cmd;
 
-
 import org.monarchinitiative.biodownload.BioDownloader;
 import org.monarchinitiative.biodownload.BioDownloaderBuilder;
 import org.monarchinitiative.biodownload.FileDownloadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.ZipFile;
 
 /**
  * Download a number of files needed for the analysis. We download by default to a subdirectory called
@@ -67,7 +58,7 @@ public class DownloadCommand implements Callable<Integer>{
     public boolean overwrite = true;
 
     @Override
-    public Integer call() throws FileDownloadException, MalformedURLException, URISyntaxException {
+    public Integer call() throws FileDownloadException, MalformedURLException {
         logger.info(String.format("Download analysis to %s", datadir));
 
         // Download from human-phenotype-ontology
@@ -115,68 +106,12 @@ public class DownloadCommand implements Callable<Integer>{
         builder.custom(url);
         BioDownloader downloader = builder.build();
         downloader.download();
-        this.extractFolder(destination + "/all_phenopackets.zip", destination.toString());
-
+        try {
+            ZipFile zipFile = new ZipFile(destination + "/all_phenopackets.zip");
+            zipFile.extractAll(destination.toString());
+        } catch (ZipException e) {
+            e.printStackTrace();
+        }
         return 0;
-    }
-
-    private void extractFolder(String zipFile,String extractFolder)
-    { // Code snippet taken from here: https://stackoverflow.com/questions/9324933/what-is-a-good-java-library-to-zip-unzip-files
-        // Avoids dependencies, but is not ideal and should perhaps be solved differently.
-        try
-        {
-            int BUFFER = 2048;
-            File file = new File(zipFile);
-
-            ZipFile zip = new ZipFile(file);
-            String newPath = extractFolder;
-
-            new File(newPath).mkdir();
-            Enumeration zipFileEntries = zip.entries();
-
-            // Process each entry
-            while (zipFileEntries.hasMoreElements())
-            {
-                // grab a zip file entry
-                ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
-                String currentEntry = entry.getName();
-
-                File destFile = new File(newPath, currentEntry);
-                //destFile = new File(newPath, destFile.getName());
-                File destinationParent = destFile.getParentFile();
-
-                // create the parent directory structure if needed
-                destinationParent.mkdirs();
-
-                if (!entry.isDirectory())
-                {
-                    BufferedInputStream is = new BufferedInputStream(zip
-                            .getInputStream(entry));
-                    int currentByte;
-                    // establish buffer for writing file
-                    byte data[] = new byte[BUFFER];
-
-                    // write the current file to disk
-                    FileOutputStream fos = new FileOutputStream(destFile);
-                    BufferedOutputStream dest = new BufferedOutputStream(fos,
-                            BUFFER);
-
-                    // read and write until last byte is encountered
-                    while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
-                        dest.write(data, 0, currentByte);
-                    }
-                    dest.flush();
-                    dest.close();
-                    is.close();
-                }
-
-
-            }
-        }
-        catch (Exception e)
-        {
-            System.out.println("ERROR: "+e.getMessage());
-        }
-
     }
 }
