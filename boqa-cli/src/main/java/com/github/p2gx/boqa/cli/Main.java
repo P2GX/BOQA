@@ -2,6 +2,8 @@ package com.github.p2gx.boqa.cli;
 
 import com.github.p2gx.boqa.cli.cmd.BoqaCommand;
 import com.github.p2gx.boqa.cli.cmd.BlendedCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 import static picocli.CommandLine.Help.Ansi.Style.*;
@@ -14,6 +16,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
+    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static final String VERSION = "v0.1.0-SNAPSHOT";
     public static final int WIDTH = 120;
     public static final String FOOTER = "The BOQA algorithm matches phenotypic features observed in patients " +
