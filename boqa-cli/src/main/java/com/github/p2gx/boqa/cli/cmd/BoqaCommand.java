@@ -2,6 +2,8 @@ package com.github.p2gx.boqa.cli.cmd;
 
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @CommandLine.Command(
         name = "plain",
@@ -9,6 +11,8 @@ import java.util.concurrent.Callable;
         description = "Performs BOQA analysis as described in PMID:22843981, without taking annotation frequencies into account.",
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
+
+    private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
 
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
@@ -51,6 +55,8 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
+        // Example of how to make a log message appear in log file
+        //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
 
         // Prepare data structure for disease-phenotype associations
         // Prepare data structure for HP ontology

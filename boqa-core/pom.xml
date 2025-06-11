@@ -16,6 +16,7 @@
             <groupId>org.monarchinitiative.phenol</groupId>
             <artifactId>phenol-core</artifactId>
         </dependency>
+
     </dependencies>
 
 </project>
