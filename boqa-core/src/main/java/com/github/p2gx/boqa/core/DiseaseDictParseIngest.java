@@ -1,22 +1,12 @@
 package com.github.p2gx.boqa.core;
 
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
-import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
-import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
-import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class DiseaseDictParseIngest implements DiseaseDict{
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDictParseIngest.class);
@@ -25,6 +15,7 @@ public class DiseaseDictParseIngest implements DiseaseDict{
     List<String> hpoFreqTermList;
     List<String> excludedHpoFreqTermList;
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
+    HashMap<String, String> geneIdToSymbolDict;
 
     public DiseaseDictParseIngest(String phenotypeAnnotationFile) {
 
@@ -164,6 +155,53 @@ public class DiseaseDictParseIngest implements DiseaseDict{
         }
     }
 
+    public void addDiseaseGeneAssociations(String diseaseGeneFile) {
+
+        this.geneIdToSymbolDict = new HashMap<>();
+
+        // Open HPOA file genes_to_disease.txt
+        try {
+            File myObj = new File(diseaseGeneFile);
+            Scanner myReader = new Scanner(myObj);
+            while (myReader.hasNextLine()) {
+                String line = myReader.nextLine();
+                // Skip header line
+                if (line.startsWith("ncbi_gene_id")) {
+                    continue;
+                }
+                String[] fields = line.split("\t");
+                if (fields.length != 5) {
+                    System.out.println("ERROR: Row does not have 5 fields!");
+                    break;
+                }
+                String ncbi_gene_id = fields[0];
+                String gene_symbol = fields[1];
+                String disease_id = fields[3];
+
+                // Map gene IDs to gene symbols
+                this.geneIdToSymbolDict.put(ncbi_gene_id, gene_symbol);
+
+                // Check if disease is in dictionary
+                if (this.diseaseFeaturesDict.containsKey(disease_id)) {
+                    // Check if disease already has genes
+                    if (!diseaseFeaturesDict.get(disease_id).containsKey("G")) {
+                        diseaseFeaturesDict.get(disease_id).put("G", new HashSet<>());
+                    }
+                    diseaseFeaturesDict.get(disease_id).get("G").add(ncbi_gene_id);
+                }
+            }
+            myReader.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("An error occurred.");
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public int size() {
+        return this.diseaseFeaturesDict.size();
+    }
+
     @Override
     public Set<String> getIncludedDiseaseFeatures(String omimId){
         return this.diseaseFeaturesDict.get(omimId).get("I");
@@ -172,5 +210,14 @@ public class DiseaseDictParseIngest implements DiseaseDict{
     @Override
     public Set<String> getExcludedDiseaseFeatures(String omimId){
         return this.diseaseFeaturesDict.get(omimId).get("E");
+    }
+
+    @Override
+    public Set<String> getDiseaseGeneIds(String omimId) {
+        if (this.diseaseFeaturesDict.get(omimId).containsKey("G")) {
+            return this.diseaseFeaturesDict.get(omimId).get("G");
+        } else {
+            return new HashSet<>();
+        }
     }
 }

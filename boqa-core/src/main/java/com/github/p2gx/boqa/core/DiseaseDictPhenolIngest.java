@@ -58,18 +58,39 @@ public class DiseaseDictPhenolIngest implements DiseaseDict{
         HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
         diseases = getPhenolHpoDiseases(ontologyFile, phenotypeAnnotationFile);
         for (HpoDisease disease : diseases) {
-            Set<String> termIdSet = disease.annotationTermIdList().stream()
-                    .map(object -> Objects.toString(object, null))
+
+            // Included
+            Set<String> includedTerms = disease.annotationTermIdList().stream()
+                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() != 0)
+                    .map(termId -> termId.toString())
                     .collect(Collectors.toSet());
+            Set<String> moi_terms = disease.modesOfInheritance().stream() // Include mode of inheritance
+                    .map(termId -> termId.toString())
+                    .collect(Collectors.toSet());
+            includedTerms.addAll(moi_terms);
             HashMap<String, Set<String>> iTerms = new HashMap<>();
-            iTerms.put("I", termIdSet);
+            iTerms.put("I", includedTerms);
             diseaseFeaturesDict.putIfAbsent(disease.id().toString(), iTerms);
+
+            // Excluded
+            Set<String> excludedTerms = disease.annotationTermIdList().stream()
+                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() == 0)
+                    .map(termId -> termId.toString())
+                    .collect(Collectors.toSet());
+            HashMap<String, Set<String>> eTerms = new HashMap<>();
+            iTerms.put("E", excludedTerms);
+            diseaseFeaturesDict.putIfAbsent(disease.id().toString(), eTerms);
         }
         return diseaseFeaturesDict;
     }
 
     public HpoDiseases getDiseases() {
         return this.diseases;
+    }
+
+    @Override
+    public int size() {
+        return this.diseaseFeaturesDict.size();
     }
 
     @Override
@@ -80,5 +101,13 @@ public class DiseaseDictPhenolIngest implements DiseaseDict{
     @Override
     public Set<String> getExcludedDiseaseFeatures(String omimId){
         return this.diseaseFeaturesDict.get(omimId).get("E");
+    }
+
+    @Override
+    public Set<String> getDiseaseGeneIds(String omimId) {
+        /*
+        Not yet implemented.
+         */
+        return new HashSet<>();
     }
 }

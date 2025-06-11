@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.core;
 
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -14,8 +16,28 @@ class DiseaseDictParseIngestTest {
     @BeforeAll
     static void setup() {
         ClassLoader classLoader = DiseaseDictParseIngest.class.getClassLoader();
-        String annotationFile = classLoader.getResource("data/testDiseaseDict/phenotype_sample.hpoa").getFile();
+        String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile();
+        String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath();
+        try {
+            new ZipFile(HpoZipArchive).extractAll(destinationDirectory);
+        } catch (ZipException e) {
+            e.printStackTrace();
+        }
+        String annotationFile = destinationDirectory + "/phenotype.hpoa";
+        String ontologyFile = destinationDirectory + "/hp.json";
+        String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
+        System.out.println(destinationDirectory);
+
         testDiseaseDict = new DiseaseDictParseIngest(annotationFile);
+        testDiseaseDict.addDiseaseGeneAssociations(diseaseGeneFile);
+    }
+
+    @Test
+    void testDiseaseGeneAssociations() {
+        System.out.println(testDiseaseDict.geneIdToSymbolDict.size());
+        String diseaseId = "OMIM:608232";
+        Set<String> geneIdSet = testDiseaseDict.getDiseaseGeneIds(diseaseId);
+        System.out.println(diseaseId + ": " + geneIdSet);
     }
 
     @Test
@@ -109,9 +131,7 @@ class DiseaseDictParseIngestTest {
         Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(omim_id);
         System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
-        //expectedExcluded.add("HP:0002155");
         assertEquals(expectedExcluded, actualExcluded);
-
     }
 
     @Test
