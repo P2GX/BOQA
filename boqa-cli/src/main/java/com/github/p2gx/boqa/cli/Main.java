@@ -16,7 +16,6 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
     public static final String VERSION = "v0.1.0-SNAPSHOT";
     public static final int WIDTH = 120;
     public static final String FOOTER = "The BOQA algorithm matches phenotypic features observed in patients " +

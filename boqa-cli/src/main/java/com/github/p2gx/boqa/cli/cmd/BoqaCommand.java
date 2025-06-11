@@ -55,7 +55,9 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
-        logger.info("Example log from {}", BoqaCommand.class.getSimpleName());
+        // Example of how to make a log message appear in log file
+        //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
+
         // Prepare data structure for disease-phenotype associations
         // Prepare data structure for HP ontology
         // Perform BOQA analysis
