@@ -14,4 +14,6 @@ public interface DiseaseDict {
     Set<String> getExcludedDiseaseFeatures(String omimId);
 
     Set<String> getDiseaseGeneIds(String omimId);
+
+    Set<String> getDiseaseGeneSymbols(String omimId);
 }

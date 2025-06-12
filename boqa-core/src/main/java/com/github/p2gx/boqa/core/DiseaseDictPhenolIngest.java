@@ -110,4 +110,12 @@ public class DiseaseDictPhenolIngest implements DiseaseDict{
          */
         return new HashSet<>();
     }
+
+    @Override
+    public Set<String> getDiseaseGeneSymbols(String omimId) {
+        /*
+        Not yet implemented.
+         */
+        return new HashSet<>();
+    }
 }

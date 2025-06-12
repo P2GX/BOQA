@@ -191,6 +191,23 @@ public class DiseaseDictParseIngest implements DiseaseDict{
                 }
             }
             myReader.close();
+
+            // Add gene symbols if available
+            for (String disease_id : diseaseFeaturesDict.keySet()) {
+                if (diseaseFeaturesDict.get(disease_id).get("G") != null) {
+                    diseaseFeaturesDict.get(disease_id).put("GS", new HashSet<>());
+                    Set<String> geneIds = diseaseFeaturesDict.get(disease_id).get("G");
+                    for (String gene_id : geneIds) {
+                        String gene_symbol;
+                        if (geneIdToSymbolDict.containsKey(gene_id)) {
+                            gene_symbol = geneIdToSymbolDict.get(gene_id);
+                        } else {
+                            gene_symbol = gene_id;
+                        }
+                        diseaseFeaturesDict.get(disease_id).get("GS").add(gene_symbol);
+                    }
+                }
+            }
         } catch (FileNotFoundException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
@@ -216,6 +233,15 @@ public class DiseaseDictParseIngest implements DiseaseDict{
     public Set<String> getDiseaseGeneIds(String omimId) {
         if (this.diseaseFeaturesDict.get(omimId).containsKey("G")) {
             return this.diseaseFeaturesDict.get(omimId).get("G");
+        } else {
+            return new HashSet<>();
+        }
+    }
+
+    @Override
+    public Set<String> getDiseaseGeneSymbols(String omimId) {
+        if (this.diseaseFeaturesDict.get(omimId).containsKey("GS")) {
+            return this.diseaseFeaturesDict.get(omimId).get("GS");
         } else {
             return new HashSet<>();
         }
