@@ -58,10 +58,25 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // Example of how to make a log message appear in log file
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
 
+        // results_dict = {id is phenopacket
+        // metadata such as timestamp, algo and version used, probability is main result, also save the four exponents}
         // Prepare data structure for disease-phenotype associations
-        // Prepare data structure for HP ontology
-        // Perform BOQA analysis
-        // Report results
+
+        // MAYBE run on one ppkt only, then we have a benchmark command for running it many times, grabbing many results
+        // and making comparison tables and plots?
+        // NO for each phenopacket
+
+        // Read in phenopacket
+        // write ppktID and metadata to result file
+        // extract HPOs as Set<termId>
+        // Traverser: create set of ON nodes, Set<termId> of Q layer
+        // for each disease
+            // Peter H code: output is Set<termId>, HPOs of that disease
+            // Traverser: create set of ON nodes, Set<termId> of H layer
+            // Set operations-based counting, return array of four numbers (the exponents of alfa, beta...)
+            // Compute unnormalized probability
+            // add  disease1: {normprob: emppty, unnorm prob: val, m001: val, m010...} to results dict
+        // Based on above result dict, sum unnorm prob to get normalization factor and insert it into normprob
 
         return 0;
     }
