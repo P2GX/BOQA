@@ -34,10 +34,16 @@ class DiseaseDictParseIngestTest {
 
     @Test
     void testDiseaseGeneAssociations() {
-        System.out.println(testDiseaseDict.geneIdToSymbolDict.size());
         String diseaseId = "OMIM:608232";
-        Set<String> geneIdSet = testDiseaseDict.getDiseaseGeneIds(diseaseId);
-        System.out.println(diseaseId + ": " + geneIdSet);
+
+        // Gene IDs
+        Set<String> expectedIncluded = new HashSet<>();
+        expectedIncluded.add("NCBIGene:613");
+        expectedIncluded.add("NCBIGene:25");
+        Set<String> actualIncluded = testDiseaseDict.getDiseaseGeneIds(diseaseId);
+        assertEquals(expectedIncluded, actualIncluded);
+
+        // Gene symbols
     }
 
     @Test
