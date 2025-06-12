@@ -59,18 +59,20 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
 
         // results_dict = {id is phenopacket
-        // metadata such as timestamp, algo and version used, probability is main result, also save the four exponents}
+        // metadata such as timestamp, algo and version used
         // Prepare data structure for disease-phenotype associations
 
-        // for each ppkt
+        // BoqaAnalysis class has what I/O exactly
+
+        // for each ppkt (chunks of n parallelized)
             // Read in phenopacket
             // write ppktID and metadata to result file
             // extract HPOs as Set<termId>
-            // Traverser: create set of ON nodes, Set<TermId> of Q layer --> Initialize counts
-            // for each disease (parallelize here)
+            // Traverser class: create set of ON nodes, Set<TermId> of Q layer --> Initialize counts
+            // for each disease (parallelize here, too?)
                 // Peter H code: output is Set<termId>, HPOs of that disease H layer
-                // Traverser: create set of ON nodes, Set<String> of H layer
-                // Set operations-based counting, return array of four numbers (the exponents of alfa, beta...)
+                // Traverser class: create set of ON nodes, Set<TermId> of H layer
+                // Counter class' method: Set operations-based counting, return array of four exponents
                 // Compute unnormalized probability
                 // add  disease1: {normprob: emppty, unnorm prob: val, m001: val, m010...} to results dict
             // Based on above result dict, sum unnorm prob to get normalization factor and insert it into normprob
