@@ -64,7 +64,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
         // BoqaAnalysis class has what I/O exactly
 
-        // for each ppkt (chunks of n parallelized)
+        // for each ppkt
             // Read in phenopacket
             // write ppktID and metadata to result file
             // extract HPOs as Set<termId>
