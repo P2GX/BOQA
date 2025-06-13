@@ -24,7 +24,7 @@ class DiseaseDictParseIngestTest {
             e.printStackTrace();
         }
         String annotationFile = destinationDirectory + "/phenotype.hpoa";
-        String ontologyFile = destinationDirectory + "/hp.json";
+        //String ontologyFile = destinationDirectory + "/hp.json";
         String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
         System.out.println(destinationDirectory);
 
@@ -33,17 +33,23 @@ class DiseaseDictParseIngestTest {
     }
 
     @Test
-    void testDiseaseGeneAssociations() {
+    void testGetDiseaseGeneIds() {
         String diseaseId = "OMIM:608232";
-
-        // Gene IDs
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("NCBIGene:613");
         expectedIncluded.add("NCBIGene:25");
         Set<String> actualIncluded = testDiseaseDict.getDiseaseGeneIds(diseaseId);
         assertEquals(expectedIncluded, actualIncluded);
+    }
 
-        // Gene symbols
+    @Test
+    void testGetDiseaseGeneSymbols() {
+        String diseaseId = "OMIM:608232";
+        Set<String> expectedIncluded = new HashSet<>();
+        expectedIncluded.add("ABL1");
+        expectedIncluded.add("BCR");
+        Set<String> actualIncluded = testDiseaseDict.getDiseaseGeneSymbols(diseaseId);
+        assertEquals(expectedIncluded, actualIncluded);
     }
 
     @Test

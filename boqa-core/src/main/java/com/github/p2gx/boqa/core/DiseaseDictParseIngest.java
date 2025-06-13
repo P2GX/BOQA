@@ -103,7 +103,7 @@ public class DiseaseDictParseIngest implements DiseaseDict{
             // E.g., 2.5%
             double percentage = Double.parseDouble(freqString.split("%")[0]);
             freqFloat = percentage/100;
-        } else if (freqString.equals("")) {
+        } else if (freqString.isEmpty()) {
             // If no frequency is given, we assume a frequency of 1
             freqFloat = 1.0;
         } else {
@@ -127,7 +127,7 @@ public class DiseaseDictParseIngest implements DiseaseDict{
         if (this.hpoFreqTermList.contains(freqString)) {
             // Frequency already specified as HPO term
             return freqString;
-        } else if (freqString.equals("")) {
+        } else if (freqString.isEmpty()) {
             // If no frequency is given, we assume a frequency of 1
             return "HP:0040280";
         } else {
@@ -202,10 +202,14 @@ public class DiseaseDictParseIngest implements DiseaseDict{
                         if (geneIdToSymbolDict.containsKey(gene_id)) {
                             gene_symbol = geneIdToSymbolDict.get(gene_id);
                         } else {
-                            gene_symbol = gene_id;
+                            // Use NCBI Gene ID without colon instead of gene symbol
+                            gene_symbol = gene_id.split(":")[0] + gene_id.split(":")[1];
                         }
                         diseaseFeaturesDict.get(disease_id).get("GS").add(gene_symbol);
                     }
+                } else {
+                    diseaseFeaturesDict.get(disease_id).put("G", new HashSet<>());
+                    diseaseFeaturesDict.get(disease_id).put("GS", new HashSet<>());
                 }
             }
         } catch (FileNotFoundException e) {
@@ -230,18 +234,18 @@ public class DiseaseDictParseIngest implements DiseaseDict{
     }
 
     @Override
-    public Set<String> getDiseaseGeneIds(String omimId) {
-        if (this.diseaseFeaturesDict.get(omimId).containsKey("G")) {
-            return this.diseaseFeaturesDict.get(omimId).get("G");
+    public Set<String> getDiseaseGeneIds(String diseaseId) {
+        if (this.diseaseFeaturesDict.get(diseaseId).containsKey("G")) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("G");
         } else {
             return new HashSet<>();
         }
     }
 
     @Override
-    public Set<String> getDiseaseGeneSymbols(String omimId) {
-        if (this.diseaseFeaturesDict.get(omimId).containsKey("GS")) {
-            return this.diseaseFeaturesDict.get(omimId).get("GS");
+    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
+        if (this.diseaseFeaturesDict.get(diseaseId).containsKey("GS")) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("GS");
         } else {
             return new HashSet<>();
         }
