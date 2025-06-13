@@ -7,6 +7,7 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,15 +17,22 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DiseaseDictPhenolIngest implements DiseaseDict{
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDictPhenolIngest.class);
+/**
+Class that implements the DiseaseDict interface by parsing disease annotations from HPOA files using Phenol.
+ * <p>
+ * TODO: Add disease genes, add terms for clinical modifier, increase default cohort size in Phenol too 100.
+ * <p>
+ * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ */
+public class DiseaseDataPhenolIngest implements DiseaseData {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataPhenolIngest.class);
     String phenotypeAnnotationFile;
     String ontologyFile;
     List<String> validDatabaseList;
     HpoDiseases diseases;
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
 
-    public DiseaseDictPhenolIngest(String phenotypeAnnotationFile, String ontologyFile) throws IOException{
+    public DiseaseDataPhenolIngest(String phenotypeAnnotationFile, String ontologyFile) throws IOException{
 
         // Source files
         this.phenotypeAnnotationFile = phenotypeAnnotationFile;
@@ -62,10 +70,10 @@ public class DiseaseDictPhenolIngest implements DiseaseDict{
             // Included
             Set<String> includedTerms = disease.annotationTermIdList().stream()
                     .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() != 0)
-                    .map(termId -> termId.toString())
+                    .map(TermId::toString)
                     .collect(Collectors.toSet());
             Set<String> moi_terms = disease.modesOfInheritance().stream() // Include mode of inheritance
-                    .map(termId -> termId.toString())
+                    .map(TermId::toString)
                     .collect(Collectors.toSet());
             includedTerms.addAll(moi_terms);
             HashMap<String, Set<String>> iTerms = new HashMap<>();
@@ -75,7 +83,7 @@ public class DiseaseDictPhenolIngest implements DiseaseDict{
             // Excluded
             Set<String> excludedTerms = disease.annotationTermIdList().stream()
                     .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() == 0)
-                    .map(termId -> termId.toString())
+                    .map(TermId::toString)
                     .collect(Collectors.toSet());
             HashMap<String, Set<String>> eTerms = new HashMap<>();
             iTerms.put("E", excludedTerms);
@@ -88,23 +96,27 @@ public class DiseaseDictPhenolIngest implements DiseaseDict{
         return this.diseases;
     }
 
+    /**
+     Methods that implement the DiseaseDict interface
+     */
+
     @Override
     public int size() {
         return this.diseaseFeaturesDict.size();
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String omimId){
-        return this.diseaseFeaturesDict.get(omimId).get("I");
+    public Set<String> getIncludedDiseaseFeatures(String diseaseId){
+        return this.diseaseFeaturesDict.get(diseaseId).get("I");
     }
 
     @Override
-    public Set<String> getExcludedDiseaseFeatures(String omimId){
-        return this.diseaseFeaturesDict.get(omimId).get("E");
+    public Set<String> getExcludedDiseaseFeatures(String diseaseId){
+        return this.diseaseFeaturesDict.get(diseaseId).get("E");
     }
 
     @Override
-    public Set<String> getDiseaseGeneIds(String omimId) {
+    public Set<String> getDiseaseGeneIds(String diseaseId) {
         /*
         Not yet implemented.
          */
@@ -112,7 +124,7 @@ public class DiseaseDictPhenolIngest implements DiseaseDict{
     }
 
     @Override
-    public Set<String> getDiseaseGeneSymbols(String omimId) {
+    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
         /*
         Not yet implemented.
          */

@@ -8,8 +8,13 @@ import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class DiseaseDictParseIngest implements DiseaseDict{
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDictParseIngest.class);
+/**
+Class that implements the DiseaseDict interface by parsing DiseaseDict annotations directly from HPOA files.
+ * <p>
+ * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ */
+public class DiseaseDataParseIngest implements DiseaseData {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataParseIngest.class);
     String phenotypeAnnotationFile;
     List<String> validDatabaseList;
     List<String> hpoFreqTermList;
@@ -17,7 +22,7 @@ public class DiseaseDictParseIngest implements DiseaseDict{
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
     HashMap<String, String> geneIdToSymbolDict;
 
-    public DiseaseDictParseIngest(String phenotypeAnnotationFile) {
+    public DiseaseDataParseIngest(String phenotypeAnnotationFile) {
 
         // Source file
         this.phenotypeAnnotationFile = phenotypeAnnotationFile;
@@ -34,7 +39,7 @@ public class DiseaseDictParseIngest implements DiseaseDict{
     }
 
     public HashMap<String, HashMap<String, Set<String>>> ingest(String phenotypeAnnotationFile) {
-        HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<String, HashMap<String, Set<String>>>();
+        HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
         // Open HPOA file phenotype.hpoa
         try {
             File myObj = new File(phenotypeAnnotationFile);
@@ -218,19 +223,23 @@ public class DiseaseDictParseIngest implements DiseaseDict{
         }
     }
 
+    /**
+    Methods that implement the DiseaseDict interface
+     */
+
     @Override
     public int size() {
         return this.diseaseFeaturesDict.size();
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String omimId){
-        return this.diseaseFeaturesDict.get(omimId).get("I");
+    public Set<String> getIncludedDiseaseFeatures(String diseaseId){
+        return this.diseaseFeaturesDict.get(diseaseId).get("I");
     }
 
     @Override
-    public Set<String> getExcludedDiseaseFeatures(String omimId){
-        return this.diseaseFeaturesDict.get(omimId).get("E");
+    public Set<String> getExcludedDiseaseFeatures(String diseaseId){
+        return this.diseaseFeaturesDict.get(diseaseId).get("E");
     }
 
     @Override

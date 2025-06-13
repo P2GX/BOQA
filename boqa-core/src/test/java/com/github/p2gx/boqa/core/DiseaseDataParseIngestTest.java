@@ -9,13 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.HashSet;
 import java.util.Set;
 
-class DiseaseDictParseIngestTest {
+/**
+ * Testing of DiseaseDataParseIngest, which implements DiseaseData.
+ * <p>
+ * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ */
+class DiseaseDataParseIngestTest {
 
-    private static DiseaseDictParseIngest testDiseaseDict;
+    private static DiseaseDataParseIngest testDiseaseDict;
 
     @BeforeAll
     static void setup() {
-        ClassLoader classLoader = DiseaseDictParseIngest.class.getClassLoader();
+        ClassLoader classLoader = DiseaseDataParseIngest.class.getClassLoader();
         String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile();
         String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath();
         try {
@@ -28,7 +33,7 @@ class DiseaseDictParseIngestTest {
         String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
         System.out.println(destinationDirectory);
 
-        testDiseaseDict = new DiseaseDictParseIngest(annotationFile);
+        testDiseaseDict = new DiseaseDataParseIngest(annotationFile);
         testDiseaseDict.addDiseaseGeneAssociations(diseaseGeneFile);
     }
 
@@ -66,11 +71,11 @@ class DiseaseDictParseIngestTest {
         OMIM:604091	HDL deficiency, familial, 1		HP:0000006	PMID:9888879	PCS					I -> included
 
          */
-        String omim_id = "OMIM:604091";
-        System.out.println(omim_id);
+        String diseaseId = "OMIM:604091";
+        System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(omim_id);
+        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003233");
@@ -80,7 +85,7 @@ class DiseaseDictParseIngestTest {
         assertEquals(expectedIncluded, actualIncluded);
 
         // Excluded
-        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(omim_id);
+        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
         System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
         expectedExcluded.add("HP:0002155");
@@ -113,11 +118,11 @@ class DiseaseDictParseIngestTest {
         OMIM:165500	Optic atrophy 1		HP:0000666	OMIM:165500	PCS		5%			P -> included
 
          */
-        String omim_id = "OMIM:165500";
-        System.out.println(omim_id);
+        String diseaseId = "OMIM:165500";
+        System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(omim_id);
+        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003587");
@@ -140,7 +145,7 @@ class DiseaseDictParseIngestTest {
         assertEquals(expectedIncluded, actualIncluded);
 
         // Excluded
-        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(omim_id);
+        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
         System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
         assertEquals(expectedExcluded, actualExcluded);
@@ -338,10 +343,3 @@ class DiseaseDictParseIngestTest {
 
     }
 }
-
-
-
-
-
-
-

@@ -4,10 +4,10 @@ import java.util.Set;
 
 /**
  * Interface that provides disease annotations from HPOA.
- *
- * @author <a href="mailto:manuel.holtgrewe@bihealth.de">Peter Hansen</a>
+ * <p>
+ * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-public interface DiseaseDict {
+public interface DiseaseData {
 
     // Return number of diseases in dictionary
     int size();

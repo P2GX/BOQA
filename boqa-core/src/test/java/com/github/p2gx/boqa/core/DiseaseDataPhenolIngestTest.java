@@ -18,13 +18,21 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class DiseaseDictPhenolIngestTest {
+/**
+ * Testing of DiseaseDataPhenolIngest, which implements DiseaseData.
+ * <p>
+ * Apart from that, there are exploratory tests that show some problems when parsing with phenol.
+ * These tests are disabled.
+ * <p>
+ * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ */
+class DiseaseDataPhenolIngestTest {
 
-    private static DiseaseDictPhenolIngest testDiseaseDict;
+    private static DiseaseDataPhenolIngest testDiseaseDict;
 
     @BeforeAll
     static void setup() throws IOException {
-        ClassLoader classLoader = DiseaseDictPhenolIngest.class.getClassLoader();
+        ClassLoader classLoader = DiseaseDataPhenolIngest.class.getClassLoader();
         String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile();
         String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath();
         try {
@@ -34,10 +42,10 @@ class DiseaseDictPhenolIngestTest {
         }
         String annotationFile = destinationDirectory + "/phenotype.hpoa";
         String ontologyFile = destinationDirectory + "/hp.json";
-        String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
+        //String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
         System.out.println(destinationDirectory);
 
-        testDiseaseDict = new DiseaseDictPhenolIngest(annotationFile, ontologyFile);
+        testDiseaseDict = new DiseaseDataPhenolIngest(annotationFile, ontologyFile);
     }
 
     @Test
@@ -54,12 +62,12 @@ class DiseaseDictPhenolIngestTest {
         OMIM:604091	HDL deficiency, familial, 1		HP:0000006	PMID:9888879	PCS					I -> included
 
          */
-        String omim_id = "OMIM:604091";
-        System.out.println(omim_id);
+        String diseaseId = "OMIM:604091";
+        //System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(omim_id);
-        System.out.println("Included: " + actualIncluded);
+        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
+        //System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003233");
         expectedIncluded.add("HP:0000006");
@@ -68,14 +76,13 @@ class DiseaseDictPhenolIngestTest {
         assertEquals(expectedIncluded, actualIncluded);
 
         // Excluded
-        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(omim_id);
-        System.out.println("Excluded: " + actualExcluded);
+        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
+        //System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
         expectedExcluded.add("HP:0002155");
         assertEquals(expectedExcluded, actualExcluded);
     }
 
-    @Disabled
     @Test
     void testInclusionAndExclusionOfTerms_2() {
         /*
@@ -102,11 +109,11 @@ class DiseaseDictPhenolIngestTest {
         OMIM:165500	Optic atrophy 1		HP:0000666	OMIM:165500	PCS		5%			P -> included
 
          */
-        String omim_id = "OMIM:165500";
-        System.out.println(omim_id);
+        String diseaseId = "OMIM:165500";
+        System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(omim_id);
+        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         //expectedIncluded.add("HP:0003587"); // Clinical modifier: Gradual, very slow onset of disease manifestations.
@@ -129,24 +136,24 @@ class DiseaseDictPhenolIngestTest {
         assertEquals(expectedIncluded, actualIncluded);
 
         // Excluded
-        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(omim_id);
+        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
         System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
-        expectedIncluded.add("HP:0000666"); // Bug in Phenol: Aspect is 'P' and frequency 5% - should be included!
+        expectedExcluded.add("HP:0000666"); // Bug in Phenol: Aspect is 'P' and frequency 5% - should be included!
         assertEquals(expectedExcluded, actualExcluded);
     }
 
     /*
-    Exploration of the parsing the file phenotype.hpoa using Phenol for debugging
+    Exploration of the parsing the file phenotype.hpoa using Phenol
     */
 
     @Disabled
     @Test
     void getDiseases_frequencies_as_percentages() {
-        String omimId = "OMIM:165500";
+        String diseaseId = "OMIM:165500";
         // In the file phenotype.hpoa the frequency of HP:0000486 is given as 10% and of HP:0000666 as 5%.
-        System.out.println(omimId);
-        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(omimId));
+        System.out.println(diseaseId);
+        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         for (TermId term : disease.annotationTermIdList()) {
             if (term.toString().equals("HP:0000486") | term.toString().equals("HP:0000666")) {
                 Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
@@ -160,10 +167,10 @@ class DiseaseDictPhenolIngestTest {
     @Disabled
     @Test
     void getDiseases_frequencies_as_percentages_with_decimals() {
-        String omimId = "OMIM:609939";
+        String diseaseId = "OMIM:609939";
         // In the file phenotype.hpoa the frequency of HP:0000077 is given as 32.3% and of HP:0000992 as 76.3%.
-        System.out.println(omimId);
-        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(omimId));
+        System.out.println(diseaseId);
+        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         List<String> relevantTermIds = List.of("HP:0000077", "HP:0000992");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
@@ -178,11 +185,11 @@ class DiseaseDictPhenolIngestTest {
     @Disabled
     @Test
     void getDiseases_frequencies_as_hpo_frequency_term() {
-        String omimId = "OMIM:276820";
+        String diseaseId = "OMIM:276820";
         // In the file phenotype.hpoa the frequency of "HP:0009815", "HP:0001773", "HP:0002980", "HP:0002827"
         // are given as HP:0040280, HP:0040281, HP:0040282, HP:0040283.
-        System.out.println(omimId);
-        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(omimId));
+        System.out.println(diseaseId);
+        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         List<String> relevantTermIds = List.of("HP:0009815", "HP:0001773", "HP:0002980", "HP:0002827");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
@@ -199,11 +206,11 @@ class DiseaseDictPhenolIngestTest {
     @Disabled
     @Test
     void getDiseases_frequencies_as_hpo_frequency_term_2() {
-        String omimId = "OMIM:615286";
+        String diseaseId = "OMIM:615286";
         // In the file phenotype.hpoa the frequency of "HP:0000718" and "HP:0000752"
         // are given as HP:0040284.
-        System.out.println(omimId);
-        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(omimId));
+        System.out.println(diseaseId);
+        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         List<String> relevantTermIds = List.of("HP:0000718", "HP:0000752");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
@@ -218,11 +225,11 @@ class DiseaseDictPhenolIngestTest {
     @Disabled
     @Test
     void getDiseases_onset() {
-        String omimId = "OMIM:618117";
-        System.out.println(omimId);
+        String diseaseId = "OMIM:618117";
+        System.out.println(diseaseId);
         // OVARIAN DYSGENESIS 7; ODG7
         // Juvenile onset (HP:0003621) is an annotated disease feature
-        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(omimId));
+        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         System.out.println("List of features: " + disease.annotationTermIdList());
         System.out.println("HP:0003621 included in list: " + disease.annotationTermIdList().toString().contains("HP:0003621"));
         System.out.println("Content of disease.diseaseOnset(): " + disease.diseaseOnset().toString());
@@ -236,11 +243,11 @@ class DiseaseDictPhenolIngestTest {
     @Disabled
     @Test
     void getDiseases_age_of_death() {
-        String omimId = "OMIM:617350";
-        System.out.println(omimId);
+        String diseaseId = "OMIM:617350";
+        System.out.println(diseaseId);
         // DEVELOPMENTAL AND EPILEPTIC ENCEPHALOPATHY 52; DEE52
         // Death in childhood (HP:0003819) is an annotated disease feature
-        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(omimId));
+        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         System.out.println("List of features: " + disease.annotationTermIdList());
         System.out.println("HP:0003819 included in list: " + disease.annotationTermIdList().toString().contains("HP:0003819"));
         // Death in childhood (HP:0003819) is not in the list of annotated features

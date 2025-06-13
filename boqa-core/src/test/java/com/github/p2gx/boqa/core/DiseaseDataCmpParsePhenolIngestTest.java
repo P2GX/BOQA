@@ -8,20 +8,24 @@ import org.junit.jupiter.api.Test;
 
 
 import java.io.IOException;
-
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class DiseaseDictCmpParsePhenolIngestTest {
+/**
+ * Comparison of the two implementations of the DiseaseData interface,
+ * namely DiseaseDataParseIngest and DiseaseDataPhenolIngest.
+ * <p>
+ * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ */
+class DiseaseDataCmpParsePhenolIngestTest {
 
-    private static DiseaseDictParseIngest testDiseaseDictParse;
-    private static DiseaseDictPhenolIngest testDiseaseDictPhenol;
+    private static DiseaseDataParseIngest testDiseaseDictParse;
+    private static DiseaseDataPhenolIngest testDiseaseDictPhenol;
 
     @BeforeAll
     static void setup() throws IOException {
-        ClassLoader classLoader = DiseaseDictPhenolIngest.class.getClassLoader();
+        ClassLoader classLoader = DiseaseDataPhenolIngest.class.getClassLoader();
         String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile();
         String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath();
         try {
@@ -31,11 +35,11 @@ class DiseaseDictCmpParsePhenolIngestTest {
         }
         String annotationFile = destinationDirectory + "/phenotype.hpoa";
         String ontologyFile = destinationDirectory + "/hp.json";
-        String geneFile = destinationDirectory + "/genes_to_disease.txt";
+        String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
         System.out.println(destinationDirectory);
 
-        testDiseaseDictParse = new DiseaseDictParseIngest(annotationFile);
-        testDiseaseDictPhenol = new DiseaseDictPhenolIngest(annotationFile, ontologyFile);
+        testDiseaseDictParse = new DiseaseDataParseIngest(annotationFile);
+        testDiseaseDictPhenol = new DiseaseDataPhenolIngest(annotationFile, ontologyFile);
     }
 
     @Test
@@ -89,6 +93,4 @@ class DiseaseDictCmpParsePhenolIngestTest {
 
         }
     }
-
-
 }
