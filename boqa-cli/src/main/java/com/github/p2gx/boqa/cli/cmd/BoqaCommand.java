@@ -59,9 +59,11 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
 
         // Prepare data structure for disease-phenotype associations
-        // Prepare data structure for HP ontology
-        // Perform BOQA analysis
-        // Report results
+        // Initialize Counter
+        // Import Query Layer Data
+        // for q in Query Layer Data
+            // Perform Analysis(q)
+        // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
 
         return 0;
     }
