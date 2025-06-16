@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
-Class that implements the DiseaseDict interface by parsing DiseaseDict annotations directly from HPOA files.
+Class that implements the DiseaseData interface by parsing annotations directly from HPOA file phenotype.hpoa.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
@@ -23,6 +23,8 @@ public class DiseaseDataParseIngest implements DiseaseData {
     HashMap<String, String> geneIdToSymbolDict;
 
     public DiseaseDataParseIngest(String phenotypeAnnotationFile) {
+
+        LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' ...");
 
         // Source file
         this.phenotypeAnnotationFile = phenotypeAnnotationFile;
@@ -84,7 +86,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
             }
             myReader.close();
         } catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
+            LOGGER.error(e.getMessage());
             e.printStackTrace();
         }
         return diseaseFeaturesDict;
@@ -218,7 +220,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
                 }
             }
         } catch (FileNotFoundException e) {
-            System.out.println("An error occurred.");
+            LOGGER.error(e.getMessage());
             e.printStackTrace();
         }
     }

@@ -34,6 +34,8 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
 
     public DiseaseDataPhenolIngest(String phenotypeAnnotationFile, String ontologyFile) throws IOException{
 
+        LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' using Phenol ...");
+
         // Source files
         this.phenotypeAnnotationFile = phenotypeAnnotationFile;
         this.ontologyFile = ontologyFile;

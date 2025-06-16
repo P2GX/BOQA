@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 /**
  * Testing of DiseaseDataPhenolIngest, which implements DiseaseData.
  * <p>
- * Apart from that, there are exploratory tests that show some problems when parsing with phenol.
+ * Apart from that, there are exploratory tests that show some problems when parsing phenotype.hpoa with phenol.
  * These tests are disabled.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
@@ -253,5 +253,19 @@ class DiseaseDataPhenolIngestTest {
         // Death in childhood (HP:0003819) is not in the list of annotated features
         // Death in childhood (HP:0003819) is a Clinical Modifier in HPO
         // What happens in Phenol with the Clinical Modifier Terms from phenotype.hpoa?
+    }
+
+    @Disabled
+    @Test
+    void getDiseases_ventricular_septal_hypertrophy() {
+        String diseaseId = "OMIM:615248";
+        System.out.println(diseaseId);
+        // DEVELOPMENTAL AND EPILEPTIC ENCEPHALOPATHY 52; DEE52
+        // Ventricular septal hypertrophy (HP:0005144) is an annotated disease feature
+        HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
+        System.out.println("List of features: " + disease.annotationTermIdList());
+        System.out.println("HP:0005144 included in list: " + disease.annotationTermIdList().toString().contains("HP:0005144"));
+        // Death in childhood (HP:0005144) is not in the list of annotated features
+        // Death in childhood (HP:0005144) is a Phenotypic abnormality in HPO
     }
 }
