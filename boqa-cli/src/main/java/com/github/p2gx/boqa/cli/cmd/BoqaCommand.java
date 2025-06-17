@@ -66,15 +66,17 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     public Integer call() throws Exception {
         // Example of how to make a log message appear in log file
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
-
-        // Initialize Counter
-        // Import Query Layer Data
-        // for q in Query Layer Data
-            // Perform Analysis(q), which will contain the following:
+        
+        // Prepare data structure for disease-phenotype associations
         DiseaseData diseaseData = new DiseaseDataParseIngest(phenotypeAnnotationFile);
         Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
         System.out.println("OMIM:604091");
         System.out.println(terIdList);
+            
+        // Initialize Counter
+        // Import Query Layer Data
+        // for q in Query Layer Data
+            // Perform Analysis(q)
         // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
 
         return 0;
