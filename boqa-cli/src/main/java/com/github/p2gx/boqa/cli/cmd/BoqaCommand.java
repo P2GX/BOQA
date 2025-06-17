@@ -8,6 +8,8 @@ import picocli.CommandLine;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.p2gx.boqa.core.DiseaseData;
 
@@ -18,6 +20,8 @@ import com.github.p2gx.boqa.core.DiseaseData;
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
 
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
@@ -60,16 +64,18 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
+        // Example of how to make a log message appear in log file
+        //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
 
-        // Prepare data structure for disease-phenotype associations
+        // Initialize Counter
+        // Import Query Layer Data
+        // for q in Query Layer Data
+            // Perform Analysis(q), which will contain the following:
         DiseaseData diseaseData = new DiseaseDataParseIngest(phenotypeAnnotationFile);
         Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
         System.out.println("OMIM:604091");
         System.out.println(terIdList);
-
-        // Prepare data structure for HP ontology
-        // Perform BOQA analysis
-        // Report results
+        // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
 
         return 0;
     }

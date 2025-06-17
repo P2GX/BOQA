@@ -3,6 +3,8 @@ package com.github.p2gx.boqa.cli;
 import com.github.p2gx.boqa.cli.cmd.BoqaCommand;
 import com.github.p2gx.boqa.cli.cmd.BlendedCommand;
 import com.github.p2gx.boqa.cli.cmd.DownloadCommand;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 import static picocli.CommandLine.Help.Ansi.Style.*;
