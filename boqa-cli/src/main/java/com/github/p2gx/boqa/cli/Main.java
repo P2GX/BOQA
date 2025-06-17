@@ -2,6 +2,7 @@ package com.github.p2gx.boqa.cli;
 
 import com.github.p2gx.boqa.cli.cmd.BoqaCommand;
 import com.github.p2gx.boqa.cli.cmd.BlendedCommand;
+import com.github.p2gx.boqa.cli.cmd.DownloadCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -36,6 +37,7 @@ public class Main implements Callable<Integer> {
 
         CommandLine cline = new CommandLine(new Main())
                 .setColorScheme(COLOR_SCHEME)
+                .addSubcommand("download", new DownloadCommand())
                 .addSubcommand("plain", new BoqaCommand())
                 .addSubcommand("blended", new BlendedCommand());
         cline.setToggleBooleanFlags(false);

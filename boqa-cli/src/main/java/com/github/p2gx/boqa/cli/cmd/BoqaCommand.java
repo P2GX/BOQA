@@ -1,9 +1,17 @@
 package com.github.p2gx.boqa.cli.cmd;
 
+import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+
+import java.nio.file.Path;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.p2gx.boqa.core.DiseaseData;
 
 @CommandLine.Command(
         name = "plain",
@@ -11,6 +19,7 @@ import org.slf4j.LoggerFactory;
         description = "Performs BOQA analysis as described in PMID:22843981, without taking annotation frequencies into account.",
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
 
     private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
 
@@ -30,7 +39,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             names = {"-p", "--phenopackets"},
             required = true,
             description = "Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
-    private String phenopacketFile;
+    private Path phenopacketFile;
 
     @CommandLine.Option(
             names={"-a","--a-param"},
@@ -57,25 +66,18 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     public Integer call() throws Exception {
         // Example of how to make a log message appear in log file
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
-
-        // results_dict = {id is phenopacket
-        // metadata such as timestamp, algo and version used
+        
         // Prepare data structure for disease-phenotype associations
-
-        // BoqaAnalysis class has what I/O exactly
-
-        // for each ppkt
-            // Read in phenopacket
-            // write ppktID and metadata to result file
-            // extract HPOs as Set<termId>
-            // Traverser class: create set of ON nodes, Set<TermId> of Q layer --> Initialize counts
-            // for each disease (parallelize here, too?)
-                // Peter H code: output is Set<termId>, HPOs of that disease H layer
-                // Traverser class: create set of ON nodes, Set<TermId> of H layer
-                // Counter class' method: Set operations-based counting, return array of four exponents
-                // Compute unnormalized probability
-                // add  disease1: {normprob: emppty, unnorm prob: val, m001: val, m010...} to results dict
-            // Based on above result dict, sum unnorm prob to get normalization factor and insert it into normprob
+        DiseaseData diseaseData = new DiseaseDataParseIngest(phenotypeAnnotationFile);
+        Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
+        System.out.println("OMIM:604091");
+        System.out.println(terIdList);
+            
+        // Initialize Counter
+        // Import Query Layer Data
+        // for q in Query Layer Data
+            // Perform Analysis(q)
+        // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
 
         return 0;
     }
