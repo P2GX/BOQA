@@ -1,5 +1,9 @@
 package com.github.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -18,6 +22,6 @@ import java.util.Set;
  */
 public interface QueryData {
 
-    // Returns a list of HPO terms to initialize the query layer
-    Set<String> getTerms();
+    // Returns a map of phenopacket ids and corresponding HPO terms
+    Map<String, Set<String>> getPhenopackets();
 }

@@ -1,6 +1,8 @@
 package com.github.p2gx.boqa.cli.cmd;
 
 import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.PhenopacketReader;
+import com.github.p2gx.boqa.core.QueryData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -72,7 +74,9 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
         System.out.println("OMIM:604091");
         System.out.println(terIdList);
-            
+
+        // Read in phenopackets
+        QueryData phenopackets = new PhenopacketReader(phenopacketFile);
         // Initialize Counter
         // Import Query Layer Data
         // for q in Query Layer Data
