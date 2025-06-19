@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Set;
 import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,10 +27,20 @@ class DiseaseDataCmpParsePhenolIngestTest {
     private static DiseaseDataPhenolIngest testDiseaseDictPhenol;
 
     @BeforeAll
-    static void setup() throws IOException {
+    static void setup() throws IOException, URISyntaxException {
         ClassLoader classLoader = DiseaseDataPhenolIngest.class.getClassLoader();
-        String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile();
-        String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath();
+//        String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile().toString();
+//        String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath().toString();
+        URL resourceUrl = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip");
+        if (resourceUrl == null) {
+            throw new IllegalArgumentException("Resource not found");
+        }
+        String HpoZipArchive = Paths.get(resourceUrl.toURI()).toFile().toString();
+        resourceUrl = classLoader.getResource("data/testDiseaseDict");
+        if (resourceUrl == null) {
+            throw new IllegalArgumentException("Resource not found");
+        }
+        String destinationDirectory = Paths.get(resourceUrl.toURI()).toFile().toString();
         try {
             new ZipFile(HpoZipArchive).extractAll(destinationDirectory);
         } catch (ZipException e) {
