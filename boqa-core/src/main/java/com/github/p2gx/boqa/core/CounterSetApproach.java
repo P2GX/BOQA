@@ -3,6 +3,8 @@ package com.github.p2gx.boqa.core;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -10,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class CounterSetApproach implements Counter{
+    private static final Logger LOGGER = LoggerFactory.getLogger(CounterSetApproach.class);
 
 
     private final Ontology hpoOntology;
