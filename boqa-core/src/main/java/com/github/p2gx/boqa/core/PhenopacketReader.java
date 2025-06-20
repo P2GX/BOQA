@@ -12,7 +12,7 @@ import java.util.Set;
 
 import static java.nio.file.Files.lines; // ?
 
-public class PhenopacketReader implements QueryData {
+public class PhenopacketReader implements PatientData {
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketReader.class);
     HashMap<String, Set<String>> phenopacketData;
     //HashMap<String, HashMap<String, Set<String>>> phenopacketData;
@@ -52,7 +52,7 @@ public class PhenopacketReader implements QueryData {
     }
     //
     @Override
-    public Map<String, Set<String>> getPhenopackets() {
+    public Map<String, Set<String>> getPhenotypes() {
         // Just a getter!
         return (Map<String, Set<String>>) Set.of();
     }

@@ -1,8 +1,5 @@
 package com.github.p2gx.boqa.core;
 
-import org.monarchinitiative.phenol.ontology.data.TermId;
-
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,8 +17,8 @@ import java.util.Set;
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  */
-public interface QueryData {
+public interface PatientData {
 
     // Returns a map of phenopacket ids and corresponding HPO terms
-    Map<String, Set<String>> getPhenopackets();
+    Map<String, Set<String>> getPhenotypes();
 }

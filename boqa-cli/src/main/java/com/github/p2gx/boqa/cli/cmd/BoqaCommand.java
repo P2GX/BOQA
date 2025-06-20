@@ -1,6 +1,7 @@
 package com.github.p2gx.boqa.cli.cmd;
 
 import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.PatientData;
 import com.github.p2gx.boqa.core.PhenopacketReader;
 import com.github.p2gx.boqa.core.QueryData;
 import org.slf4j.Logger;
@@ -76,7 +77,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         System.out.println(terIdList);
 
         // Read in phenopackets
-        QueryData phenopackets = new PhenopacketReader(phenopacketFile);
+        PatientData phenopackets = new PhenopacketReader(phenopacketFile);
         // Initialize Counter
         // Import Query Layer Data
         // for q in Query Layer Data
