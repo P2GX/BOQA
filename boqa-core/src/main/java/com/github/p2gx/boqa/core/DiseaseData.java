@@ -13,6 +13,9 @@ public interface DiseaseData {
     // Return number of diseases in dictionary
     int size();
 
+    // Get set of all disease IDs
+    Set<String> getDiseaseIds();
+
     // Return HPO terms associated with a disease
     Set<String> getIncludedDiseaseFeatures(String diseaseId);
 
@@ -24,8 +27,4 @@ public interface DiseaseData {
 
     // Return gene symbols associated with a disease
     Set<String> getDiseaseGeneSymbols(String diseaseId);
-
-    // Filter dictionary for diseases associated with given genes
-
-    // Create blended diseases by combining the phenotypic features for all pairs of diseases
 }

@@ -114,13 +114,26 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String diseaseId){
-        return this.diseaseFeaturesDict.get(diseaseId).get("I");
+    public Set<String> getDiseaseIds() {
+        return this.diseaseFeaturesDict.keySet();
+    }
+
+    @Override
+    public Set<String> getIncludedDiseaseFeatures(String diseaseId) {
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("I");
+        } else {
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
+        }
     }
 
     @Override
     public Set<String> getExcludedDiseaseFeatures(String diseaseId){
-        return this.diseaseFeaturesDict.get(diseaseId).get("E");
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("E");
+        } else {
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
+        }
     }
 
     @Override

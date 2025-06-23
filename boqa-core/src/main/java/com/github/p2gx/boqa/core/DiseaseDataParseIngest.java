@@ -244,30 +244,51 @@ public class DiseaseDataParseIngest implements DiseaseData {
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String diseaseId){
-        return this.diseaseFeaturesDict.get(diseaseId).get("I");
+    public Set<String> getDiseaseIds() {
+        return this.diseaseFeaturesDict.keySet();
     }
 
     @Override
-    public Set<String> getExcludedDiseaseFeatures(String diseaseId){
-        return this.diseaseFeaturesDict.get(diseaseId).get("E");
-    }
-
-    @Override
-    public Set<String> getDiseaseGeneIds(String diseaseId) {
-        if (this.diseaseFeaturesDict.get(diseaseId).containsKey("G")) {
-            return this.diseaseFeaturesDict.get(diseaseId).get("G");
+    public Set<String> getIncludedDiseaseFeatures(String diseaseId) {
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("I");
         } else {
-            return new HashSet<>();
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
         }
     }
 
     @Override
-    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
-        if (this.diseaseFeaturesDict.get(diseaseId).containsKey("GS")) {
-            return this.diseaseFeaturesDict.get(diseaseId).get("GS");
+    public Set<String> getExcludedDiseaseFeatures(String diseaseId){
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("E");
         } else {
-            return new HashSet<>();
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
+        }
+    }
+
+    @Override
+    public Set<String> getDiseaseGeneIds(String diseaseId) {
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            if (this.diseaseFeaturesDict.get(diseaseId).containsKey("G")) {
+                return this.diseaseFeaturesDict.get(diseaseId).get("G");
+            } else {
+                return new HashSet<>();
+            }
+        } else {
+                throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
+            }
+    }
+
+    @Override
+    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            if (this.diseaseFeaturesDict.get(diseaseId).containsKey("GS")) {
+                return this.diseaseFeaturesDict.get(diseaseId).get("GS");
+            } else {
+                return new HashSet<>();
+            }
+        } else {
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
         }
     }
 }

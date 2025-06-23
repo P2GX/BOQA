@@ -5,6 +5,7 @@ import net.lingala.zip4j.exception.ZipException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,7 +17,7 @@ import java.util.Set;
  */
 class DiseaseDataParseIngestTest {
 
-    private static DiseaseDataParseIngest testDiseaseDict;
+    private static DiseaseDataParseIngest testDiseaseData;
 
     @BeforeAll
     static void setup() {
@@ -31,10 +32,9 @@ class DiseaseDataParseIngestTest {
         String annotationFile = destinationDirectory + "/phenotype.hpoa";
         //String ontologyFile = destinationDirectory + "/hp.json";
         String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
-        System.out.println(destinationDirectory);
 
-        testDiseaseDict = new DiseaseDataParseIngest(annotationFile);
-        testDiseaseDict.addDiseaseGenes(diseaseGeneFile);
+        testDiseaseData = new DiseaseDataParseIngest(annotationFile);
+        testDiseaseData.addDiseaseGenes(diseaseGeneFile);
     }
 
     @Test
@@ -43,7 +43,7 @@ class DiseaseDataParseIngestTest {
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("NCBIGene:613");
         expectedIncluded.add("NCBIGene:25");
-        Set<String> actualIncluded = testDiseaseDict.getDiseaseGeneIds(diseaseId);
+        Set<String> actualIncluded = testDiseaseData.getDiseaseGeneIds(diseaseId);
         assertEquals(expectedIncluded, actualIncluded);
     }
 
@@ -53,7 +53,7 @@ class DiseaseDataParseIngestTest {
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("ABL1");
         expectedIncluded.add("BCR");
-        Set<String> actualIncluded = testDiseaseDict.getDiseaseGeneSymbols(diseaseId);
+        Set<String> actualIncluded = testDiseaseData.getDiseaseGeneSymbols(diseaseId);
         assertEquals(expectedIncluded, actualIncluded);
     }
 
@@ -75,7 +75,7 @@ class DiseaseDataParseIngestTest {
         System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
+        Set<String> actualIncluded = testDiseaseData.getIncludedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003233");
@@ -85,7 +85,7 @@ class DiseaseDataParseIngestTest {
         assertEquals(expectedIncluded, actualIncluded);
 
         // Excluded
-        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
+        Set<String> actualExcluded = testDiseaseData.getExcludedDiseaseFeatures(diseaseId);
         System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
         expectedExcluded.add("HP:0002155");
@@ -122,7 +122,7 @@ class DiseaseDataParseIngestTest {
         System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
+        Set<String> actualIncluded = testDiseaseData.getIncludedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003587");
@@ -145,7 +145,7 @@ class DiseaseDataParseIngestTest {
         assertEquals(expectedIncluded, actualIncluded);
 
         // Excluded
-        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
+        Set<String> actualExcluded = testDiseaseData.getExcludedDiseaseFeatures(diseaseId);
         System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
         assertEquals(expectedExcluded, actualExcluded);
@@ -155,19 +155,19 @@ class DiseaseDataParseIngestTest {
     void testFreqStringToFloatPercentages() {
 
         double expectedFloat = 0.01;
-        double actualFloat = testDiseaseDict.freqStringToFloat("1%");
+        double actualFloat = testDiseaseData.freqStringToFloat("1%");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = 0.20;
-        actualFloat = testDiseaseDict.freqStringToFloat("20%");
+        actualFloat = testDiseaseData.freqStringToFloat("20%");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = 1.00;
-        actualFloat = testDiseaseDict.freqStringToFloat("100%");
+        actualFloat = testDiseaseData.freqStringToFloat("100%");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = -1.00;
-        actualFloat = testDiseaseDict.freqStringToFloat("1000%");
+        actualFloat = testDiseaseData.freqStringToFloat("1000%");
         assertEquals(expectedFloat, actualFloat);
 
     }
@@ -176,19 +176,19 @@ class DiseaseDataParseIngestTest {
     void testFreqStringToFloatPercentagesWithDecimals() {
 
         double expectedFloat = 0.012;
-        double actualFloat = testDiseaseDict.freqStringToFloat("1.2%");
+        double actualFloat = testDiseaseData.freqStringToFloat("1.2%");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = 0.20123456;
-        actualFloat = testDiseaseDict.freqStringToFloat("20.123456%");
+        actualFloat = testDiseaseData.freqStringToFloat("20.123456%");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = 1.00;
-        actualFloat = testDiseaseDict.freqStringToFloat("100.00%");
+        actualFloat = testDiseaseData.freqStringToFloat("100.00%");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = -1.00;
-        actualFloat = testDiseaseDict.freqStringToFloat("100.01%");
+        actualFloat = testDiseaseData.freqStringToFloat("100.01%");
         assertEquals(expectedFloat, actualFloat);
 
     }
@@ -197,19 +197,19 @@ class DiseaseDataParseIngestTest {
     void testFreqStringToFloatRatios() {
 
         double expectedFloat = 1.00;
-        double actualFloat = testDiseaseDict.freqStringToFloat("1/1");
+        double actualFloat = testDiseaseData.freqStringToFloat("1/1");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = 0.50;
-        actualFloat = testDiseaseDict.freqStringToFloat("1/2");
+        actualFloat = testDiseaseData.freqStringToFloat("1/2");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = 0.00;
-        actualFloat = testDiseaseDict.freqStringToFloat("0/2");
+        actualFloat = testDiseaseData.freqStringToFloat("0/2");
         assertEquals(expectedFloat, actualFloat);
 
         expectedFloat = -1.00;
-        actualFloat = testDiseaseDict.freqStringToFloat("2/1");
+        actualFloat = testDiseaseData.freqStringToFloat("2/1");
         assertEquals(expectedFloat, actualFloat);
 
     }
@@ -219,22 +219,22 @@ class DiseaseDataParseIngestTest {
 
         // Percentage
         String expectedTerm = "HP:0040280";
-        String actualTerm = testDiseaseDict.freqStringToHpoTerm("100%");
+        String actualTerm = testDiseaseData.freqStringToHpoTerm("100%");
         assertEquals(expectedTerm, actualTerm);
 
         // Percentage with decimals
         expectedTerm = "HP:0040280";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("100.00%");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("100.00%");
         assertEquals(expectedTerm, actualTerm);
 
         // Ratio
         expectedTerm = "HP:0040280";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("1/1");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("1/1");
         assertEquals(expectedTerm, actualTerm);
 
         // Empty string
         expectedTerm = "HP:0040280";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("");
         assertEquals(expectedTerm, actualTerm);
 
     }
@@ -244,17 +244,17 @@ class DiseaseDataParseIngestTest {
 
         // Percentage with decimals
         String expectedTerm = "HP:0040281";
-        String actualTerm = testDiseaseDict.freqStringToHpoTerm("99.999999999%");
+        String actualTerm = testDiseaseData.freqStringToHpoTerm("99.999999999%");
         assertEquals(expectedTerm, actualTerm);
 
         // Percentage
         expectedTerm = "HP:0040281";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("80%");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("80%");
         assertEquals(expectedTerm, actualTerm);
 
         // Ratio
         expectedTerm = "HP:0040281";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("4/5");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("4/5");
         assertEquals(expectedTerm, actualTerm);
 
     }
@@ -264,17 +264,17 @@ class DiseaseDataParseIngestTest {
 
         // Percentage with decimals
         String expectedTerm = "HP:0040282";
-        String actualTerm = testDiseaseDict.freqStringToHpoTerm("79.999999999%");
+        String actualTerm = testDiseaseData.freqStringToHpoTerm("79.999999999%");
         assertEquals(expectedTerm, actualTerm);
 
         // Percentage
         expectedTerm = "HP:0040282";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("30%");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("30%");
         assertEquals(expectedTerm, actualTerm);
 
         // Ratio
         expectedTerm = "HP:0040282";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("3/10");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("3/10");
         assertEquals(expectedTerm, actualTerm);
 
     }
@@ -284,17 +284,17 @@ class DiseaseDataParseIngestTest {
 
         // Percentage with decimals
         String expectedTerm = "HP:0040283";
-        String actualTerm = testDiseaseDict.freqStringToHpoTerm("29.999999999%");
+        String actualTerm = testDiseaseData.freqStringToHpoTerm("29.999999999%");
         assertEquals(expectedTerm, actualTerm);
 
         // Percentage
         expectedTerm = "HP:0040283";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("5%");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("5%");
         assertEquals(expectedTerm, actualTerm);
 
         // Ratio
         expectedTerm = "HP:0040283";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("1/20");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("1/20");
         assertEquals(expectedTerm, actualTerm);
 
     }
@@ -304,17 +304,17 @@ class DiseaseDataParseIngestTest {
 
         // Percentage with decimals
         String expectedTerm = "HP:0040284";
-        String actualTerm = testDiseaseDict.freqStringToHpoTerm("4.999999999%");
+        String actualTerm = testDiseaseData.freqStringToHpoTerm("4.999999999%");
         assertEquals(expectedTerm, actualTerm);
 
         // Percentage
         expectedTerm = "HP:0040284";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("1%");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("1%");
         assertEquals(expectedTerm, actualTerm);
 
         // Ratio
         expectedTerm = "HP:0040284";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("1/100");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("1/100");
         assertEquals(expectedTerm, actualTerm);
 
     }
@@ -324,22 +324,46 @@ class DiseaseDataParseIngestTest {
 
         // Percentage with decimals
         String expectedTerm = "HP:0040285";
-        String actualTerm = testDiseaseDict.freqStringToHpoTerm("0.999999999%");
+        String actualTerm = testDiseaseData.freqStringToHpoTerm("0.999999999%");
         assertEquals(expectedTerm, actualTerm);
 
         // Percentage
         expectedTerm = "HP:0040285";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("0.1%");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("0.1%");
         assertEquals(expectedTerm, actualTerm);
 
         // Ratio
         expectedTerm = "HP:0040285";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("1/1000");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("1/1000");
         assertEquals(expectedTerm, actualTerm);
 
         expectedTerm = "HP:0040285";
-        actualTerm = testDiseaseDict.freqStringToHpoTerm("0/10");
+        actualTerm = testDiseaseData.freqStringToHpoTerm("0/10");
         assertEquals(expectedTerm, actualTerm);
 
+    }
+
+    @Test
+    void testNonExistentDiseaseId() {
+        Throwable exception = assertThrows(
+                IllegalArgumentException.class, () ->
+                        testDiseaseData.getIncludedDiseaseFeatures("OMIM:INCULDED"));
+
+        assertEquals("Disease ID \"OMIM:INCULDED\" not found!", exception.getMessage());
+
+        exception = assertThrows(
+                IllegalArgumentException.class, () ->
+                        testDiseaseData.getExcludedDiseaseFeatures("OMIM:EXCLUDED"));
+        assertEquals("Disease ID \"OMIM:EXCLUDED\" not found!", exception.getMessage());
+
+        exception = assertThrows(
+                IllegalArgumentException.class, () ->
+                        testDiseaseData.getDiseaseGeneIds("getDiseaseGeneIds"));
+        assertEquals("Disease ID \"getDiseaseGeneIds\" not found!", exception.getMessage());
+
+        exception = assertThrows(
+                IllegalArgumentException.class, () ->
+                        testDiseaseData.getDiseaseGeneSymbols("getDiseaseGeneSymbols"));
+        assertEquals("Disease ID \"getDiseaseGeneSymbols\" not found!", exception.getMessage());
     }
 }
