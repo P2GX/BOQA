@@ -58,7 +58,7 @@ class DiseaseDataPhenolIngestTest {
         //String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
         System.out.println(destinationDirectory);
 
-        testDiseaseDict = new DiseaseDataPhenolIngest(annotationFile, ontologyFile);
+        testDiseaseDict = new DiseaseDataPhenolIngest(annotationFile, ontologyFile, List.of("OMIM", "ORPHA"));
     }
 
     @Test
@@ -138,7 +138,7 @@ class DiseaseDataPhenolIngestTest {
         expectedIncluded.add("HP:0000505");
         expectedIncluded.add("HP:0000648");
         expectedIncluded.add("HP:0000006");
-        //expectedIncluded.add("HP:0000666"); // Bug in Phenol: Aspect is 'P' and frequency 5% - should be included!
+        expectedIncluded.add("HP:0000666"); // Bug in Phenol: Aspect is 'P' and frequency 5% - should be included!
         expectedIncluded.add("HP:0007663");
         expectedIncluded.add("HP:0000603");
         expectedIncluded.add("HP:0000552");
@@ -152,7 +152,7 @@ class DiseaseDataPhenolIngestTest {
         Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
         System.out.println("Excluded: " + actualExcluded);
         Set<String> expectedExcluded = new HashSet<>();
-        expectedExcluded.add("HP:0000666"); // Bug in Phenol: Aspect is 'P' and frequency 5% - should be included!
+        //expectedExcluded.add("HP:0000666"); // Bug in Phenol: Aspect is 'P' and frequency 5% - should be included!
         assertEquals(expectedExcluded, actualExcluded);
     }
 
@@ -175,6 +175,7 @@ class DiseaseDataPhenolIngestTest {
         }
         // The term HP:0000486 with 10% is converted to 1/5, which corresponds to 20% (incorrect).
         // The term HP:0000666 with 5% is converted to 0/5, which corresponds to 0% (incorrect).
+        // Works when using default cohort size of 100 (default is 5).
     }
 
     @Disabled
@@ -193,6 +194,7 @@ class DiseaseDataPhenolIngestTest {
         }
         // The term HP:0000077 with 32.3%  is converted to 2/5, which corresponds to 40% (imprecise).
         // The term HP:0000992 with 76.3% is converted to 4/5, which corresponds to 80% (imprecise).
+        // More precise with default cohort size of 100 (default is 5).
     }
 
     @Disabled
@@ -233,6 +235,7 @@ class DiseaseDataPhenolIngestTest {
         }
         // The term HP:0000718 with HP:0040284 is converted to 0/5, which corresponds to excluded (incorrect).
         // The term HP:0000752 with HP:0040284 is converted to 0/5, which corresponds to excluded (incorrect).
+        // Works when using default cohort size of 100 (default is 5).
     }
 
     @Disabled

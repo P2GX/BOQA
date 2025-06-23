@@ -23,7 +23,7 @@ public class CounterSetApproach implements Counter{
     }
 
 
-    public void initQLayer(Set<String> queryTerms){
+    public void initQueryLayer(Set<String> queryTerms){
         // TODO should this live in phenol?
         Set<TermId> queryTermIDs = queryTerms.stream()
                 .map(TermId::of)

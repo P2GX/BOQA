@@ -21,8 +21,8 @@ class DiseaseDataParseIngestTest {
     @BeforeAll
     static void setup() {
         ClassLoader classLoader = DiseaseDataParseIngest.class.getClassLoader();
-        String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile().toString();
-        String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath().toString();
+        String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile();
+        String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath();
         try {
             new ZipFile(HpoZipArchive).extractAll(destinationDirectory);
         } catch (ZipException e) {
@@ -34,7 +34,7 @@ class DiseaseDataParseIngestTest {
         System.out.println(destinationDirectory);
 
         testDiseaseDict = new DiseaseDataParseIngest(annotationFile);
-        testDiseaseDict.addDiseaseGeneAssociations(diseaseGeneFile);
+        testDiseaseDict.addDiseaseGenes(diseaseGeneFile);
     }
 
     @Test

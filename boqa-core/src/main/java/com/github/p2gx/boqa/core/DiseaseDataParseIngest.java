@@ -9,32 +9,41 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
-Class that implements the DiseaseData interface by parsing annotations directly from HPOA file phenotype.hpoa.
+ * Class that implements the DiseaseData interface by parsing annotations directly from the HPOA files
+ * phenotype.hpoa and genes_to_diseases.txt.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
 public class DiseaseDataParseIngest implements DiseaseData {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataParseIngest.class);
-    String phenotypeAnnotationFile;
-    List<String> validDatabaseList;
-    List<String> hpoFreqTermList;
-    List<String> excludedHpoFreqTermList;
+    List<String> validDatabaseList; // Valid databases are "OMIM", "ORPHA", and "DECIPHER"
+    List<String> hpoFreqTermList;List<String> hpoExcludedHpoFreqTermList;
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
     HashMap<String, String> geneIdToSymbolDict;
 
+    /*
+    Constructor call with defaults
+     */
     public DiseaseDataParseIngest(String phenotypeAnnotationFile) {
+        this(phenotypeAnnotationFile,
+                List.of("OMIM"),
+                List.of("HP:0040280", "HP:0040281", "HP:0040282", "HP:0040283", "HP:0040284", "HP:0040285"),
+                List.of("HP:0040285")
+                );
+    }
+
+    public DiseaseDataParseIngest(String phenotypeAnnotationFile,
+                                  List<String> validDatabaseList,
+                                  List<String> hpoFreqTermList,
+                                  List<String> hpoExcludedFreqTermList) {
 
         LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' ...");
 
-        // Source file
-        this.phenotypeAnnotationFile = phenotypeAnnotationFile;
-
-        //this.validDatabaseList = List.of("OMIM", "ORPHA", "DECIPHER");
-        this.validDatabaseList = List.of("OMIM");
+        this.validDatabaseList = validDatabaseList;
 
         // HPO frequency terms
-        this.hpoFreqTermList = List.of("HP:0040280", "HP:0040281", "HP:0040282", "HP:0040283", "HP:0040284", "HP:0040285");
-        this.excludedHpoFreqTermList = List.of("HP:0040285");
+        this.hpoFreqTermList = hpoFreqTermList;
+        this.hpoExcludedHpoFreqTermList = hpoExcludedFreqTermList;
 
         // Create dictionary by parsing phenotype.hpoa
         this.diseaseFeaturesDict = ingest(phenotypeAnnotationFile);
@@ -76,7 +85,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
                     diseaseFeaturesDict.get(disease_id).put("E", new HashSet<>());
                     diseaseFeaturesDict.get(disease_id).put("I", new HashSet<>());
                 }
-                if (this.excludedHpoFreqTermList.contains(HpoFreqTerm)) {
+                if (this.hpoExcludedHpoFreqTermList.contains(HpoFreqTerm)) {
                     // Term is excluded
                     diseaseFeaturesDict.get(disease_id).get("E").add(hpo_id);
                 } else {
@@ -162,7 +171,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
         }
     }
 
-    public void addDiseaseGeneAssociations(String diseaseGeneFile) {
+    public void addDiseaseGenes(String diseaseGeneFile) {
 
         this.geneIdToSymbolDict = new HashMap<>();
 
