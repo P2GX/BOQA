@@ -11,9 +11,9 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -26,47 +26,46 @@ Class that implements the DiseaseDict interface by parsing disease annotations f
  */
 public class DiseaseDataPhenolIngest implements DiseaseData {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataPhenolIngest.class);
-    String phenotypeAnnotationFile;
-    String ontologyFile;
     List<String> validDatabaseList;
     HpoDiseases diseases;
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
 
-    public DiseaseDataPhenolIngest(String phenotypeAnnotationFile, String ontologyFile) throws IOException{
+    public static DiseaseDataPhenolIngest fromPaths(Path phenotypeAnnotationFile, Path ontologyFile) throws IOException {
+        try (
+                BufferedInputStream annotationsStream = new BufferedInputStream(Files.newInputStream(phenotypeAnnotationFile));
+                BufferedInputStream ontologyStream = new BufferedInputStream(Files.newInputStream(ontologyFile))
+        ) {
+            return new DiseaseDataPhenolIngest(ontologyStream, annotationsStream);
+        }
+    }
 
-        LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' using Phenol ...");
-
-        // Source files
-        this.phenotypeAnnotationFile = phenotypeAnnotationFile;
-        this.ontologyFile = ontologyFile;
-
+    public DiseaseDataPhenolIngest(InputStream ontologyStream, InputStream annotationsStream) throws IOException{
         // Temporarily needed to explore HpoDiseases in test class because there is no adequate phenol documentation
-        this.diseases = getPhenolHpoDiseases(ontologyFile, phenotypeAnnotationFile);
+        this.diseases = getPhenolHpoDiseases(ontologyStream, annotationsStream);
 
         //this.validDatabaseList = List.of("OMIM", "ORPHA", "DECIPHER");
         this.validDatabaseList = List.of("OMIM");
 
         // Create dictionary using Phenol
-        this.diseaseFeaturesDict = phenolIngest(ontologyFile, phenotypeAnnotationFile);
+        this.diseaseFeaturesDict = phenolIngest();
     }
 
-    private HpoDiseases getPhenolHpoDiseases(String ontologyFile, String phenotypeAnnotationFile) throws IOException {
+    private HpoDiseases getPhenolHpoDiseases(InputStream ontologyStream, InputStream phenotypeAnnotations) throws IOException {
         /*
         Code required to get a kind of list of HpoDisease objects in Phenol from the HPOA file phenotype.hpoa
         and the HP ontology in JSON format.
          */
-        Ontology ontology = OntologyLoader.loadOntology(new File(ontologyFile));
+        Ontology ontology = OntologyLoader.loadOntology(ontologyStream);
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(ontology, HpoDiseaseLoaderOptions.defaultOmim());
-        return loader.load(Paths.get(phenotypeAnnotationFile));
+        return loader.load(phenotypeAnnotations);
     }
 
-    private HashMap<String, HashMap<String, Set<String>>> phenolIngest(String ontologyFile, String phenotypeAnnotationFile) throws IOException {
+    private HashMap<String, HashMap<String, Set<String>>> phenolIngest() {
         /*
         Use phenol to construct a dictionary that contains, for each disease, associated features and explicitly
         non-associated features.
          */
         HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
-        diseases = getPhenolHpoDiseases(ontologyFile, phenotypeAnnotationFile);
         for (HpoDisease disease : diseases) {
 
             // Included
