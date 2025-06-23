@@ -3,7 +3,8 @@ package com.github.p2gx.boqa.core;
 import java.util.Set;
 
 /**
- * Interface that provides disease annotations from HPOA.
+ * Interface that provides disease annotations from various sources such as HPOA.
+ * Different implementations of this interface ingest annotations from different sources.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */

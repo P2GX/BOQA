@@ -38,8 +38,8 @@ public class CounterSetApproach implements Counter{
 
     //TODO
     @Override
-    public ArrayList<Integer> getCounts(String diseaseId){
-        return new ArrayList<Integer>();
+    public BoqaCounts getBoqaCounts(String diseaseId){
+        return new BoqaCounts(diseaseId,10,10,10, 10);
     }
 
 }
