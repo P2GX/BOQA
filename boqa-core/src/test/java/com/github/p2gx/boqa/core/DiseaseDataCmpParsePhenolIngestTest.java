@@ -58,6 +58,7 @@ class DiseaseDataCmpParsePhenolIngestTest {
         // Get List of all disease keys
         Set<String> diseaseSet = testDiseaseDictParse.diseaseFeaturesDict.keySet();
         for (String diseaseId: diseaseSet) {
+            System.out.println("------------------------------");
             System.out.println(diseaseId);
             Set<String> includedTermsParse = testDiseaseDictParse.getIncludedDiseaseFeatures(diseaseId);
             Set<String> includedTermsPhenol = testDiseaseDictPhenol.getIncludedDiseaseFeatures(diseaseId);

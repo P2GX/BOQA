@@ -1,11 +1,12 @@
 package com.github.p2gx.boqa.core;
 
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,20 +16,13 @@ class BlendedDiseaseDataTest {
     private static DiseaseDataParseIngest testDiseaseData;
 
     @BeforeAll
-    static void setup() {
-        ClassLoader classLoader = DiseaseDataParseIngest.class.getClassLoader();
-        String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile();
-        String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath();
-        try {
-            new ZipFile(HpoZipArchive).extractAll(destinationDirectory);
-        } catch (ZipException e) {
-            e.printStackTrace();
+    static void setup() throws IOException {
+        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
+            testDiseaseData = new DiseaseDataParseIngest(is);
         }
-        String annotationFile = destinationDirectory + "/phenotype.hpoa";
-        String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
-
-        testDiseaseData = new DiseaseDataParseIngest(annotationFile);
-        testDiseaseData.addDiseaseGenes(diseaseGeneFile);
+        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("genes_to_disease.txt.gz"))) {
+            testDiseaseData.addDiseaseGeneAssociations(is);
+        }
     }
 
     @Test

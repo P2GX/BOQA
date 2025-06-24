@@ -43,16 +43,19 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     /*
     Constructor call with defaults
     */
-    public DiseaseDataPhenolIngest(InputStream ontologyStream, InputStream phenotypeAnnotations) throws IOException {
-        this(ontologyStream, phenotypeAnnotations, List.of("OMIM"));
+    public DiseaseDataPhenolIngest(InputStream ontologyStream, InputStream annotationsStream) throws IOException {
+        this(annotationsStream, ontologyStream, List.of("OMIM"));
     }
 
-    public DiseaseDataPhenolIngest(InputStream phenotypeAnnotations,
+    public DiseaseDataPhenolIngest(InputStream annotationsStream,
                                    InputStream ontologyStream,
                                    List<String> validDatabaseList) // Valid databases are "OMIM", "ORPHA", and "DECIPHER"
             throws IOException{
 
         LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' using Phenol ...");
+
+        // Temporarily needed to explore HpoDiseases in test class because there is no adequate phenol documentation
+        this.diseases = getPhenolHpoDiseases(ontologyStream, annotationsStream, validDatabaseList);
 
         // Create dictionary using Phenol
         this.diseaseFeaturesDict = phenolIngest();
