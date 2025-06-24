@@ -26,17 +26,17 @@ public class DiseaseDataParseIngest implements DiseaseData {
     /**
      * Read disease data from an uncompressed file <code>path</code>.
      */
-    public static DiseaseDataParseIngest fromPath(Path path) throws IOException {
-        try (InputStream is = Files.newInputStream(path)) {
-            return new DiseaseDataParseIngest(is);
+    public static DiseaseDataParseIngest fromPath(Path phenotypeAnnotationFile) throws IOException {
+        try (InputStream annotationStream = Files.newInputStream(phenotypeAnnotationFile)) {
+            return new DiseaseDataParseIngest(annotationStream);
         }
     }
 
     /*
     Constructor call with defaults
      */
-    public DiseaseDataParseIngest(InputStream is) {
-        this(is,
+    public DiseaseDataParseIngest(InputStream annotationStream) {
+        this(annotationStream,
                 List.of("OMIM"),
                 List.of("HP:0040280", "HP:0040281", "HP:0040282", "HP:0040283", "HP:0040284", "HP:0040285"),
                 List.of("HP:0040285")
@@ -45,26 +45,27 @@ public class DiseaseDataParseIngest implements DiseaseData {
 
     /**
      * Read disease data from an input stream. The stream must <em>not</em> be compressed.
-     * @param is the stream to read from.
+     * @param annotationStream the stream to read from.
      */
-    public DiseaseDataParseIngest(InputStream is, List<String> validDatabaseList,
+    public DiseaseDataParseIngest(InputStream annotationStream,
+                                  List<String> validDatabaseList,
                                   List<String> hpoFreqTermList,
                                   List<String> hpoExcludedFreqTermList) {
         //this.validDatabaseList = List.of("OMIM", "ORPHA", "DECIPHER");
-        this.validDatabaseList = List.of("OMIM");
+        this.validDatabaseList = validDatabaseList;
 
         // HPO frequency terms
         this.hpoFreqTermList = hpoFreqTermList;
         this.hpoExcludedHpoFreqTermList = hpoExcludedFreqTermList;
 
         // Create dictionary by parsing phenotype.hpoa
-        this.diseaseFeaturesDict = ingest(is);
+        this.diseaseFeaturesDict = ingest(annotationStream);
     }
 
-    private HashMap<String, HashMap<String, Set<String>>> ingest(InputStream is) {
+    private HashMap<String, HashMap<String, Set<String>>> ingest(InputStream annotationStream) {
         HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
 
-        Scanner myReader = new Scanner(is);
+        Scanner myReader = new Scanner(annotationStream);
         while (myReader.hasNextLine()) {
             String line = myReader.nextLine();
             // Skip header lines

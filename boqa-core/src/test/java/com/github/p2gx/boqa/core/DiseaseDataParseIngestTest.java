@@ -22,11 +22,11 @@ class DiseaseDataParseIngestTest {
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
-            testDiseaseData = new DiseaseDataParseIngest(is);
+        try (InputStream annotationStream = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
+            testDiseaseData = new DiseaseDataParseIngest(annotationStream);
         }
-        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("genes_to_disease.txt.gz"))) {
-            testDiseaseData.addDiseaseGeneAssociations(is);
+        try (InputStream diseaseGeneSteam = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("genes_to_disease.txt.gz"))) {
+            testDiseaseData.addDiseaseGeneAssociations(diseaseGeneSteam);
         }
     }
 
