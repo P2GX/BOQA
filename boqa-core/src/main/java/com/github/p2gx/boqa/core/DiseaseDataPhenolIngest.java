@@ -12,9 +12,9 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,45 +31,54 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     HpoDiseases diseases; // Temporarily needed to explore Phenols HpoDiseases, as there is no documentation
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
 
+    public static DiseaseDataPhenolIngest fromPaths(Path phenotypeAnnotationFile, Path ontologyFile) throws IOException {
+        try (
+                BufferedInputStream annotationsStream = new BufferedInputStream(Files.newInputStream(phenotypeAnnotationFile));
+                BufferedInputStream ontologyStream = new BufferedInputStream(Files.newInputStream(ontologyFile))
+        ) {
+            return new DiseaseDataPhenolIngest(ontologyStream, annotationsStream);
+        }
+    }
+
     /*
     Constructor call with defaults
     */
-    public DiseaseDataPhenolIngest(String phenotypeAnnotationFile, String ontologyFile) throws IOException {
-        this(phenotypeAnnotationFile, ontologyFile, List.of("OMIM"));
+    public DiseaseDataPhenolIngest(InputStream ontologyStream, InputStream phenotypeAnnotations) throws IOException {
+        this(ontologyStream, phenotypeAnnotations, List.of("OMIM"));
     }
 
-    public DiseaseDataPhenolIngest(String phenotypeAnnotationFile,
-                                   String ontologyFile,
+    public DiseaseDataPhenolIngest(InputStream phenotypeAnnotations,
+                                   InputStream ontologyStream,
                                    List<String> validDatabaseList) // Valid databases are "OMIM", "ORPHA", and "DECIPHER"
             throws IOException{
 
         LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' using Phenol ...");
 
         // Create dictionary using Phenol
-        this.diseaseFeaturesDict = phenolIngest(ontologyFile, phenotypeAnnotationFile, validDatabaseList);
+        this.diseaseFeaturesDict = phenolIngest();
     }
 
-    private HpoDiseases getPhenolHpoDiseases(String ontologyFile, String phenotypeAnnotationFile, List<String> validDatabaseList) throws IOException {
+    private HpoDiseases getPhenolHpoDiseases(InputStream ontologyStream, InputStream phenotypeAnnotations, List<String> validDatabaseList) throws IOException {
         /*
         Code required to get a kind of list of HpoDisease objects in Phenol from the HPOA file phenotype.hpoa
         and the HP ontology in JSON format.
          */
-        Ontology ontology = OntologyLoader.loadOntology(new File(ontologyFile));
+        Ontology ontology = OntologyLoader.loadOntology(ontologyStream);
         Set<DiseaseDatabase> DiseaseDatabaseSet = validDatabaseList.stream()
                 .map(DiseaseDatabase::fromString)
                 .collect(Collectors.toSet());
         HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(DiseaseDatabaseSet,false, cohortSize);
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(ontology, options);
-        return loader.load(Paths.get(phenotypeAnnotationFile));
+        return loader.load(phenotypeAnnotations);
     }
 
-    private HashMap<String, HashMap<String, Set<String>>> phenolIngest(String ontologyFile, String phenotypeAnnotationFile, List<String> validDatabaseList) throws IOException {
+    private HashMap<String, HashMap<String, Set<String>>> phenolIngest() {
         /*
         Use phenol to construct a dictionary that contains, for each disease, associated features and explicitly
         non-associated features.
          */
         HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
-        this.diseases = getPhenolHpoDiseases(ontologyFile, phenotypeAnnotationFile, validDatabaseList);
+
         for (HpoDisease disease : this.diseases) {
 
             // Included

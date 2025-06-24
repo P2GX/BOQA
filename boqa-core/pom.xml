@@ -27,12 +27,6 @@
         <artifactId>phenol-annotations</artifactId>
         <version>${phenol.version}</version>
     </dependency>
-        <dependency>
-            <groupId>net.lingala.zip4j</groupId>
-            <artifactId>zip4j</artifactId>
-            <version>2.11.5</version>
-            <scope>test</scope>
-        </dependency>
 
     </dependencies>
 

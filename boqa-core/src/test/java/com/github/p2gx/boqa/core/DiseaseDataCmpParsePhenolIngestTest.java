@@ -1,18 +1,15 @@
 package com.github.p2gx.boqa.core;
 
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
+import java.io.*;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -27,32 +24,17 @@ class DiseaseDataCmpParsePhenolIngestTest {
     private static DiseaseDataPhenolIngest testDiseaseDictPhenol;
 
     @BeforeAll
-    static void setup() throws IOException, URISyntaxException {
-        ClassLoader classLoader = DiseaseDataPhenolIngest.class.getClassLoader();
-//        String HpoZipArchive = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip").getFile().toString();
-//        String destinationDirectory = classLoader.getResource("data/testDiseaseDict").getPath().toString();
-        URL resourceUrl = classLoader.getResource("data/testDiseaseDict/hpo_v2025-05-06.zip");
-        if (resourceUrl == null) {
-            throw new IllegalArgumentException("Resource not found");
+    static void setup() throws IOException {
+        try (InputStream is = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
+            testDiseaseDictParse = new DiseaseDataParseIngest(is);
         }
-        String HpoZipArchive = Paths.get(resourceUrl.toURI()).toFile().toString();
-        resourceUrl = classLoader.getResource("data/testDiseaseDict");
-        if (resourceUrl == null) {
-            throw new IllegalArgumentException("Resource not found");
-        }
-        String destinationDirectory = Paths.get(resourceUrl.toURI()).toFile().toString();
-        try {
-            new ZipFile(HpoZipArchive).extractAll(destinationDirectory);
-        } catch (ZipException e) {
-            e.printStackTrace();
-        }
-        String annotationFile = destinationDirectory + "/phenotype.hpoa";
-        String ontologyFile = destinationDirectory + "/hp.json";
-        String diseaseGeneFile = destinationDirectory + "/genes_to_disease.txt";
-        System.out.println(destinationDirectory);
 
-        testDiseaseDictParse = new DiseaseDataParseIngest(annotationFile);
-        testDiseaseDictPhenol = new DiseaseDataPhenolIngest(annotationFile, ontologyFile);
+        try (
+            InputStream annotationStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"));
+            InputStream ontologyStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class.getResourceAsStream("hp.v2025-05-06.json.gz"))
+        ) {
+            testDiseaseDictPhenol = new DiseaseDataPhenolIngest(ontologyStream, annotationStream);
+        }
     }
 
     @Test

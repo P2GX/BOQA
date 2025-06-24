@@ -27,7 +27,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             names={"-dp","--disease-phenotype-associations"},
             required = true,
             description ="Big HPO annotation file (phenotype.hpoa).")
-    private String phenotypeAnnotationFile;
+    private Path phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
@@ -68,7 +68,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
         
         // Prepare data structure for disease-phenotype associations
-        DiseaseData diseaseData = new DiseaseDataParseIngest(phenotypeAnnotationFile);
+        DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
         Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
         System.out.println("OMIM:604091");
         System.out.println(terIdList);
