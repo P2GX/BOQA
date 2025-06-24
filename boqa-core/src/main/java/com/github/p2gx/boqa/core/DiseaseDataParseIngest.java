@@ -91,7 +91,6 @@ public class DiseaseDataParseIngest implements DiseaseData {
                 HpoFreqTerm = "HP:0040285";
             }
             if (!diseaseFeaturesDict.containsKey(disease_id)) {
-
                     diseaseFeaturesDict.putIfAbsent(disease_id, new HashMap<>());
                     diseaseFeaturesDict.get(disease_id).put("E", new HashSet<>());
                     diseaseFeaturesDict.get(disease_id).put("I", new HashSet<>());

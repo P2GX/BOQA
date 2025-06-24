@@ -32,4 +32,12 @@ class BlendedDiseaseDataTest {
         Set<String> geneIdAssociatedDiseasesActual = testBlendedDiseaseData.geneIdAssociatedDiseases("NCBIGene:392255");
         assertEquals(geneIdAssociatedDiseasesExpected, geneIdAssociatedDiseasesActual);
     }
+
+    @Test
+    void testSize() {
+        BlendedDiseaseData testBlendedDiseaseData = new BlendedDiseaseData(testDiseaseData, "NCBIGene:392255");
+        Integer SizeExpected = testBlendedDiseaseData.size();
+        Integer SizeActual = 41810;
+        assertEquals(SizeExpected, SizeActual);
+    }
 }
