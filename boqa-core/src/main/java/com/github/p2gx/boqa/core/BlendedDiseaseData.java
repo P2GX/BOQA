@@ -11,11 +11,14 @@ public class BlendedDiseaseData implements DiseaseData{
     public BlendedDiseaseData(DiseaseData plainDiseaseData, String geneId) {
         this.plainDiseaseData = plainDiseaseData;
         // Get all diseases associated with the given geneId
-        Set<String> geneIdAssociatedDiseases = this.plainDiseaseData.getDiseaseIds().stream()
+        Set<String> geneIdAssociatedDiseases = geneIdAssociatedDiseases(geneId);
+        // Create blended diseases by combining the HPO terms for all pairs of these diseases
+    }
+
+    Set<String> geneIdAssociatedDiseases(String geneId) {
+        return this.plainDiseaseData.getDiseaseIds().stream()
                 .filter(d -> this.plainDiseaseData.getDiseaseGeneIds(d).contains(geneId))
                 .collect(Collectors.toSet());
-        System.out.println(geneIdAssociatedDiseases);
-        // Create blended diseases by combining the phenotypic features for all pairs of these diseases
     }
 
     @Override

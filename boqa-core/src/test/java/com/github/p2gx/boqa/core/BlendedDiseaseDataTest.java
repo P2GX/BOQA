@@ -4,6 +4,9 @@ import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class BlendedDiseaseDataTest {
@@ -29,16 +32,10 @@ class BlendedDiseaseDataTest {
     }
 
     @Test
-    void test1() {
-        System.out.println(testDiseaseData.size());
+    void testGeneIdAssociatedDiseases() {
         BlendedDiseaseData testBlendedDiseaseData = new BlendedDiseaseData(testDiseaseData, "NCBIGene:392255");
-        System.out.println(testDiseaseData.getDiseaseGeneIds("OMIM:617898"));
-        System.out.println(testDiseaseData.getDiseaseGeneIds("OMIM:615360"));
-        System.out.println(testDiseaseData.getDiseaseGeneIds("OMIM:613094"));
-        System.out.println(testDiseaseData.getDiseaseGeneIds("OMIM:118100"));
-        System.out.println(testDiseaseData.getDiseaseGeneIds("OMIM:613703"));
-
-
+        Set<String> geneIdAssociatedDiseasesExpected = Set.of("OMIM:617898", "OMIM:615360", "OMIM:613094", "OMIM:118100", "OMIM:613703");
+        Set<String> geneIdAssociatedDiseasesActual = testBlendedDiseaseData.geneIdAssociatedDiseases("NCBIGene:392255");
+        assertEquals(geneIdAssociatedDiseasesExpected, geneIdAssociatedDiseasesActual);
     }
-
 }
