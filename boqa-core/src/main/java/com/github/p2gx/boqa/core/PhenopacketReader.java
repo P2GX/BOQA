@@ -1,6 +1,7 @@
 package com.github.p2gx.boqa.core;
 
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +12,9 @@ import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import org.phenopackets.schema.v2.Phenopacket;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -40,6 +44,11 @@ public class PhenopacketReader implements PatientData {
             throw new PhenolRuntimeException("Could not load phenopacket at " + phenopacketFile);
         }
         this.ppktID = ppkt.getId();
+        this.observedHPOs = ppkt.getPhenotypicFeaturesList().stream()
+                .filter(Predicate.not(PhenotypicFeature::getExcluded))
+                .map(PhenotypicFeature::getType)
+                .map(OntologyClass::getId)
+                .collect(Collectors.toSet());
     }
 
     public HashMap<String, Set<String>> setter(Path phenopacketFile) throws IOException {
