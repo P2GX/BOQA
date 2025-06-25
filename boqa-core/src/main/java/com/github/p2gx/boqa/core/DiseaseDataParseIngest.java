@@ -91,19 +91,18 @@ public class DiseaseDataParseIngest implements DiseaseData {
                 HpoFreqTerm = "HP:0040285";
             }
             if (!diseaseFeaturesDict.containsKey(disease_id)) {
-                    diseaseFeaturesDict.putIfAbsent(disease_id, new HashMap<>());
-                    diseaseFeaturesDict.get(disease_id).put("E", new HashSet<>());
-                    diseaseFeaturesDict.get(disease_id).put("I", new HashSet<>());
-                }
-                if (this.hpoExcludedHpoFreqTermList.contains(HpoFreqTerm)) {
-                    // Term is excluded
-                    diseaseFeaturesDict.get(disease_id).get("E").add(hpo_id);
-                } else {
-                    // Term is included
-                    diseaseFeaturesDict.get(disease_id).get("I").add(hpo_id);
-                }
+                diseaseFeaturesDict.put(disease_id, new HashMap<>());
+                diseaseFeaturesDict.get(disease_id).put("E", new HashSet<>());
+                diseaseFeaturesDict.get(disease_id).put("I", new HashSet<>());
             }
-
+            if (this.hpoExcludedHpoFreqTermList.contains(HpoFreqTerm)) {
+                // Term is excluded
+                diseaseFeaturesDict.get(disease_id).get("E").add(hpo_id);
+            } else {
+                // Term is included
+                diseaseFeaturesDict.get(disease_id).get("I").add(hpo_id);
+            }
+        }
         return diseaseFeaturesDict;
     }
 
@@ -181,8 +180,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
         try (InputStream is = Files.newInputStream(Path.of(diseaseGeneFile))) {
             addDiseaseGeneAssociations(is);
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
