@@ -5,6 +5,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * This class implements an obvious approach to analyzing blended phenotypes using BOQA.
+ * Given phenotypic features of a patient (query) and a disease gene,
+ * determine all diseases associated with this gene and pair these diseases with all other diseases.
+ * Create a BlendedDiseaseData object that returns the annotated HPO terms for individual diseases and disease pairs,
+ * with the union of the terms from both diseases being returned for disease pairs.
+ * Use the created BlendedDiseaseData object for the BOQA analysis.
+ * <p>
+ * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ */
 public class BlendedDiseaseData implements DiseaseData{
 
     private final DiseaseData plainDiseaseData;
@@ -33,7 +43,7 @@ public class BlendedDiseaseData implements DiseaseData{
         Set<String> allDiseases = this.plainDiseaseData.getDiseaseIds();
         for (String diseaseId1 : geneIdAssociatedDiseases) {
             for (String diseaseId2 : allDiseases) {
-                if (diseaseId1 != diseaseId2) {
+                if (!diseaseId1.equals(diseaseId2)) {
                     String blendedDiseaseId = diseaseId1 + ',' + diseaseId2;
                     this.blendedDiseaseFeaturesDict.putIfAbsent(blendedDiseaseId, new HashMap<>());
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("I", new HashSet<>());
@@ -48,7 +58,6 @@ public class BlendedDiseaseData implements DiseaseData{
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("GS", new HashSet<>());
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("GS").addAll(this.plainDiseaseData.getDiseaseGeneSymbols(diseaseId1));
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("GS").addAll(this.plainDiseaseData.getDiseaseGeneSymbols(diseaseId2));
-
                 }
             }
         }
