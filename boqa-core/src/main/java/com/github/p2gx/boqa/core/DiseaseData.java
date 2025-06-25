@@ -3,7 +3,8 @@ package com.github.p2gx.boqa.core;
 import java.util.Set;
 
 /**
- * Interface that provides disease annotations from HPOA.
+ * Interface that provides disease annotations from various sources such as HPOA.
+ * Different implementations of this interface ingest annotations from different sources.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
@@ -11,6 +12,9 @@ public interface DiseaseData {
 
     // Return number of diseases in dictionary
     int size();
+
+    // Get set of all disease IDs
+    Set<String> getDiseaseIds();
 
     // Return HPO terms associated with a disease
     Set<String> getIncludedDiseaseFeatures(String diseaseId);
@@ -23,8 +27,4 @@ public interface DiseaseData {
 
     // Return gene symbols associated with a disease
     Set<String> getDiseaseGeneSymbols(String diseaseId);
-
-    // Filter dictionary for diseases associated with given genes
-
-    // Create blended diseases by combining the phenotypic features for all pairs of diseases
 }
