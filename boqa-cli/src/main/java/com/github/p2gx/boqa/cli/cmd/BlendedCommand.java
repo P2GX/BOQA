@@ -1,7 +1,6 @@
 package com.github.p2gx.boqa.cli.cmd;
 
 import picocli.CommandLine;
-
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
@@ -15,7 +14,7 @@ public class BlendedCommand extends BoqaCommand implements Callable<Integer> {
             names={"-dg","--disease-gene-associations"},
             required = true,
             description ="HPOA file with disease-gene associations (genes_to_disease.txt).")
-    private String geneAnnotationFile;
+    private String diseaseGeneFile;
 
     @CommandLine.Option(
             names={"-g","--anchor-gene"},

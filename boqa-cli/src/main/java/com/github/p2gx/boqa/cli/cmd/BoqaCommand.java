@@ -1,9 +1,17 @@
 package com.github.p2gx.boqa.cli.cmd;
 
+import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+
+import java.nio.file.Path;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.github.p2gx.boqa.core.DiseaseData;
 
 @CommandLine.Command(
         name = "plain",
@@ -11,6 +19,7 @@ import org.slf4j.LoggerFactory;
         description = "Performs BOQA analysis as described in PMID:22843981, without taking annotation frequencies into account.",
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
 
     private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
 
@@ -18,7 +27,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             names={"-dp","--disease-phenotype-associations"},
             required = true,
             description ="Big HPO annotation file (phenotype.hpoa).")
-    private String phenotypeAnnotationFile;
+    private Path phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
@@ -30,7 +39,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             names = {"-p", "--phenopackets"},
             required = true,
             description = "Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
-    private String phenopacketFile;
+    private Path phenopacketFile;
 
     @CommandLine.Option(
             names={"-a","--a-param"},
@@ -57,8 +66,13 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     public Integer call() throws Exception {
         // Example of how to make a log message appear in log file
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
-
+        
         // Prepare data structure for disease-phenotype associations
+        DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
+        Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
+        System.out.println("OMIM:604091");
+        System.out.println(terIdList);
+            
         // Initialize Counter
         // Import Query Layer Data
         // for q in Query Layer Data
