@@ -1,11 +1,14 @@
 package com.github.p2gx.boqa.cli.cmd;
 
 import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.QueryData;
+import com.github.p2gx.boqa.core.QueryDataFromString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
@@ -65,13 +68,18 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // Example of how to make a log message appear in log file
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
         
-        // Prepare Disease
+        // Prepare DiseaseData
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Prepare QueryData
+        String includedTerms = "HP:0000006,HP:0005181,HP:0001658,HP:0003233";
+        String excludedTerms = "HP:0002155";
+        QueryData queryData1 = new QueryDataFromString(includedTerms, excludedTerms);
+        QueryData queryData2 = new QueryDataFromString(includedTerms, excludedTerms);
+        List<QueryData> QueryDataList = List.of(queryData1, queryData2);
 
-            
         // Initialize Counter
+
         // Import Query Layer Data
         // for q in Query Layer Data
             // Perform Analysis(q)

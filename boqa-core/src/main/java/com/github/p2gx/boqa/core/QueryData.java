@@ -19,5 +19,6 @@ import java.util.Set;
 public interface QueryData {
 
     // Returns a list of HPO terms to initialize the query layer
-    Set<String> getTerms();
+    Set<String> getIncludedTerms();
+    Set<String> getExcludedTerms();
 }
