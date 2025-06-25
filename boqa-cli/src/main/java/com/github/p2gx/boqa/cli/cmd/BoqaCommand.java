@@ -1,20 +1,19 @@
 package com.github.p2gx.boqa.cli.cmd;
 
-import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
-import com.github.p2gx.boqa.core.PatientData;
-import com.github.p2gx.boqa.core.PhenopacketReader;
-import com.github.p2gx.boqa.core.QueryData;
+import com.github.p2gx.boqa.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.p2gx.boqa.core.DiseaseData;
+import static java.nio.file.Files.lines;
 
 @CommandLine.Command(
         name = "plain",
@@ -41,7 +40,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
             required = true,
-            description = "Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
+            description = "Input a text file with list of absolute paths to patient files.")
     private Path phenopacketFile;
 
     @CommandLine.Option(
@@ -76,13 +75,26 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         System.out.println("OMIM:604091");
         System.out.println(terIdList);
 
-        // Read in phenopackets
-        PatientData phenopackets = new PhenopacketReader(phenopacketFile);
         // Initialize Counter
-        // Import Query Layer Data
-        // for q in Query Layer Data
-            // Perform Analysis(q)
-        // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
+
+        // Read in list of paths to files
+        List<Path> patientFiles = List.of();
+        try {
+            lines(phenopacketFile).map(Path::of).forEach(p -> {
+                patientFiles.add(p);
+            });
+        } catch (IOException e) {
+            logger.warn("File {} does not exist.", e.getMessage()); // TODO make better
+        }
+
+        // for item in phenopacketFile
+        for(Path singlefile : patientFiles) {
+            // Import Patient Data
+            PatientData phenopacket = new PhenopacketReader(singlefile);
+            // Perform Analysis(phenopacket)
+            Analysis onecase = new AnalysisRunner(phenopacket);
+            // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
+        }
 
         return 0;
     }

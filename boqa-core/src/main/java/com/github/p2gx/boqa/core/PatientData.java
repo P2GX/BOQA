@@ -18,7 +18,7 @@ import java.util.Set;
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  */
 public interface PatientData {
-
+    String getID();
     // Returns a map of phenopacket ids and corresponding HPO terms
-    Map<String, Set<String>> getPhenotypes();
+    Set<String> getPhenotypes();
 }
