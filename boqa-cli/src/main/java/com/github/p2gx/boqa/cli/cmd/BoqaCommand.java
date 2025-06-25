@@ -1,8 +1,6 @@
 package com.github.p2gx.boqa.cli.cmd;
 
-import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
-import com.github.p2gx.boqa.core.QueryData;
-import com.github.p2gx.boqa.core.QueryDataFromString;
+import com.github.p2gx.boqa.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -13,8 +11,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.p2gx.boqa.core.DiseaseData;
 
 @CommandLine.Command(
         name = "plain",
@@ -79,11 +75,11 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         List<QueryData> QueryDataList = List.of(queryData1, queryData2);
 
         // Initialize Counter
+        Counter counter = new CounterDummy(diseaseData);
 
-        // Import Query Layer Data
-        // for q in Query Layer Data
+        for (QueryData query : QueryDataList) {
             // Perform Analysis(q)
-        // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
+        }
 
         return 0;
     }

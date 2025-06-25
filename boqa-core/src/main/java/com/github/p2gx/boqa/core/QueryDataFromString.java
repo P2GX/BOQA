@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
 public class QueryDataFromString implements QueryData {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataParseIngest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(QueryDataFromString.class);
 
     Set<String> includedTerms;
     Set<String> excludedTerms;
