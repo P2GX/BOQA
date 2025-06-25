@@ -21,8 +21,6 @@ import com.github.p2gx.boqa.core.DiseaseData;
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
-
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
             required = true,
@@ -67,11 +65,11 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // Example of how to make a log message appear in log file
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
         
-        // Prepare data structure for disease-phenotype associations
+        // Prepare Disease
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
-        Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
-        System.out.println("OMIM:604091");
-        System.out.println(terIdList);
+
+        // Prepare QueryData
+
             
         // Initialize Counter
         // Import Query Layer Data
