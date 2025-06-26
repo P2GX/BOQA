@@ -68,6 +68,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Prepare QueryData
+        // Provisional until PhenopacketReader is ready for use
         String includedTerms = "HP:0000006,HP:0005181,HP:0001658,HP:0003233";
         String excludedTerms = "HP:0002155";
         QueryData queryData1 = new QueryDataFromString(includedTerms, excludedTerms);
@@ -77,10 +78,14 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // Initialize Counter
         Counter counter = new CounterDummy(diseaseData);
 
+        // We will later iterate over the paths to the Phenopackets and create a QueryData object in each iteration as discussed.
+        Set<AnalysisResults> analysisResultsSet = Set.of();
         for (QueryData query : QueryDataList) {
-            // Perform Analysis(q)
+            counter.initQueryLayer(query.getIncludedTerms());
+            Analysis analysis = new AnalysisDummy(query, counter);
+            analysis.run();
+            analysisResultsSet.add(analysis.getResults());
         }
-
         return 0;
     }
 }

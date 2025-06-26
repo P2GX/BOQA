@@ -6,4 +6,7 @@ package com.github.p2gx.boqa.core;
  */
 public interface Analysis {
 
+    void run();
+
+    AnalysisResults getResults();
 }

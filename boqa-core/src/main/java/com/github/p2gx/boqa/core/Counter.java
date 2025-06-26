@@ -26,4 +26,6 @@ public interface Counter {
      false-positives, false-negatives, true-negatives, and true-positives.
      */
     BoqaCounts getBoqaCounts(String diseaseId);
+
+    Set<String> getDiseaseIds();
 }
