@@ -1,7 +1,10 @@
 package com.github.p2gx.boqa.core;
 
 import java.util.Set;
-
+/**
+ * Book keeping class that contains the query along with the results of a BoqaAnalysis.
+ * Functions for calculating scores, ranking and reporting should be implemented here.
+ */
 public class AnalysisResults {
 
     QueryData queryData;

@@ -2,7 +2,9 @@ package com.github.p2gx.boqa.core;
 
 import java.nio.file.Path;
 import java.util.Set;
-
+/**
+ * Dummy class with no functionality. For development. Always returns the same BoqaCounts.
+ */
 public class CounterDummy implements Counter{
 
     Set<String> diseaseIdSet;

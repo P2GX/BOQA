@@ -27,5 +27,8 @@ public interface Counter {
      */
     BoqaCounts getBoqaCounts(String diseaseId);
 
+    /*
+    Return a set with all disease IDs.
+     */
     Set<String> getDiseaseIds();
 }

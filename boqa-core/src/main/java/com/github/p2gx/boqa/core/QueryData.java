@@ -15,6 +15,8 @@ import java.util.Set;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ *
+ * TODO: Add parameters alpha and beta
  */
 public interface QueryData {
 

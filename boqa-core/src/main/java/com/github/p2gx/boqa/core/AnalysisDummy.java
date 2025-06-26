@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.core;
-
+/**
+ * Class that implements Analysis and uses a Counter object to calculate BoqaCounts for all diseases in parallel.
+ */
 public class AnalysisDummy implements Analysis {
 
     Counter counter;
