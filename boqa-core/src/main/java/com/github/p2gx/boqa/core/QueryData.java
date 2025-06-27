@@ -15,9 +15,15 @@ import java.util.Set;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ *
+ * TODO: Add parameters alpha and beta
  */
 public interface QueryData {
 
     // Returns a list of HPO terms to initialize the query layer
-    Set<String> getTerms();
+    Set<String> getIncludedTerms();
+    default Set<String> getExcludedTerms(){
+        // If excluded terms are not used or not available
+        return Set.of();
+    }
 }

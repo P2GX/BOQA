@@ -1,17 +1,16 @@
 package com.github.p2gx.boqa.cli.cmd;
 
-import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.github.p2gx.boqa.core.DiseaseData;
 
 @CommandLine.Command(
         name = "plain",
@@ -20,8 +19,6 @@ import com.github.p2gx.boqa.core.DiseaseData;
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
-
-    private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
 
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
@@ -67,18 +64,29 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // Example of how to make a log message appear in log file
         //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
         
-        // Prepare data structure for disease-phenotype associations
+        // Prepare DiseaseData
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
-        Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
-        System.out.println("OMIM:604091");
-        System.out.println(terIdList);
-            
-        // Initialize Counter
-        // Import Query Layer Data
-        // for q in Query Layer Data
-            // Perform Analysis(q)
-        // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
 
+        // Prepare QueryData
+        // Provisional until PhenopacketReader is ready for use
+        String includedTerms = "HP:0000006,HP:0005181,HP:0001658,HP:0003233";
+        String excludedTerms = "HP:0002155";
+        QueryData queryData1 = new QueryDataFromString(includedTerms, excludedTerms);
+        QueryData queryData2 = new QueryDataFromString(includedTerms, excludedTerms);
+        List<QueryData> QueryDataList = List.of(queryData1, queryData2);
+
+        // Initialize Counter
+        Counter counter = new CounterDummy(diseaseData);
+
+        // We will later iterate over the paths to the Phenopackets and create a QueryData object in each iteration as discussed.
+        //TODO: make sure Set is appropriate here
+        Set<AnalysisResults> analysisResultsSet = Set.of();
+        for (QueryData query : QueryDataList) {
+            counter.initQueryLayer(query.getIncludedTerms());
+            Analysis analysis = new AnalysisDummy(query, counter);
+            analysis.run();
+            analysisResultsSet.add(analysis.getResults());
+        }
         return 0;
     }
 }
