@@ -22,5 +22,8 @@ public interface QueryData {
 
     // Returns a list of HPO terms to initialize the query layer
     Set<String> getIncludedTerms();
-    Set<String> getExcludedTerms();
+    default Set<String> getExcludedTerms(){
+        // If excluded terms are not used or not available
+        return Set.of();
+    }
 }

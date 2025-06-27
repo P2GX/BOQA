@@ -20,7 +20,10 @@ public interface DiseaseData {
     Set<String> getIncludedDiseaseFeatures(String diseaseId);
 
     // Return HPO terms that are explicitly not associated with a disease
-    Set<String> getExcludedDiseaseFeatures(String diseaseId);
+    default Set<String> getExcludedDiseaseFeatures(String diseaseId) {
+        // If excluded terms are not used or not available
+        return Set.of();
+    }
 
     // Return NCBI gene IDs associated with a disease
     Set<String> getDiseaseGeneIds(String diseaseId);

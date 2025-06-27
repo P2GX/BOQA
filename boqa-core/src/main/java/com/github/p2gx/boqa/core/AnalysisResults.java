@@ -7,8 +7,8 @@ import java.util.Set;
  */
 public class AnalysisResults {
 
-    QueryData queryData;
-    Set<BoqaCounts> boqaCountsSet;
+    QueryData queryData; //TODO add getter method
+    Set<BoqaCounts> boqaCountsSet; //TODO add getter method
 
     public AnalysisResults(QueryData queryData) {
         this.queryData = queryData;

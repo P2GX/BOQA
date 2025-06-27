@@ -79,6 +79,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         Counter counter = new CounterDummy(diseaseData);
 
         // We will later iterate over the paths to the Phenopackets and create a QueryData object in each iteration as discussed.
+        //TODO: make sure Set is appropriate here
         Set<AnalysisResults> analysisResultsSet = Set.of();
         for (QueryData query : QueryDataList) {
             counter.initQueryLayer(query.getIncludedTerms());
