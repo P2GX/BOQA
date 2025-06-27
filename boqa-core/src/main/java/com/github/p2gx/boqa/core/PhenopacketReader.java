@@ -1,16 +1,12 @@
 package com.github.p2gx.boqa.core;
 
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -23,11 +19,10 @@ import org.json.simple.parser.ParseException;
 import org.phenopackets.schema.v2.core.*;
 
 public class PhenopacketReader implements PatientData {
-    private final Logger LOGGER = LoggerFactory.getLogger(PhenopacketReader.class);
 
+    private final Logger LOGGER = LoggerFactory.getLogger(PhenopacketReader.class);
     private final Phenopacket ppkt;
     private final Set<String> observedHPOs;
-
     private final String ppktID;
 
     public PhenopacketReader(Path phenopacketFile) throws IOException {
@@ -51,21 +46,8 @@ public class PhenopacketReader implements PatientData {
                 .collect(Collectors.toSet());
     }
 
-    public HashMap<String, Set<String>> setter(Path phenopacketFile) throws IOException {
-        HashMap<String, Set<String>> phenopacketData = new HashMap<>();
-        phenopacketData.putAll(processPhenopacket(phenopacketFile));
-        return phenopacketData;
-    }
-
-    private HashMap<String, Set<String>>  processPhenopacket(Path p) {
-        // A JSON file processor that extracts phenopacket ID and observed HPOs
-        return (HashMap<String, Set<String>>) Set.of();
-    }
-
-    //
     @Override
     public Set<String> getPhenotypes() {
-        // Just a getter!
         return observedHPOs;
     }
 

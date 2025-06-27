@@ -6,15 +6,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class PhenopacketReaderTest {
@@ -26,7 +22,6 @@ class PhenopacketReaderTest {
         //InputStream ppkt = PhenopacketReaderTest.class.getResourceAsStream("phenopackets/PMID_30569521_proband.json");
         Path ppkt = Path.of(PhenopacketReaderTest.class.getResource("PMID_30569521_proband.json").getPath());
         examplePpkt = new PhenopacketReader(ppkt);
-
     }
 
     @AfterEach
@@ -34,13 +29,8 @@ class PhenopacketReaderTest {
     }
 
     @Test
-    void setter() {
-    }
-
-    @Test
     void getPhenotypes() throws IOException {
         // Read the line from a file (assuming it's all on one line)
-        //String csvLine = Files.readString(Paths.get("terms.csv")).trim();
         String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
                 getResource("PMID_30569521_proband_features.csv").getPath())).trim();
         // Convert to Set<String>
