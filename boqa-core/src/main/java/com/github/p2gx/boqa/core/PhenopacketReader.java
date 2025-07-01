@@ -23,6 +23,7 @@ public class PhenopacketReader implements PatientData {
     private final Logger LOGGER = LoggerFactory.getLogger(PhenopacketReader.class);
     private final Phenopacket ppkt;
     private final Set<String> observedHPOs;
+    private final Set<String> excludedHPOs;
     private final String ppktID;
 
     public PhenopacketReader(Path phenopacketFile) throws IOException {
@@ -44,11 +45,21 @@ public class PhenopacketReader implements PatientData {
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
                 .collect(Collectors.toSet());
+        this.excludedHPOs = ppkt.getPhenotypicFeaturesList().stream()
+                .filter(PhenotypicFeature::getExcluded)
+                .map(PhenotypicFeature::getType)
+                .map(OntologyClass::getId)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public Set<String> getObservedPhenotypes() {
         return observedHPOs;
+    }
+
+    @Override
+    public Set<String> getExcludedPhenotypes() {
+        return excludedHPOs;
     }
 
     @Override
