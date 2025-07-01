@@ -47,7 +47,7 @@ public class PhenopacketReader implements PatientData {
     }
 
     @Override
-    public Set<String> getPhenotypes() {
+    public Set<String> getObservedPhenotypes() {
         return observedHPOs;
     }
 

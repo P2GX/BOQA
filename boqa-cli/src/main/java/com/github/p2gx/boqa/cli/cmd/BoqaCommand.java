@@ -23,8 +23,6 @@ import static java.nio.file.Files.lines;
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
-
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
             required = true,
@@ -66,16 +64,11 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
-        // Example of how to make a log message appear in log file
-        //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
-        
-        // Prepare data structure for disease-phenotype associations
+        // Prepare DiseaseData
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
-        Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
-        System.out.println("OMIM:604091");
-        System.out.println(terIdList);
 
         // Initialize Counter
+        Counter counter = new CounterDummy(diseaseData);
 
         // Read in list of paths to files
         List<Path> patientFiles = List.of();
@@ -84,18 +77,22 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
                 patientFiles.add(p);
             });
         } catch (IOException e) {
-            logger.warn("File {} does not exist.", e.getMessage()); // TODO make better
+            LOGGER.warn("File {} does not exist.", e.getMessage()); // TODO make better
         }
+
+        //TODO: make sure Set is appropriate here
+        Set<AnalysisResults> analysisResultsSet = Set.of();
 
         // for item in phenopacketFile
         for(Path singlefile : patientFiles) {
             // Import Patient Data
             PatientData phenopacket = new PhenopacketReader(singlefile);
+            counter.initQueryLayer(phenopacket.getObservedPhenotypes());
             // Perform Analysis(phenopacket)
-            Analysis onecase = new AnalysisRunner(phenopacket);
-            // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
+            Analysis analysis = new AnalysisDummy(phenopacket, counter);
+            analysis.run();
+            analysisResultsSet.add(analysis.getResults());
         }
-
         return 0;
     }
 }

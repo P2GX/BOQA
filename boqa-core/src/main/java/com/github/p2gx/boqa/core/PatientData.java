@@ -16,9 +16,15 @@ import java.util.Set;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ *
+ * TODO: Add parameters alpha and beta
  */
 public interface PatientData {
     String getID();
     // Returns a map of phenopacket ids and corresponding HPO terms
-    Set<String> getPhenotypes();
+    Set<String> getObservedPhenotypes();
+    default Set<String> getExcludedPhenotypes() {
+        // If excluded terms are not used or not available
+        return Set.of();
+    }
 }

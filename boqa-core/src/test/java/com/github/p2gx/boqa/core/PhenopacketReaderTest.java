@@ -37,7 +37,7 @@ class PhenopacketReaderTest {
         Set<String> termSet = Arrays.stream(csvLine.split(","))
                 .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes
                 .collect(Collectors.toSet());
-        assertEquals(termSet, examplePpkt.getPhenotypes());
+        assertEquals(termSet, examplePpkt.getObservedPhenotypes());
     }
 
     @Test

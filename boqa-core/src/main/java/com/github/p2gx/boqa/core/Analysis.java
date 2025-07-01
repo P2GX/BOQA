@@ -1,9 +1,11 @@
 package com.github.p2gx.boqa.core;
 
 /**
- * Initializes one query layer (one patient) and orchestrates the computation of the score for each disease.
- * Should allow for parallel execution of diseases.
+ * Minimal interface for analysis so that different approaches can be implemented for this interface.
  */
 public interface Analysis {
 
+    void run();
+
+    AnalysisResults getResults();
 }

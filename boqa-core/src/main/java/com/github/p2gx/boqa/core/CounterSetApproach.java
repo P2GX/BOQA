@@ -42,4 +42,9 @@ public class CounterSetApproach implements Counter{
         return new BoqaCounts(diseaseId,10,10,10, 10);
     }
 
+    @Override
+    public Set<String> getDiseaseIds() {
+        return Set.of();
+    }
+
 }
