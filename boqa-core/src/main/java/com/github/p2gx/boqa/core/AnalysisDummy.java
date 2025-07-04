@@ -16,7 +16,7 @@ public class AnalysisDummy implements Analysis {
     public void run() {
         // This for loop should be parallelized
         for (String diseaseId : counter.getDiseaseIds()) {
-            results.addBoqaCounts(counter.getBoqaCounts(diseaseId));
+            results.addBoqaCounts(counter.computeBoqaCounts(diseaseId));
         }
     }
 
