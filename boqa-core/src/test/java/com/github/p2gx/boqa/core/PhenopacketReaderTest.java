@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PhenopacketReaderTest {
 
@@ -29,7 +30,7 @@ class PhenopacketReaderTest {
     }
 
     @Test
-    void getPhenotypes() throws IOException {
+    void getObservedPhenotypes() throws IOException {
         // Read the line from a file (assuming it's all on one line)
         String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
                 getResource("PMID_30569521_proband_features.csv").getPath())).trim();
@@ -41,6 +42,19 @@ class PhenopacketReaderTest {
     }
 
     @Test
+    void getExcludedPhenotypes() throws IOException {
+        // Read the line from a file (assuming it's all on one line)
+        String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
+                getResource("PMID_30569521_proband_excluded_features.csv").getPath())).trim();
+        // Convert to Set<String>
+        Set<String> termSet = Arrays.stream(csvLine.split(","))
+                .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes
+                .collect(Collectors.toSet());
+        assertEquals(termSet, examplePpkt.getExcludedPhenotypes());
+    }
+
+    @Test
     void getID() {
+        assertEquals("PMID_30569521_proband", examplePpkt.getID());
     }
 }
