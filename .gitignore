@@ -20,5 +20,6 @@ dependency-reduced-pom.xml
 .settings
 .project
 .classpath
+boqacore.*.gz
 
 docs/_build/

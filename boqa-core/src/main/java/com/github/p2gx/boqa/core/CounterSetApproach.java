@@ -31,7 +31,7 @@ public class CounterSetApproach implements Counter{
     }
 
 
-    public void initQLayer(Set<String> queryTerms){
+    public void initQueryLayer(Set<String> queryTerms){
         // TODO should this live in phenol?
         Set<TermId> queryTermIDs = queryTerms.stream()
                 .map(TermId::of)
@@ -50,8 +50,13 @@ public class CounterSetApproach implements Counter{
 
     //TODO
     @Override
-    public ArrayList<Integer> getCounts(String diseaseId){
-        return new ArrayList<Integer>();
+    public BoqaCounts getBoqaCounts(String diseaseId){
+        return new BoqaCounts(diseaseId,10,10,10, 10);
+    }
+
+    @Override
+    public Set<String> getDiseaseIds() {
+        return Set.of();
     }
 
 }

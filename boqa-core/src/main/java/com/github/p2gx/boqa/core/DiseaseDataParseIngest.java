@@ -3,91 +3,105 @@ package com.github.p2gx.boqa.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
-Class that implements the DiseaseData interface by parsing annotations directly from HPOA file phenotype.hpoa.
+ * Class that implements the DiseaseData interface by parsing annotations directly from the HPOA files
+ * phenotype.hpoa and genes_to_diseases.txt.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
 public class DiseaseDataParseIngest implements DiseaseData {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataParseIngest.class);
-    String phenotypeAnnotationFile;
-    List<String> validDatabaseList;
+    List<String> validDatabaseList; // Valid databases are "OMIM", "ORPHA", and "DECIPHER"
     List<String> hpoFreqTermList;
-    List<String> excludedHpoFreqTermList;
+    List<String> hpoExcludedHpoFreqTermList;
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
     HashMap<String, String> geneIdToSymbolDict;
 
-    public DiseaseDataParseIngest(String phenotypeAnnotationFile) {
-
-        LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' ...");
-
-        // Source file
-        this.phenotypeAnnotationFile = phenotypeAnnotationFile;
-
-        //this.validDatabaseList = List.of("OMIM", "ORPHA", "DECIPHER");
-        this.validDatabaseList = List.of("OMIM");
-
-        // HPO frequency terms
-        this.hpoFreqTermList = List.of("HP:0040280", "HP:0040281", "HP:0040282", "HP:0040283", "HP:0040284", "HP:0040285");
-        this.excludedHpoFreqTermList = List.of("HP:0040285");
-
-        // Create dictionary by parsing phenotype.hpoa
-        this.diseaseFeaturesDict = ingest(phenotypeAnnotationFile);
+    /**
+     * Read disease data from an uncompressed file <code>path</code>.
+     */
+    public static DiseaseDataParseIngest fromPath(Path phenotypeAnnotationFile) throws IOException {
+        try (InputStream annotationStream = Files.newInputStream(phenotypeAnnotationFile)) {
+            return new DiseaseDataParseIngest(annotationStream);
+        }
     }
 
-    public HashMap<String, HashMap<String, Set<String>>> ingest(String phenotypeAnnotationFile) {
-        HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
-        // Open HPOA file phenotype.hpoa
-        try {
-            File myObj = new File(phenotypeAnnotationFile);
-            Scanner myReader = new Scanner(myObj);
-            while (myReader.hasNextLine()) {
-                String line = myReader.nextLine();
-                // Skip header lines
-                if (line.startsWith("#") | line.startsWith("database_id")) {
-                    continue;
-                }
-                String[] fields = line.split("\t");
-                if (fields.length != 12) {
-                    System.out.println("ERROR: Row does not have 12 fields!");
-                    break;
-                }
-                String disease_id = fields[0];
-                String qualifier = fields[2];
-                String hpo_id = fields[3];
-                String frequency = fields[7];
-                String database_tag = disease_id.split(":")[0];
-                if (!validDatabaseList.contains(database_tag)) {
-                    // Annotations can be restricted to individual databases from OMIM, ORPHA and DECIPHER.
-                    continue;
-                }
-                String HpoFreqTerm = this.freqStringToHpoTerm(frequency);
-                if (qualifier.equals("NOT")) {
-                    HpoFreqTerm = "HP:0040285";
-                }
-                if (!diseaseFeaturesDict.containsKey(disease_id)) {
+    /*
+    Constructor call with defaults
+     */
+    public DiseaseDataParseIngest(InputStream annotationStream) {
+        this(annotationStream,
+                List.of("OMIM"),
+                List.of("HP:0040280", "HP:0040281", "HP:0040282", "HP:0040283", "HP:0040284", "HP:0040285"),
+                List.of("HP:0040285")
+        );
+    }
 
-                    diseaseFeaturesDict.putIfAbsent(disease_id, new HashMap<>());
-                    diseaseFeaturesDict.get(disease_id).put("E", new HashSet<>());
-                    diseaseFeaturesDict.get(disease_id).put("I", new HashSet<>());
-                }
-                if (this.excludedHpoFreqTermList.contains(HpoFreqTerm)) {
-                    // Term is excluded
-                    diseaseFeaturesDict.get(disease_id).get("E").add(hpo_id);
-                } else {
-                    // Term is included
-                    diseaseFeaturesDict.get(disease_id).get("I").add(hpo_id);
-                }
+    /**
+     * Read disease data from an input stream. The stream must <em>not</em> be compressed.
+     * @param annotationStream the stream to read from.
+     */
+    public DiseaseDataParseIngest(InputStream annotationStream,
+                                  List<String> validDatabaseList,
+                                  List<String> hpoFreqTermList,
+                                  List<String> hpoExcludedFreqTermList) {
+        //this.validDatabaseList = List.of("OMIM", "ORPHA", "DECIPHER");
+        this.validDatabaseList = validDatabaseList;
+
+        // HPO frequency terms
+        this.hpoFreqTermList = hpoFreqTermList;
+        this.hpoExcludedHpoFreqTermList = hpoExcludedFreqTermList;
+
+        // Create dictionary by parsing phenotype.hpoa
+        this.diseaseFeaturesDict = ingest(annotationStream);
+    }
+
+    private HashMap<String, HashMap<String, Set<String>>> ingest(InputStream annotationStream) {
+        HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
+
+        Scanner myReader = new Scanner(annotationStream);
+        while (myReader.hasNextLine()) {
+            String line = myReader.nextLine();
+            // Skip header lines
+            if (line.startsWith("#") | line.startsWith("database_id")) {
+                continue;
             }
-            myReader.close();
-        } catch (FileNotFoundException e) {
-            LOGGER.error(e.getMessage());
-            e.printStackTrace();
+            String[] fields = line.split("\t");
+            if (fields.length != 12) {
+                System.out.println("ERROR: Row does not have 12 fields!");
+                break;
+            }
+            String disease_id = fields[0];
+            String qualifier = fields[2];
+            String hpo_id = fields[3];
+            String frequency = fields[7];
+            String database_tag = disease_id.split(":")[0];
+            if (!validDatabaseList.contains(database_tag)) {
+                // Annotations can be restricted to individual databases from OMIM, ORPHA and DECIPHER.
+                continue;
+            }
+            String HpoFreqTerm = this.freqStringToHpoTerm(frequency);
+            if (qualifier.equals("NOT")) {
+                HpoFreqTerm = "HP:0040285";
+            }
+            if (!diseaseFeaturesDict.containsKey(disease_id)) {
+                diseaseFeaturesDict.put(disease_id, new HashMap<>());
+                diseaseFeaturesDict.get(disease_id).put("E", new HashSet<>());
+                diseaseFeaturesDict.get(disease_id).put("I", new HashSet<>());
+            }
+            if (this.hpoExcludedHpoFreqTermList.contains(HpoFreqTerm)) {
+                // Term is excluded
+                diseaseFeaturesDict.get(disease_id).get("E").add(hpo_id);
+            } else {
+                // Term is included
+                diseaseFeaturesDict.get(disease_id).get("I").add(hpo_id);
+            }
         }
         return diseaseFeaturesDict;
     }
@@ -163,65 +177,66 @@ public class DiseaseDataParseIngest implements DiseaseData {
     }
 
     public void addDiseaseGeneAssociations(String diseaseGeneFile) {
+        try (InputStream is = Files.newInputStream(Path.of(diseaseGeneFile))) {
+            addDiseaseGeneAssociations(is);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    public void addDiseaseGeneAssociations(InputStream is) {
 
         this.geneIdToSymbolDict = new HashMap<>();
 
         // Open HPOA file genes_to_disease.txt
-        try {
-            File myObj = new File(diseaseGeneFile);
-            Scanner myReader = new Scanner(myObj);
-            while (myReader.hasNextLine()) {
-                String line = myReader.nextLine();
-                // Skip header line
-                if (line.startsWith("ncbi_gene_id")) {
-                    continue;
-                }
-                String[] fields = line.split("\t");
-                if (fields.length != 5) {
-                    System.out.println("ERROR: Row does not have 5 fields!");
-                    break;
-                }
-                String ncbi_gene_id = fields[0];
-                String gene_symbol = fields[1];
-                String disease_id = fields[3];
-
-                // Map gene IDs to gene symbols
-                this.geneIdToSymbolDict.put(ncbi_gene_id, gene_symbol);
-
-                // Check if disease is in dictionary
-                if (this.diseaseFeaturesDict.containsKey(disease_id)) {
-                    // Check if disease already has genes
-                    if (!diseaseFeaturesDict.get(disease_id).containsKey("G")) {
-                        diseaseFeaturesDict.get(disease_id).put("G", new HashSet<>());
-                    }
-                    diseaseFeaturesDict.get(disease_id).get("G").add(ncbi_gene_id);
-                }
+        Scanner myReader = new Scanner(is);
+        while (myReader.hasNextLine()) {
+            String line = myReader.nextLine();
+            // Skip header line
+            if (line.startsWith("ncbi_gene_id")) {
+                continue;
             }
-            myReader.close();
+            String[] fields = line.split("\t");
+            if (fields.length != 5) {
+                System.out.println("ERROR: Row does not have 5 fields!");
+                break;
+            }
+            String ncbi_gene_id = fields[0];
+            String gene_symbol = fields[1];
+            String disease_id = fields[3];
 
-            // Add gene symbols if available
-            for (String disease_id : diseaseFeaturesDict.keySet()) {
-                if (diseaseFeaturesDict.get(disease_id).get("G") != null) {
-                    diseaseFeaturesDict.get(disease_id).put("GS", new HashSet<>());
-                    Set<String> geneIds = diseaseFeaturesDict.get(disease_id).get("G");
-                    for (String gene_id : geneIds) {
-                        String gene_symbol;
-                        if (geneIdToSymbolDict.containsKey(gene_id)) {
-                            gene_symbol = geneIdToSymbolDict.get(gene_id);
-                        } else {
-                            // Use NCBI Gene ID without colon instead of gene symbol
-                            gene_symbol = gene_id.split(":")[0] + gene_id.split(":")[1];
-                        }
-                        diseaseFeaturesDict.get(disease_id).get("GS").add(gene_symbol);
-                    }
-                } else {
+            // Map gene IDs to gene symbols
+            this.geneIdToSymbolDict.put(ncbi_gene_id, gene_symbol);
+
+            // Check if disease is in dictionary
+            if (this.diseaseFeaturesDict.containsKey(disease_id)) {
+                // Check if disease already has genes
+                if (!diseaseFeaturesDict.get(disease_id).containsKey("G")) {
                     diseaseFeaturesDict.get(disease_id).put("G", new HashSet<>());
-                    diseaseFeaturesDict.get(disease_id).put("GS", new HashSet<>());
                 }
+                diseaseFeaturesDict.get(disease_id).get("G").add(ncbi_gene_id);
             }
-        } catch (FileNotFoundException e) {
-            LOGGER.error(e.getMessage());
-            e.printStackTrace();
+        }
+
+        // Add gene symbols if available
+        for (String disease_id : diseaseFeaturesDict.keySet()) {
+            if (diseaseFeaturesDict.get(disease_id).get("G") != null) {
+                diseaseFeaturesDict.get(disease_id).put("GS", new HashSet<>());
+                Set<String> geneIds = diseaseFeaturesDict.get(disease_id).get("G");
+                for (String gene_id : geneIds) {
+                    String gene_symbol;
+                    if (geneIdToSymbolDict.containsKey(gene_id)) {
+                        gene_symbol = geneIdToSymbolDict.get(gene_id);
+                    } else {
+                        // Use NCBI Gene ID without colon instead of gene symbol
+                        gene_symbol = gene_id.split(":")[0] + gene_id.split(":")[1];
+                    }
+                    diseaseFeaturesDict.get(disease_id).get("GS").add(gene_symbol);
+                }
+            } else {
+                diseaseFeaturesDict.get(disease_id).put("G", new HashSet<>());
+                diseaseFeaturesDict.get(disease_id).put("GS", new HashSet<>());
+            }
         }
     }
 
@@ -235,30 +250,51 @@ public class DiseaseDataParseIngest implements DiseaseData {
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String diseaseId){
-        return this.diseaseFeaturesDict.get(diseaseId).get("I");
+    public Set<String> getDiseaseIds() {
+        return this.diseaseFeaturesDict.keySet();
     }
 
     @Override
-    public Set<String> getExcludedDiseaseFeatures(String diseaseId){
-        return this.diseaseFeaturesDict.get(diseaseId).get("E");
-    }
-
-    @Override
-    public Set<String> getDiseaseGeneIds(String diseaseId) {
-        if (this.diseaseFeaturesDict.get(diseaseId).containsKey("G")) {
-            return this.diseaseFeaturesDict.get(diseaseId).get("G");
+    public Set<String> getIncludedDiseaseFeatures(String diseaseId) {
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("I");
         } else {
-            return new HashSet<>();
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
         }
     }
 
     @Override
-    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
-        if (this.diseaseFeaturesDict.get(diseaseId).containsKey("GS")) {
-            return this.diseaseFeaturesDict.get(diseaseId).get("GS");
+    public Set<String> getExcludedDiseaseFeatures(String diseaseId){
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            return this.diseaseFeaturesDict.get(diseaseId).get("E");
         } else {
-            return new HashSet<>();
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
+        }
+    }
+
+    @Override
+    public Set<String> getDiseaseGeneIds(String diseaseId) {
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            if (this.diseaseFeaturesDict.get(diseaseId).containsKey("G")) {
+                return this.diseaseFeaturesDict.get(diseaseId).get("G");
+            } else {
+                return new HashSet<>();
+            }
+        } else {
+                throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
+            }
+    }
+
+    @Override
+    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
+        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+            if (this.diseaseFeaturesDict.get(diseaseId).containsKey("GS")) {
+                return this.diseaseFeaturesDict.get(diseaseId).get("GS");
+            } else {
+                return new HashSet<>();
+            }
+        } else {
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
         }
     }
 }

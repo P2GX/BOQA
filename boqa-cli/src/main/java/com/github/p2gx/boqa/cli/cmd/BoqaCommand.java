@@ -1,17 +1,21 @@
 package com.github.p2gx.boqa.cli.cmd;
 
-import com.github.p2gx.boqa.core.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import com.github.p2gx.boqa.core.DiseaseData;
+import static java.nio.file.Files.lines;
 
 @CommandLine.Command(
         name = "plain",
@@ -21,13 +25,11 @@ import com.github.p2gx.boqa.core.DiseaseData;
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(BoqaCommand.class);
-
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
             required = true,
             description ="Big HPO annotation file (phenotype.hpoa).")
-    private String phenotypeAnnotationFile;
+    private Path phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
@@ -38,7 +40,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
             required = true,
-            description = "Input phenopacket file in JSON format or text file with list of absolute paths to phenopackets.")
+            description = "Input a text file with list of absolute paths to patient files.")
     private Path phenopacketFile;
 
     @CommandLine.Option(
@@ -64,21 +66,46 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
-        // Example of how to make a log message appear in log file
-        //logger.warn("Example log from {}", BoqaCommand.class.getSimpleName());
-        
-        // Prepare data structure for disease-phenotype associations
-        DiseaseData diseaseData = new DiseaseDataParseIngest(phenotypeAnnotationFile);
-        Set<String> terIdList = diseaseData.getIncludedDiseaseFeatures("OMIM:604091");
-        System.out.println("OMIM:604091");
-        System.out.println(terIdList);
-            
-        // Initialize Counter
-        // Import Query Layer Data
-        // for q in Query Layer Data
-            // Perform Analysis(q)
-        // Report results (or Analysis writes out results and another benchmark command creates Top-<n> results
+        // Prepare DiseaseData
+        DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
+        // Initialize Counter
+        Counter counter = new CounterDummy(diseaseData);
+
+        // Read in list of paths to files
+        List<Path> patientFiles =  new ArrayList<>();
+        try (Stream<String> stream = lines(phenopacketFile)) {
+            stream.map(Path::of).forEach(patientFiles::add);
+        } catch (IOException e) {
+            LOGGER.warn("File {} does not exist.", e.getMessage());  // TODO make better
+        }
+
+        Set<AnalysisResults> analysisResults = new HashSet<>();
+
+        // for item in phenopacketFile
+        for(Path singlefile : patientFiles) {
+            // Import Patient Data
+            PatientData phenopacket = new PhenopacketReader(singlefile);
+            counter.initQueryLayer(phenopacket.getObservedTerms());
+            // Perform Analysis(phenopacket)
+            Analysis analysis = new AnalysisDummy(phenopacket, counter);
+            analysis.run();
+            analysisResults.add(analysis.getResults());
+        }
+
+        // TODO This is just a placeholder to print out something to look at
+        analysisResults.stream()
+                .findFirst()
+                .ifPresent(result -> {
+                    System.out.println("\n\nPatientData\nPhenopacket ID: " + result.getPatientDataData().getID());
+                    System.out.println("Observed HPOs: " + result.getPatientDataData().getObservedTerms());
+                    System.out.println("Excluded HPOs: " + result.getPatientDataData().getExcludedTerms());
+
+                    String boqaStr = result.getBoqaCounts().toString();
+                    int n = 200; // number of chars to print
+                    String shortBoqaStr = boqaStr.length() > n ? boqaStr.substring(0, n) + "..." : boqaStr;
+                    System.out.println("\nBoqaCounts (first " + n + " chars): " + shortBoqaStr);
+                });
         return 0;
     }
 }
