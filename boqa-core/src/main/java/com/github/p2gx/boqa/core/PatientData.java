@@ -8,7 +8,7 @@ import java.util.Set;
  * <p>
  * Input formats include:
  * <ul>
- *     <li> Phenopackets (QueryDataFromPhenopacket)
+ *     <li> Phenopackets (PhenopacketReader)
  *     <li> Strings consisting of comma-separated HPO terms (QueryDataFromString)
  *     <li> Maybe other formats
  * </ul>

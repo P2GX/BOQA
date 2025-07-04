@@ -9,15 +9,15 @@ import java.util.Set;
  */
 public class AnalysisResults {
 
-    private PatientData queryData;
+    private PatientData patientData;
     private Set<BoqaCounts> boqaCountsHashSet = new HashSet<>();
 
-    public AnalysisResults(PatientData queryData) {
-        this.queryData = queryData;
+    public AnalysisResults(PatientData patientData) {
+        this.patientData = patientData;
     }
 
-    public PatientData getQueryData() {
-        return queryData;
+    public PatientData getPatientDataData() {
+        return patientData;
     }
     public Set<BoqaCounts> getBoqaCounts() {
         return boqaCountsHashSet;

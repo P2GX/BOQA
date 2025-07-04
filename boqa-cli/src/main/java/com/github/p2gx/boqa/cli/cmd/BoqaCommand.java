@@ -93,6 +93,19 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             analysisResults.add(analysis.getResults());
         }
 
+        // TODO This is just a placeholder to print out something to look at
+        analysisResults.stream()
+                .findFirst()
+                .ifPresent(result -> {
+                    System.out.println("\n\nPatientData\nPhenopacket ID: " + result.getPatientDataData().getID());
+                    System.out.println("Observed HPOs: " + result.getPatientDataData().getObservedTerms());
+                    System.out.println("Excluded HPOs: " + result.getPatientDataData().getExcludedTerms());
+
+                    String boqaStr = result.getBoqaCounts().toString();
+                    int n = 200; // number of chars to print
+                    String shortBoqaStr = boqaStr.length() > n ? boqaStr.substring(0, n) + "..." : boqaStr;
+                    System.out.println("\nBoqaCounts (first " + n + " chars): " + shortBoqaStr);
+                });
         return 0;
     }
 }
