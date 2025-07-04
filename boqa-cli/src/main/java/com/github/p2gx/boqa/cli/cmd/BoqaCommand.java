@@ -7,9 +7,13 @@ import picocli.CommandLine;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.nio.file.Files.lines;
 
@@ -69,17 +73,14 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         Counter counter = new CounterDummy(diseaseData);
 
         // Read in list of paths to files
-        List<Path> patientFiles = List.of();
-        try {
-            lines(phenopacketFile).map(Path::of).forEach(p -> {
-                patientFiles.add(p);
-            });
+        List<Path> patientFiles =  new ArrayList<>();
+        try (Stream<String> stream = lines(phenopacketFile)) {
+            stream.map(Path::of).forEach(patientFiles::add);
         } catch (IOException e) {
-            LOGGER.warn("File {} does not exist.", e.getMessage()); // TODO make better
+            LOGGER.warn("File {} does not exist.", e.getMessage());  // TODO make better
         }
 
-        //TODO: make sure Set is appropriate here
-        Set<AnalysisResults> analysisResultsSet = Set.of();
+        Set<AnalysisResults> analysisResults = new HashSet<>();
 
         // for item in phenopacketFile
         for(Path singlefile : patientFiles) {
@@ -89,8 +90,9 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             // Perform Analysis(phenopacket)
             Analysis analysis = new AnalysisDummy(phenopacket, counter);
             analysis.run();
-            analysisResultsSet.add(analysis.getResults());
+            analysisResults.add(analysis.getResults());
         }
+
         return 0;
     }
 }
