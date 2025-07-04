@@ -7,6 +7,7 @@ import picocli.CommandLine;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +71,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Initialize Counter
-        Counter counter = new CounterDummy(diseaseData);
+        Counter counter = new CounterSetApproach(diseaseData, Paths.get(ontologyFile));
 
         // Read in list of paths to files
         List<Path> patientFiles =  new ArrayList<>();

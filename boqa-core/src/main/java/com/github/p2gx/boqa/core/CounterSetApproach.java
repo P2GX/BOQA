@@ -19,20 +19,23 @@ public class CounterSetApproach implements Counter{
     private Set<TermId> queryLayerInitialized;
     private Map<TermId, Set<TermId>> diseaseLayers = new HashMap<>();
 
-    // for each disease in diseaseData compute ancestors OR load from disk (?) [--> .ser, serialize object]
+    // TODO for each disease in diseaseData compute ancestors OR load from disk (?) [--> .ser, serialize object]
     public CounterSetApproach(DiseaseData diseaseData, Path hpoPath){
         File hpoFile = hpoPath.toFile();
         this.hpoOntology = OntologyLoader.loadOntology(hpoFile);
-        for (DiseaseData d : diseaseData){ // for each not applicable to type disease data, fix this
-            Set<String> observedHpos = d.getIncludedDiseaseFeatures(d.toString());
-            Set<TermId> observedHposTerms = observedHpos.stream().map(TermId::of).collect(Collectors.toSet());
-            diseaseLayers.put(TermId.of(d.toString()), initLayer(observedHposTerms));
+        Set<String> diseaseIDs = diseaseData.getDiseaseIds();
+        for (String d : diseaseIDs){ // for each not applicable to type disease data, fix this
+            Set<String> observedHpos = diseaseData.getIncludedDiseaseFeatures(d);
+            Set<TermId> observedHposTerms = observedHpos.stream()
+                        .map(TermId::of)
+                        .collect(Collectors.toSet());
+            diseaseLayers.put(TermId.of(d), initLayer(observedHposTerms));
         }
     }
 
 
     public void initQueryLayer(Set<String> queryTerms){
-        // TODO should this live in phenol?
+        // TODO should the following line live in phenol?
         Set<TermId> queryTermIDs = queryTerms.stream()
                 .map(TermId::of)
                 .collect(Collectors.toSet());
@@ -51,6 +54,7 @@ public class CounterSetApproach implements Counter{
     //TODO
     @Override
     public BoqaCounts getBoqaCounts(String diseaseId){
+        // will need queryLayerInitialized and diseaseLayers
         return new BoqaCounts(diseaseId,10,10,10, 10);
     }
 
