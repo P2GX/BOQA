@@ -1,5 +1,6 @@
 package com.github.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -23,8 +24,8 @@ public class CounterSetApproach implements Counter{
     public CounterSetApproach(DiseaseData diseaseData, Path hpoPath){
         File hpoFile = hpoPath.toFile();
         this.hpoOntology = OntologyLoader.loadOntology(hpoFile);
-        Set<String> diseaseIDs = diseaseData.getDiseaseIds();
-        for (String d : diseaseIDs){ // for each not applicable to type disease data, fix this
+        Set<String> diseaseIds = diseaseData.getDiseaseIds();
+        for (String d : diseaseIds){ // for each not applicable to type disease data, fix this
             Set<String> observedHpos = diseaseData.getIncludedDiseaseFeatures(d);
             Set<TermId> observedHposTerms = observedHpos.stream()
                         .map(TermId::of)
@@ -36,10 +37,10 @@ public class CounterSetApproach implements Counter{
 
     public void initQueryLayer(Set<String> queryTerms){
         // TODO should the following line live in phenol?
-        Set<TermId> queryTermIDs = queryTerms.stream()
+        Set<TermId> queryTermIds = queryTerms.stream()
                 .map(TermId::of)
                 .collect(Collectors.toSet());
-        this.queryLayerInitialized = initLayer(queryTermIDs);
+        this.queryLayerInitialized = initLayer(queryTermIds);
     }
 
     Set<TermId> initLayer(Set<TermId> hpoTerms){
@@ -50,12 +51,14 @@ public class CounterSetApproach implements Counter{
         }
         return observedAncestors;
     }
-
-    //TODO
+    
     @Override
-    public BoqaCounts getBoqaCounts(String diseaseId){
-        // will need queryLayerInitialized and diseaseLayers
-        return new BoqaCounts(diseaseId,10,10,10, 10);
+    public BoqaCounts computeBoqaCounts(String diseaseId){
+        Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
+        Set<TermId> intersection = new HashSet<>(diseaseLayer); // use copy constructor
+        intersection.retainAll(queryLayerInitialized);
+        // TODO this is DUMMY. Implement
+        return new BoqaCounts(diseaseId, intersection.size(), intersection.size(), intersection.size(),intersection.size());
     }
 
     @Override

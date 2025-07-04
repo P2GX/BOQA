@@ -20,12 +20,12 @@ public interface Counter {
     Initialization of the query layer involves applying the annotation propagation rule.
      */
     void initQueryLayer(Set<String> queryTerms);
-
+    //TODO edit comment below, this is not a count of true positives, true negatives... These are the exponents of alpha, beta, 1-alpha...
     /*
      Given the initialized query layer, returns a BoqaCounts object representing the counts of
      false-positives, false-negatives, true-negatives, and true-positives.
      */
-    BoqaCounts getBoqaCounts(String diseaseId);
+    BoqaCounts computeBoqaCounts(String diseaseId);
 
     /*
     Return a set with all disease IDs.
