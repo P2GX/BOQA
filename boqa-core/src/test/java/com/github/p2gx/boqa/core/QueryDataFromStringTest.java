@@ -12,7 +12,7 @@ class QueryDataFromStringTest {
     void testGetIncludedTerms() {
         PatientData queryData = new QueryDataFromString("HP:0040281,HP:0040281,HP:0040282", "HP:0040283,HP:0040283,HP:0040284");
         Set<String> includedTermsExpected = Set.of("HP:0040281","HP:0040282");
-        Set<String> includedTermsActual = queryData.getObservedPhenotypes();
+        Set<String> includedTermsActual = queryData.getObservedTerms();
         assertEquals(includedTermsExpected, includedTermsActual);
     }
 
@@ -20,7 +20,7 @@ class QueryDataFromStringTest {
     void testGetExcludedTerms() {
         PatientData queryData = new QueryDataFromString("HP:0040281,HP:0040281,HP:0040282", "HP:0040283,HP:0040283,HP:0040284");
         Set<String> excludedTermsExpected = Set.of("HP:0040283","HP:0040284");
-        Set<String> excludedTermsActual = queryData.getExcludedPhenotypes();
+        Set<String> excludedTermsActual = queryData.getExcludedTerms();
         assertEquals(excludedTermsExpected, excludedTermsActual);
     }
 }

@@ -30,12 +30,12 @@ public class QueryDataFromString implements PatientData {
     }
 
     @Override
-    public Set<String> getObservedPhenotypes() {
+    public Set<String> getObservedTerms() {
         return this.includedTerms ;
     }
 
     @Override
-    public Set<String> getExcludedPhenotypes() {
+    public Set<String> getExcludedTerms() {
         return this.excludedTerms ;
     }
 }

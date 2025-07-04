@@ -10,8 +10,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.file.Files.lines;
 
@@ -87,7 +85,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         for(Path singlefile : patientFiles) {
             // Import Patient Data
             PatientData phenopacket = new PhenopacketReader(singlefile);
-            counter.initQueryLayer(phenopacket.getObservedPhenotypes());
+            counter.initQueryLayer(phenopacket.getObservedTerms());
             // Perform Analysis(phenopacket)
             Analysis analysis = new AnalysisDummy(phenopacket, counter);
             analysis.run();

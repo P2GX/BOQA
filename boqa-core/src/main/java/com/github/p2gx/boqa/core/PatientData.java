@@ -1,6 +1,5 @@
 package com.github.p2gx.boqa.core;
 
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -22,8 +21,8 @@ import java.util.Set;
 public interface PatientData {
     String getID();
     // Returns a map of phenopacket ids and corresponding HPO terms
-    Set<String> getObservedPhenotypes();
-    default Set<String> getExcludedPhenotypes() {
+    Set<String> getObservedTerms();
+    default Set<String> getExcludedTerms() {
         // If excluded terms are not used or not available
         return Set.of();
     }
