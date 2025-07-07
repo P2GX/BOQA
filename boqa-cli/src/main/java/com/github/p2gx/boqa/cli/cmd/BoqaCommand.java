@@ -1,6 +1,9 @@
 package com.github.p2gx.boqa.cli.cmd;
 
 import com.github.p2gx.boqa.core.*;
+import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -13,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.Files.lines;
@@ -67,11 +69,14 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
+        //TODO it was suggested by Ielis to only load the ontology once at the beginning
+        OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile()).graph();
+
         // Prepare DiseaseData
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Initialize Counter
-        Counter counter = new CounterSetApproach(diseaseData, Paths.get(ontologyFile));
+        Counter counter = new CounterSetApproach(diseaseData, hpoGraph);
 
         // Read in list of paths to files
         List<Path> patientFiles =  new ArrayList<>();
