@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,6 +36,14 @@ class GraphTraversingTest {
 
     @Test
     void initLayer() {
+        // Create example, start from Arachnodactyly and work our way up (only one active term, add test with more)
+        Set<String> queryTerms = Set.of("HP:0001166","HP:0001238","HP:0100807","HP:0001167","HP:0001155","HP:0002817",
+                "HP:0040064","HP:0000118","HP:0011297","HP:0002813","HP:0040068","HP:0000924","HP:0011844",
+                "HP:0011842","HP:0033127");
+        Set<TermId> queryTermIds = queryTerms.stream()
+                .map(TermId::of)
+                .collect(Collectors.toSet());
+        assertEquals(queryTermIds, graphTraverser.initLayer(Set.of(TermId.of("HP:0001166"))));
     }
 
     @Test

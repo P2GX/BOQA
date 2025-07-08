@@ -25,12 +25,12 @@ public class GraphTraversing {
         return observedAncestors;
     }
 
-
+    // TODO are these two methods trivial and should be removed? 1/2
     public Collection extendWithParents(TermId termId, boolean includeSource){
         return hpoGraph.extendWithParents(termId, includeSource );
     }
 
-
+    // TODO are these two methods trivial and should be removed? 2/2
     public Collection extendWithChildren(TermId termId, boolean includeSource){
         return hpoGraph.extendWithChildren(termId, includeSource );
     }
