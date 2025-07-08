@@ -22,6 +22,8 @@ public class GraphTraversing {
         for (TermId termId : observed) {
             observedAncestors.addAll( hpoGraph.extendWithAncestors(termId, true));
         }
+        // We only want phenotypic abnormalities!
+        observedAncestors.remove(TermId.of("HP:0000001"));
         return observedAncestors;
     }
 
