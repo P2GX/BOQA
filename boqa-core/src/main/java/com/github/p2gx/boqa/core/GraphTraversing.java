@@ -16,17 +16,13 @@ public class GraphTraversing {
         this.hpoGraph = hpoGraph;
     }
 
-    Set<TermId> initLayer(Set<TermId> hpoTerms){
+    public Set<TermId> initLayer(Set<TermId> hpoTerms){
         List<TermId> observed = hpoTerms.stream().toList();
         Set<TermId> observedAncestors = new HashSet<>();
         for (TermId termId : observed) {
             observedAncestors.addAll( hpoGraph.extendWithAncestors(termId, true));
         }
         return observedAncestors;
-    }
-
-    public Collection extendWithAncestors(TermId termId, boolean includeSource){
-        return hpoGraph.extendWithAncestors(termId, includeSource );
     }
 
 
@@ -39,12 +35,18 @@ public class GraphTraversing {
         return hpoGraph.extendWithChildren(termId, includeSource );
     }
 
-    public boolean allParentsActive(TermId node, Set<TermId> initializedLayer){
-        // TODO this supposes we are in the query layer. Generalize?
+    /**
+     * Computes the parents of a node and confronts it with a Set of active nodes.
+     * If all parents are in the Set of active nodes, the method returns true.
+     *
+     * @param node The width of the rectangle.
+     * @param activeNodes The height of the rectangle.
+     * @return true if all parents are active, false otherwise.
+     */
+    public boolean allParentsActive(TermId node, Set<TermId> activeNodes){
         Set<TermId> parents = new HashSet<>();
         parents.addAll( extendWithParents(node, false));
-        // increase counter iff (parents \ queryLayerInitialized) is the empty set
-        parents.removeAll(initializedLayer);
+        parents.removeAll(activeNodes);
         return parents.isEmpty();
     }
 }

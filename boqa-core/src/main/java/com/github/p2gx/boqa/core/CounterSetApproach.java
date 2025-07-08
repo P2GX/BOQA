@@ -20,7 +20,7 @@ public class CounterSetApproach implements Counter, Serializable {
     private final Map<TermId, Set<TermId>> diseaseLayers = new HashMap<>();
     private final Set<String> diseaseIds;
 
-    // TODO for each disease in diseaseData compute ancestors OR load from disk (?) [--> .ser, serialize object]
+    // TODO for each disease in diseaseData compute ancestors OR load from disk (?) [--> add serialize object]
     public CounterSetApproach(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph){
         this.graphTraverser = new GraphTraversing(hpoGraph);
         this.diseaseIds = diseaseData.getDiseaseIds();
@@ -35,8 +35,7 @@ public class CounterSetApproach implements Counter, Serializable {
 
     @Override
     public void initQueryLayer(Set<String> queryTerms){
-        // TODO this can only be single threaded. Calling this method from two threads will create problems
-        // TODO should the following line live in phenol?
+        // TODO 4 future: this can only be single threaded. Calling this method from two threads will create problems
         Set<TermId> queryTermIds = queryTerms.stream()
                 .map(TermId::of)
                 .collect(Collectors.toSet());
