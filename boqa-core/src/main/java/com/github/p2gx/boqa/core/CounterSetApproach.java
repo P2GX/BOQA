@@ -60,7 +60,7 @@ public class CounterSetApproach implements Counter, Serializable {
         int offNodesCount = 0; // exponent of 1-alpha
         for(TermId qobs : queryLayerInitialized){
             Set<TermId> children = new HashSet<>();
-            children.addAll( graphTraverser.extendWithChildren(qobs, false));
+            children.addAll( graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
             // Go through all children and find those that are off, increase counter iff *all* parents are ON
             for(TermId child : children){
                 if(!queryLayerInitialized.contains(child)){

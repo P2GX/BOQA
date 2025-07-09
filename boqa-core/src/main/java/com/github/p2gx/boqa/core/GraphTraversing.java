@@ -11,7 +11,9 @@ import java.util.Set;
 public class GraphTraversing {
 
     private final OntologyGraph<TermId> hpoGraph;
-
+    public OntologyGraph<TermId> getHpoGraph() {
+        return hpoGraph;
+    }
     public GraphTraversing(OntologyGraph<TermId> hpoGraph) {
         this.hpoGraph = hpoGraph;
     }
@@ -27,16 +29,6 @@ public class GraphTraversing {
         return observedAncestors;
     }
 
-    // TODO are these two methods trivial and should be removed? 1/2
-    public Collection extendWithParents(TermId termId, boolean includeSource){
-        return hpoGraph.extendWithParents(termId, includeSource );
-    }
-
-    // TODO are these two methods trivial and should be removed? 2/2
-    public Collection extendWithChildren(TermId termId, boolean includeSource){
-        return hpoGraph.extendWithChildren(termId, includeSource );
-    }
-
     /**
      * Computes the parents of a node and confronts it with a Set of active nodes.
      * If all parents are in the Set of active nodes, the method returns true.
@@ -47,7 +39,7 @@ public class GraphTraversing {
      */
     public boolean allParentsActive(TermId node, Set<TermId> activeNodes){
         Set<TermId> parents = new HashSet<>();
-        parents.addAll( extendWithParents(node, false));
+        parents.addAll( hpoGraph.extendWithParents(node, false));
         parents.removeAll(activeNodes);
         return parents.isEmpty();
     }
