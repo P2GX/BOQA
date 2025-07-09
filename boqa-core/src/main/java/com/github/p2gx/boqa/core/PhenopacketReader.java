@@ -35,10 +35,14 @@ public class PhenopacketReader implements PatientData {
             Phenopacket.Builder phenoPacketBuilder = Phenopacket.newBuilder();
             JsonFormat.parser().merge(phenopacketJsonString, phenoPacketBuilder);
             this.ppkt = phenoPacketBuilder.build();
-        } catch (IOException | ParseException e1) {
-            LOGGER.error("Could not ingest phenopacket: {}", e1.getMessage());
-            throw new PhenolRuntimeException("Could not load phenopacket at " + phenopacketFile);
+        } catch (IOException e) {
+            LOGGER.error("I/O error while loading phenopacket: {}", e.getMessage(), e);
+            throw new PhenolRuntimeException("I/O failure", e);
+        } catch (ParseException e) {
+            LOGGER.error("Could not ingest phenopacket ({}): {}", e.getClass().getSimpleName(), e.getMessage());
+            throw new PhenolRuntimeException("Phenopacket parsing failure at " + phenopacketFile, e);
         }
+
         this.ppktID = ppkt.getId();
         this.observedHPOs = ppkt.getPhenotypicFeaturesList().stream()
                 .filter(Predicate.not(PhenotypicFeature::getExcluded))
