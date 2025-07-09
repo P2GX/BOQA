@@ -50,10 +50,10 @@ class PhenopacketReaderTest {
     }
 
     @Test
-    void testGetObservedTerms() throws IOException {
+    void testGetObservedTerms() throws IOException, URISyntaxException {
         // Read the line from a file (assuming it's all on one line)
         String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
-                getResource("PMID_30569521_proband_features.csv").getPath())).trim();
+                getResource("PMID_30569521_proband_features.csv").toURI())).trim();
         // Convert to Set<String>
         Set<String> termSet = Arrays.stream(csvLine.split(","))
                 .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes
@@ -65,10 +65,10 @@ class PhenopacketReaderTest {
     }
 
     @Test
-    void testGetExcludedTerms() throws IOException {
+    void testGetExcludedTerms() throws IOException, URISyntaxException {
         // Read the line from a file (assuming it's all on one line)
         String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
-                getResource("PMID_30569521_proband_excluded_features.csv").getPath())).trim();
+                getResource("PMID_30569521_proband_excluded_features.csv").toURI())).trim();
         // Convert to Set<String>
         Set<String> termSet = Arrays.stream(csvLine.split(","))
                 .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes
