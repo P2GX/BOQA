@@ -1,4 +1,5 @@
 package com.github.p2gx.boqa.core;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
@@ -12,15 +13,17 @@ import java.util.stream.Collectors;
 public class QueryDataFromString implements PatientData {
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryDataFromString.class);
 
-    Set<String> includedTerms;
-    Set<String> excludedTerms;
+    Set<TermId> observedTerms;
+    Set<TermId> excludedTerms;
 
     public QueryDataFromString(String includedTermListString, String excludedTermListString) {
-        this.includedTerms = Arrays.asList(includedTermListString.split(",")).stream()
+        this.observedTerms = Arrays.asList(includedTermListString.split(",")).stream()
                 .filter(t -> t.matches("HP:\\d{7}"))
+                .map(TermId::of)
                 .collect(Collectors.toSet());
         this.excludedTerms = Arrays.asList(excludedTermListString.split(",")).stream()
                 .filter(t -> t.matches("HP:\\d{7}"))
+                .map(TermId::of)
                 .collect(Collectors.toSet());
     }
 
@@ -30,12 +33,12 @@ public class QueryDataFromString implements PatientData {
     }
 
     @Override
-    public Set<String> getObservedTerms() {
-        return this.includedTerms ;
+    public Set<TermId> getObservedTerms() {
+        return this.observedTerms ;
     }
 
     @Override
-    public Set<String> getExcludedTerms() {
+    public Set<TermId> getExcludedTerms() {
         return this.excludedTerms ;
     }
 }

@@ -3,6 +3,7 @@ package com.github.p2gx.boqa.core;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -55,8 +56,9 @@ class PhenopacketReaderTest {
         String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
                 getResource("PMID_30569521_proband_features.csv").toURI())).trim();
         // Convert to Set<String>
-        Set<String> termSet = Arrays.stream(csvLine.split(","))
+        Set<TermId> termSet = Arrays.stream(csvLine.split(","))
                 .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes
+                .map(TermId::of)
                 .collect(Collectors.toSet());
         assertEquals(termSet, examplePpkts.get(0).getObservedTerms());
 
@@ -70,8 +72,9 @@ class PhenopacketReaderTest {
         String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
                 getResource("PMID_30569521_proband_excluded_features.csv").toURI())).trim();
         // Convert to Set<String>
-        Set<String> termSet = Arrays.stream(csvLine.split(","))
+        Set<TermId> termSet = Arrays.stream(csvLine.split(","))
                 .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes
+                .map(TermId::of)
                 .collect(Collectors.toSet());
         assertEquals(termSet, examplePpkts.get(0).getExcludedTerms());
 
