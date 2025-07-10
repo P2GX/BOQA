@@ -34,11 +34,8 @@ public class CounterSetApproach implements Counter, Serializable {
     }
 
     @Override
-    public void initQueryLayer(Set<String> queryTerms){
+    public void initQueryLayer(Set<TermId> queryTermIds){
         // TODO 4 future: this can only be single threaded. Calling this method from two threads will create problems
-        Set<TermId> queryTermIds = queryTerms.stream()
-                .map(TermId::of)
-                .collect(Collectors.toSet());
         this.queryLayerInitialized = graphTraverser.initLayer(queryTermIds);
     }
 

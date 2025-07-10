@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
 import java.util.Set;
 
 /**
@@ -21,8 +23,8 @@ import java.util.Set;
 public interface PatientData {
     String getID();
     // Returns a map of phenopacket ids and corresponding HPO terms
-    Set<String> getObservedTerms();
-    default Set<String> getExcludedTerms() {
+    Set<TermId> getObservedTerms();
+    default Set<TermId> getExcludedTerms() {
         // If excluded terms are not used or not available
         return Set.of();
     }

@@ -1,6 +1,7 @@
 package com.github.p2gx.boqa.core;
 
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +23,8 @@ public class PhenopacketReader implements PatientData {
 
     private final Logger LOGGER = LoggerFactory.getLogger(PhenopacketReader.class);
     private final Phenopacket ppkt;
-    private final Set<String> observedHPOs;
-    private final Set<String> excludedHPOs;
+    private final Set<TermId> observedHPOs;
+    private final Set<TermId> excludedHPOs;
     private final String ppktID;
 
     public PhenopacketReader(Path phenopacketFile) throws IOException {
@@ -48,21 +49,23 @@ public class PhenopacketReader implements PatientData {
                 .filter(Predicate.not(PhenotypicFeature::getExcluded))
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
+                .map(TermId::of)
                 .collect(Collectors.toSet());
         this.excludedHPOs = ppkt.getPhenotypicFeaturesList().stream()
                 .filter(PhenotypicFeature::getExcluded)
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
+                .map(TermId::of)
                 .collect(Collectors.toSet());
     }
 
     @Override
-    public Set<String> getObservedTerms() {
+    public Set<TermId> getObservedTerms() {
         return observedHPOs;
     }
 
     @Override
-    public Set<String> getExcludedTerms() {
+    public Set<TermId> getExcludedTerms() {
         return excludedHPOs;
     }
 

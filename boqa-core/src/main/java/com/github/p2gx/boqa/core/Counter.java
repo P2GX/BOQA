@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
 import java.util.Set;
 
 /**
@@ -19,7 +21,7 @@ public interface Counter {
     /*
     Initialization of the query layer involves applying the annotation propagation rule.
      */
-    void initQueryLayer(Set<String> queryTerms);
+    void initQueryLayer(Set<TermId> queryTerms);
     //TODO edit comment below, this is not a count of true positives, true negatives... These are the exponents of alpha, beta, 1-alpha...
     /*
      Given the initialized query layer, returns a BoqaCounts object representing the counts of
