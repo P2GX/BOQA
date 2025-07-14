@@ -7,7 +7,7 @@ public class AnalysisDummy implements Analysis {
     Counter counter;
     AnalysisResults results;
 
-    public AnalysisDummy(QueryData queryData, Counter counter) {
+    public AnalysisDummy(PatientData queryData, Counter counter) {
         this.results = new AnalysisResults(queryData);
         this.counter = counter;
     }

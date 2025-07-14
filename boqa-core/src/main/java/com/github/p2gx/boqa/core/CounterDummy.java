@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
 import java.nio.file.Path;
 import java.util.Set;
 /**
@@ -19,7 +21,7 @@ public class CounterDummy implements Counter{
     }
 
     @Override
-    public void initQueryLayer(Set<String> queryTerms) {
+    public void initQueryLayer(Set<TermId> queryTerms) {
         // Init Query layer
     }
 

@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
 import java.util.Set;
 
 /**
@@ -8,7 +10,7 @@ import java.util.Set;
  * <p>
  * Input formats include:
  * <ul>
- *     <li> Phenopackets (QueryDataFromPhenopacket)
+ *     <li> Phenopackets (PhenopacketReader)
  *     <li> Strings consisting of comma-separated HPO terms (QueryDataFromString)
  *     <li> Maybe other formats
  * </ul>
@@ -18,11 +20,11 @@ import java.util.Set;
  *
  * TODO: Add parameters alpha and beta
  */
-public interface QueryData {
-
-    // Returns a list of HPO terms to initialize the query layer
-    Set<String> getIncludedTerms();
-    default Set<String> getExcludedTerms(){
+public interface PatientData {
+    String getID();
+    // Returns a map of phenopacket ids and corresponding HPO terms
+    Set<TermId> getObservedTerms();
+    default Set<TermId> getExcludedTerms() {
         // If excluded terms are not used or not available
         return Set.of();
     }
