@@ -1,5 +1,4 @@
 package com.github.p2gx.boqa.core;
-import com.github.p2gx.boqa.core.GraphTraversing;
 
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -10,10 +9,13 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class CounterSetApproach implements Counter, Serializable {
-    // TODO implement serializable, no need to recompute diseaseLayers each time
-    // Especially important for melded/digenic where combinatorial complexity increases
-    private static final Logger LOGGER = LoggerFactory.getLogger(CounterSetApproach.class);
+/**
+ * This class counts the four quantities needed by the BOQA algorithm.
+ *  TODO implement serializable, no need to recompute diseaseLayers each time
+ *  Especially important for melded/digenic where combinatorial complexity increases
+ */
+public class BoqaSetCounter implements Counter, Serializable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
 
     private GraphTraversing graphTraverser;
     private Set<TermId> queryLayerInitialized;
@@ -21,8 +23,9 @@ public class CounterSetApproach implements Counter, Serializable {
     private final Set<String> diseaseIds;
 
     // TODO for each disease in diseaseData compute ancestors OR load from disk (?) [--> add serialize object]
-    public CounterSetApproach(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph){
+    public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph){
         this.graphTraverser = new GraphTraversing(hpoGraph);
+        // this.diseaseIds.stream().parallel() -- might be faster than for loop, use forEach method
         this.diseaseIds = diseaseData.getDiseaseIds();
         for (String d : diseaseIds){
             Set<String> observedHpos = diseaseData.getIncludedDiseaseFeatures(d);
@@ -33,14 +36,15 @@ public class CounterSetApproach implements Counter, Serializable {
         }
     }
 
+    /**
+     *
+     * @param diseaseId
+     * @param observedHpos
+     * @return BoqaCounts object containing for counts.
+     */
     @Override
-    public void initQueryLayer(Set<TermId> queryTermIds){
-        // TODO 4 future: this can only be single threaded. Calling this method from two threads will create problems
-        this.queryLayerInitialized = graphTraverser.initLayer(queryTermIds);
-    }
-
-    @Override
-    public BoqaCounts computeBoqaCounts(String diseaseId){
+    public BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos){
+        Set<TermId> queryLayerInitialized = graphTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
         Set<TermId> intersection = new HashSet<>(diseaseLayer); // use copy constructor
         intersection.retainAll(queryLayerInitialized); // TP

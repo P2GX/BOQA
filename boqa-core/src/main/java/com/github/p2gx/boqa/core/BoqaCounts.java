@@ -6,9 +6,9 @@ package com.github.p2gx.boqa.core;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-public record BoqaCounts(String diseaseId, int tp, int fp, int tn, int fn) {
+public record BoqaCounts(String diseaseId, int tpExponent, int fpExponent, int tnExponent, int fnExponent) {
     public BoqaCounts {
-        if (tp < 0 || fp < 0 || tn < 0 || fn < 0) {
+        if (tpExponent < 0 || fpExponent < 0 || tnExponent < 0 || fnExponent < 0) {
             throw new java.lang.IllegalArgumentException("Counts must be greater than zero!");
         }
     }

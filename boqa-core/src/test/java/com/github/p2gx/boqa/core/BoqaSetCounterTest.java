@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CounterSetApproachTest {
+class BoqaSetCounterTest {
 
     @BeforeEach
     void setUp() {
@@ -16,15 +16,12 @@ class CounterSetApproachTest {
     void tearDown() {
     }
 
+
     @Test
-    void initQueryLayer() {
+    void testComputeBoqaCounts() {
     }
 
     @Test
-    void computeBoqaCounts() {
-    }
-
-    @Test
-    void getDiseaseIds() {
+    void testGetDiseaseIds() {
     }
 }

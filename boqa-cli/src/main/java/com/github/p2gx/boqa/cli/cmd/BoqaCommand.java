@@ -76,7 +76,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Initialize Counter
-        Counter counter = new CounterSetApproach(diseaseData, hpoGraph);
+        Counter counter = new BoqaSetCounter(diseaseData, hpoGraph);
 
         // Read in list of paths to files
         List<Path> patientFiles =  new ArrayList<>();
@@ -92,7 +92,6 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         for(Path singlefile : patientFiles) {
             // Import Patient Data
             PatientData phenopacket = new PhenopacketReader(singlefile);
-            counter.initQueryLayer(phenopacket.getObservedTerms());
             // Perform Analysis(phenopacket)
             Analysis analysis = new AnalysisDummy(phenopacket, counter);
             analysis.run();
@@ -103,9 +102,9 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         analysisResults.stream()
                 .findFirst()
                 .ifPresent(result -> {
-                    System.out.println("\n\nPatientData\nPhenopacket ID: " + result.getPatientDataData().getID());
-                    System.out.println("Observed HPOs: " + result.getPatientDataData().getObservedTerms());
-                    System.out.println("Excluded HPOs: " + result.getPatientDataData().getExcludedTerms());
+                    System.out.println("\n\nPatientData\nPhenopacket ID: " + result.getPatientData().getID());
+                    System.out.println("Observed HPOs: " + result.getPatientData().getObservedTerms());
+                    System.out.println("Excluded HPOs: " + result.getPatientData().getExcludedTerms());
 
                     String boqaStr = result.getBoqaCounts().toString();
                     int n = 200; // number of chars to print

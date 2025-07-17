@@ -18,19 +18,14 @@ import java.util.Set;
  */
 public interface Counter {
 
-    /*
-    Initialization of the query layer involves applying the annotation propagation rule.
+    /**
+     * Given a patient's observed HPOs, returns a BoqaCounts object representing
+     * the exponents of alpha, beta, 1-alpha, 1-beta
      */
-    void initQueryLayer(Set<TermId> queryTerms);
-    //TODO edit comment below, this is not a count of true positives, true negatives... These are the exponents of alpha, beta, 1-alpha...
-    /*
-     Given the initialized query layer, returns a BoqaCounts object representing the counts of
-     false-positives, false-negatives, true-negatives, and true-positives.
-     */
-    BoqaCounts computeBoqaCounts(String diseaseId);
+    BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos);
 
-    /*
-    Return a set with all disease IDs.
+    /**
+     * Return a set with all disease IDs.
      */
     Set<String> getDiseaseIds();
 }

@@ -8,9 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class GraphTraversing {
+class GraphTraversing {
 
     private final OntologyGraph<TermId> hpoGraph;
+
     public OntologyGraph<TermId> getHpoGraph() {
         return hpoGraph;
     }
@@ -18,12 +19,25 @@ public class GraphTraversing {
         this.hpoGraph = hpoGraph;
     }
 
-    public Set<TermId> initLayer(Set<TermId> hpoTerms){
-        List<TermId> observed = hpoTerms.stream().toList();
+    /**
+     * // Insert example below:
+     * <pre>
+     *     Set<TermId> queryWithAncsSet = BoqaSetCounter.initLayer(querySet);
+     *
+     * </pre>
+     * @param hpoTerms
+     * @return
+     */
+    Set<TermId> initLayer(Set<TermId> hpoTerms){
         Set<TermId> observedAncestors = new HashSet<>();
-        for (TermId termId : observed) {
-            observedAncestors.addAll( hpoGraph.extendWithAncestors(termId, true));
-        }
+        hpoTerms.forEach(t -> observedAncestors.addAll(hpoGraph.extendWithAncestors(t, true)));
+        // We only want phenotypic abnormalities!
+        //List<TermId> observed = hpoTerms.stream().toList();
+        //Set<TermId> observedAncestors = new HashSet<>();
+        //for (TermId termId : observed) {
+        //    observedAncestors.addAll( hpoGraph.extendWithAncestors(termId, true));
+        //}
+
         // We only want phenotypic abnormalities!
         observedAncestors.remove(TermId.of("HP:0000001"));
         return observedAncestors;

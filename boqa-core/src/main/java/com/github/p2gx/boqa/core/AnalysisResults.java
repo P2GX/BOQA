@@ -16,7 +16,7 @@ public class AnalysisResults {
         this.patientData = patientData;
     }
 
-    public PatientData getPatientDataData() {
+    public PatientData getPatientData() {
         return patientData;
     }
     public Set<BoqaCounts> getBoqaCounts() {
