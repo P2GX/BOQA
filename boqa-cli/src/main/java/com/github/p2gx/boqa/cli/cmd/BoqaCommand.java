@@ -69,7 +69,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
-        //TODO it was suggested by Ielis to only load the ontology once at the beginning
+        //TODO Ielis suggests to only load the ontology once at the beginning, change DiseasesData
         OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile()).graph();
 
         // Prepare DiseaseData

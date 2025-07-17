@@ -20,10 +20,8 @@ class GraphTraversing {
     }
 
     /**
-     * // Insert example below:
      * <pre>
-     *     Set<TermId> queryWithAncsSet = BoqaSetCounter.initLayer(querySet);
-     *
+     *      Set &ltTermId&gt someLayerInitialized = graphTraverser.initLayer(observedHpos);
      * </pre>
      * @param hpoTerms
      * @return
@@ -31,13 +29,6 @@ class GraphTraversing {
     Set<TermId> initLayer(Set<TermId> hpoTerms){
         Set<TermId> observedAncestors = new HashSet<>();
         hpoTerms.forEach(t -> observedAncestors.addAll(hpoGraph.extendWithAncestors(t, true)));
-        // We only want phenotypic abnormalities!
-        //List<TermId> observed = hpoTerms.stream().toList();
-        //Set<TermId> observedAncestors = new HashSet<>();
-        //for (TermId termId : observed) {
-        //    observedAncestors.addAll( hpoGraph.extendWithAncestors(termId, true));
-        //}
-
         // We only want phenotypic abnormalities!
         observedAncestors.remove(TermId.of("HP:0000001"));
         return observedAncestors;

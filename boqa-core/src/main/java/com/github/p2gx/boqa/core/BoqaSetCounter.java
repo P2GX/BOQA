@@ -18,7 +18,6 @@ public class BoqaSetCounter implements Counter, Serializable {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
 
     private GraphTraversing graphTraverser;
-    private Set<TermId> queryLayerInitialized;
     private final Map<TermId, Set<TermId>> diseaseLayers = new HashMap<>();
     private final Set<String> diseaseIds;
 
@@ -80,5 +79,4 @@ public class BoqaSetCounter implements Counter, Serializable {
     public Set<String> getDiseaseIds() {
         return this.diseaseIds;
     }
-
 }
