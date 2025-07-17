@@ -25,6 +25,7 @@ class GraphTraversingTest {
     GraphTraversing graphTraverser;
     OntologyGraph<TermId> hpoGraph;
 
+    // TODO: Daniel suggests using Extensions API rather then TestBase and extensions thereof, more modern.
     @BeforeAll
     void setUp() throws IOException {
         try (
@@ -43,7 +44,7 @@ class GraphTraversingTest {
                 .collect(Collectors.toSet());
         assertEquals(expectedNodesTermIds, graphTraverser.initLayer(observedNodes));
     }
-
+    // TODO: Daniel suggests using @CsvSource
     private static Stream<Arguments> activeLayers(){
         // Manually curated example: start from Arachnodactyly, HP:0001166, and go up
         Set<String> queryTermsFromOne = Set.of("HP:0001166","HP:0001238","HP:0100807","HP:0001167","HP:0001155","HP:0002817",

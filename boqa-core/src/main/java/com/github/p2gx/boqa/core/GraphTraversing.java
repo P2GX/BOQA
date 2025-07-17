@@ -8,6 +8,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * This utility class holds the ontology graph and methods acting on it to collect necessary sets of terms.
+ * <p>
+ * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ */
 class GraphTraversing {
 
     private final OntologyGraph<TermId> hpoGraph;
@@ -20,18 +25,22 @@ class GraphTraversing {
     }
 
     /**
+     * Given a set of HPO terms, computes and returns the set of all implied terms, included those passed as input.
+     * In BOQA language, the layer (query layer for patients and hidden layer for diseases) is
+     * <i>initialized</i>.
+     *
      * <pre>
      *      Set &ltTermId&gt someLayerInitialized = graphTraverser.initLayer(observedHpos);
      * </pre>
      * @param hpoTerms
-     * @return
+     * @return initializedLayer
      */
     Set<TermId> initLayer(Set<TermId> hpoTerms){
-        Set<TermId> observedAncestors = new HashSet<>();
-        hpoTerms.forEach(t -> observedAncestors.addAll(hpoGraph.extendWithAncestors(t, true)));
+        Set<TermId> initializedLayer = new HashSet<>();
+        hpoTerms.forEach(t -> initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true)));
         // We only want phenotypic abnormalities!
-        observedAncestors.remove(TermId.of("HP:0000001"));
-        return observedAncestors;
+        initializedLayer.remove(TermId.of("HP:0000001"));
+        return initializedLayer;
     }
 
     /**

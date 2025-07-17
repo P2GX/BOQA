@@ -11,17 +11,18 @@ import java.util.stream.Collectors;
 
 /**
  * This class counts the four quantities needed by the BOQA algorithm.
- *  TODO implement serializable, no need to recompute diseaseLayers each time
+ *  TODO implement serialization via XML or JSON, no need to recompute diseaseLayers each time
+ *  Try to avoid Serialization, since it is heavily criticized and deprecated.
  *  Especially important for melded/digenic where combinatorial complexity increases
  */
-public class BoqaSetCounter implements Counter, Serializable {
+public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
 
     private GraphTraversing graphTraverser;
     private final Map<TermId, Set<TermId>> diseaseLayers = new HashMap<>();
     private final Set<String> diseaseIds;
 
-    // TODO for each disease in diseaseData compute ancestors OR load from disk (?) [--> add serialize object]
+    // TODO for each disease in diseaseData compute ancestors OR load from disk
     public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph){
         this.graphTraverser = new GraphTraversing(hpoGraph);
         // this.diseaseIds.stream().parallel() -- might be faster than for loop, use forEach method
@@ -36,10 +37,13 @@ public class BoqaSetCounter implements Counter, Serializable {
     }
 
     /**
-     *
+     * This method computes counts given a disease ID and a patient's observed HPO terms.
+     * These counts are related to true/false positives and true/false negatives, and are used to compute the
+     * probability that a patient has the input disease. The probability is computed as <p>
+     * P = alpha^tpExponent * beta^fpExponent * (1-alpha)^fnExponent * (1-beta)^tpExponent
      * @param diseaseId
      * @param observedHpos
-     * @return BoqaCounts object containing for counts.
+     * @return BoqaCounts record containing four counts associated to a diseases-patient pair.
      */
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos){
@@ -71,7 +75,6 @@ public class BoqaSetCounter implements Counter, Serializable {
                 }
             }
         }
-
         return new BoqaCounts(diseaseId, intersection.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
