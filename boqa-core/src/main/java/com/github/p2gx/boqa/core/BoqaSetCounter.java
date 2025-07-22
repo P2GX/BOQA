@@ -10,10 +10,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * This class counts the four quantities needed by the BOQA algorithm.
- *  TODO implement serialization via XML or JSON, no need to recompute diseaseLayers each time
- *  Try to avoid Serialization, since it is heavily criticized and deprecated.
- *  Especially important for melded/digenic where combinatorial complexity increases
+ * This class initializes all disease layers through its constructor, i.e. it computes the full induced HPO graph via
+ * disease-phenotype annotations for all diseases. <p>
+ * Its method {@link #computeBoqaCounts(String, Set<TermId>) ComputeBoqaCounts} contains the BOQA algorithm which, for
+ * a given set of observed HPO terms as TermIds belonging to a patient, counts the four integers needed to compute each
+ * disease's probability, see also the record {@link BoqaCounts BoqaCounts}.
+ * <p>TODO implement serialization via XML or JSON, no need to recompute diseaseLayers each time.
+ * Try to avoid Serialization, since it is heavily criticized and deprecated.
+ * Especially important for melded/digenic where combinatorial complexity increases
  */
 public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
@@ -25,15 +29,19 @@ public class BoqaSetCounter implements Counter {
     // TODO for each disease in diseaseData compute ancestors OR load from disk
     public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph){
         this.graphTraverser = new GraphTraversing(hpoGraph);
-        // this.diseaseIds.stream().parallel() -- might be faster than for loop, use forEach method
         this.diseaseIds = diseaseData.getDiseaseIds();
-        for (String d : diseaseIds){
-            Set<String> observedHpos = diseaseData.getIncludedDiseaseFeatures(d);
-            Set<TermId> observedHposTerms = observedHpos.stream()
-                        .map(TermId::of)
-                        .collect(Collectors.toSet());
-            diseaseLayers.put(TermId.of(d), graphTraverser.initLayer(observedHposTerms));
-        }
+        diseaseIds.forEach(
+                d -> diseaseLayers.put(
+                        TermId.of(d),
+                        graphTraverser.initLayer(
+                            diseaseData
+                                    .getIncludedDiseaseFeatures(d)
+                                    .parallelStream()
+                                    .map(TermId::of)
+                                    .collect(Collectors.toSet() )
+                        )
+                )
+        );
     }
 
     /**
