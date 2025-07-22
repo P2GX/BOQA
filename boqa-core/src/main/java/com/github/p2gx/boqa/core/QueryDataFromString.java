@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Class that implements the QueryData interface by parsing comma-strings of HPO terms.
+ * Class that implements the QueryData interface by parsing comma-separated strings of HPO terms.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
