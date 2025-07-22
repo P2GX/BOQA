@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -78,24 +79,16 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // Initialize Counter
         Counter counter = new BoqaSetCounter(diseaseData, hpoGraph);
 
-        // Read in list of paths to files
-        List<Path> patientFiles =  new ArrayList<>();
-        try (Stream<String> stream = lines(phenopacketFile)) {
-            stream.map(Path::of).forEach(patientFiles::add);
-        } catch (IOException e) {
-            LOGGER.warn("File {} does not exist.", e.getMessage());  // TODO make better
-        }
-
         Set<AnalysisResults> analysisResults = new HashSet<>();
-
-        // for item in phenopacketFile
-        for(Path singlefile : patientFiles) {
-            // Import Patient Data
-            PatientData phenopacket = new PhenopacketReader(singlefile);
-            // Perform Analysis(phenopacket)
-            Analysis analysis = new AnalysisDummy(phenopacket, counter);
-            analysis.run();
-            analysisResults.add(analysis.getResults());
+        // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
+        try (Stream<String> stream = Files.lines(phenopacketFile)) {
+            stream.map(Path::of).forEach(singleFile -> {
+                Analysis analysis = new AnalysisDummy(new PhenopacketReader(singleFile), counter);
+                analysis.run();
+                analysisResults.add(analysis.getResults());
+            });
+        } catch (IOException e) {
+            LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
         }
 
         // TODO This is just a placeholder to print out something to look at

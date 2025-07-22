@@ -52,6 +52,8 @@ public class BoqaSetCounter implements Counter {
      * @param diseaseId
      * @param observedHpos
      * @return BoqaCounts record containing four counts associated to a diseases-patient pair.
+     * <p>
+     * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
      */
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos){
