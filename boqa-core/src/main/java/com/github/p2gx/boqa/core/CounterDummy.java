@@ -20,13 +20,9 @@ public class CounterDummy implements Counter{
         // Or read CouterDummy object with precalculated hidden layers from a serialized file
     }
 
-    @Override
-    public void initQueryLayer(Set<TermId> queryTerms) {
-        // Init Query layer
-    }
 
     @Override
-    public BoqaCounts getBoqaCounts(String diseaseId) {
+    public BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos) {
         return new BoqaCounts(diseaseId, 10, 10, 10, 10);
     }
 

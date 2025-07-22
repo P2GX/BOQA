@@ -27,7 +27,18 @@ public class PhenopacketReader implements PatientData {
     private final Set<TermId> excludedHPOs;
     private final String ppktID;
 
-    public PhenopacketReader(Path phenopacketFile) throws IOException {
+    /**
+     * This class reads in a Path to a phenopacket file and reads it in as a
+     * {@link org.phenopackets.schema.v2.Phenopacket Phenopacket} object.
+     * <p>
+     * Observed and Excluded phenotypic features,
+     * as well as the Phenopacket ID can be queried through {@link #getObservedTerms() getObservedTerms},
+     * {@link #getExcludedTerms() getExcludedTerms}, and {@link #getID() getID}.
+     * @param phenopacketFile
+     * <p>
+     * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+     */
+    public PhenopacketReader(Path phenopacketFile) {
         JSONParser parser = new JSONParser();
         try {
             Object obj = parser.parse(new FileReader(String.valueOf(phenopacketFile)));

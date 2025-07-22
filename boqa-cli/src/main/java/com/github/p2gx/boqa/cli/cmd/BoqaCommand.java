@@ -1,18 +1,22 @@
 package com.github.p2gx.boqa.cli.cmd;
 
 import com.github.p2gx.boqa.core.*;
+import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.nio.file.Files.lines;
@@ -66,40 +70,34 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
     @Override
     public Integer call() throws Exception {
+        //TODO Ielis suggests to only load the ontology once at the beginning, change DiseasesData
+        OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile()).graph();
+
         // Prepare DiseaseData
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Initialize Counter
-        Counter counter = new CounterDummy(diseaseData);
-
-        // Read in list of paths to files
-        List<Path> patientFiles =  new ArrayList<>();
-        try (Stream<String> stream = lines(phenopacketFile)) {
-            stream.map(Path::of).forEach(patientFiles::add);
-        } catch (IOException e) {
-            LOGGER.warn("File {} does not exist.", e.getMessage());  // TODO make better
-        }
+        Counter counter = new BoqaSetCounter(diseaseData, hpoGraph);
 
         Set<AnalysisResults> analysisResults = new HashSet<>();
-
-        // for item in phenopacketFile
-        for(Path singlefile : patientFiles) {
-            // Import Patient Data
-            PatientData phenopacket = new PhenopacketReader(singlefile);
-            counter.initQueryLayer(phenopacket.getObservedTerms());
-            // Perform Analysis(phenopacket)
-            Analysis analysis = new AnalysisDummy(phenopacket, counter);
-            analysis.run();
-            analysisResults.add(analysis.getResults());
+        // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
+        try (Stream<String> stream = Files.lines(phenopacketFile)) {
+            stream.map(Path::of).forEach(singleFile -> {
+                Analysis analysis = new AnalysisDummy(new PhenopacketReader(singleFile), counter);
+                analysis.run();
+                analysisResults.add(analysis.getResults());
+            });
+        } catch (IOException e) {
+            LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
         }
 
         // TODO This is just a placeholder to print out something to look at
         analysisResults.stream()
                 .findFirst()
                 .ifPresent(result -> {
-                    System.out.println("\n\nPatientData\nPhenopacket ID: " + result.getPatientDataData().getID());
-                    System.out.println("Observed HPOs: " + result.getPatientDataData().getObservedTerms());
-                    System.out.println("Excluded HPOs: " + result.getPatientDataData().getExcludedTerms());
+                    System.out.println("\n\nPatientData\nPhenopacket ID: " + result.getPatientData().getID());
+                    System.out.println("Observed HPOs: " + result.getPatientData().getObservedTerms());
+                    System.out.println("Excluded HPOs: " + result.getPatientData().getExcludedTerms());
 
                     String boqaStr = result.getBoqaCounts().toString();
                     int n = 200; // number of chars to print
