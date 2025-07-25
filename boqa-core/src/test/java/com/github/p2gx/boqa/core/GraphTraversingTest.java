@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class GraphTraversingTest {
 
     GraphTraversing graphTraverser;
-    OntologyGraph<TermId> hpoGraph;
 
     // TODO: Daniel suggests using Extensions API rather then TestBase and extensions thereof, more modern.
     @BeforeAll

@@ -1,16 +1,16 @@
 package com.github.p2gx.boqa.core;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Book keeping class that contains the query along with the results of a BoqaAnalysis.
+ * Bookkeeping class that contains the query along with the results of a BoqaAnalysis.
  * Functions for calculating scores, ranking and reporting should be implemented here.
  */
 public class AnalysisResults {
 
     private PatientData patientData;
-    private Set<BoqaCounts> boqaCountsHashSet = new HashSet<>();
+    private Map<String, BoqaCounts> boqaCountsMap = new HashMap<>();
 
     public AnalysisResults(PatientData patientData) {
         this.patientData = patientData;
@@ -19,12 +19,13 @@ public class AnalysisResults {
     public PatientData getPatientData() {
         return patientData;
     }
-    public Set<BoqaCounts> getBoqaCounts() {
-        return boqaCountsHashSet;
-    }
-    public void addBoqaCounts(BoqaCounts boqaCounts) {
-        this.boqaCountsHashSet.add(boqaCounts);
+
+    public Map<String, BoqaCounts> getBoqaCounts() {
+        return boqaCountsMap;
     }
 
+    public void addBoqaCounts(BoqaCounts boqaCounts) {
+        boqaCountsMap.put(boqaCounts.diseaseId(), boqaCounts);
+    }
 
 }
