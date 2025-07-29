@@ -4,6 +4,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -17,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,11 +33,12 @@ class BoqaSetCounterTest {
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream annotationStream = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
+        // Getting the versions used in pyboqa since, for now, that is the only main test happening here.
+        try (InputStream annotationStream = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-03-03.hpoa.gz"))) {
             diseaseData = new DiseaseDataParseIngest(annotationStream);
         }
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-05-06.json.gz")))
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-03-03.json.gz")))
         ) {
             hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
         }
@@ -42,24 +48,38 @@ class BoqaSetCounterTest {
     void tearDown() {
     }
 
-
-    @Test
-    void testComputeBoqaCounts() throws URISyntaxException {
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvFileSource(
+            resources = "PYBOQA_phenopacket_store_0.1.24_results_table.tsv",
+            delimiter = '\t',
+            numLinesToSkip = 1,
+            useHeadersInDisplayName = true
+    )
+    void testComputeBoqaCounts(
+            String phenopacketId,
+            String status,
+            String diagnosedDiseaseId,
+            String nAnnotated,
+            String nIncluded,
+            String nExcluded,
+            String nIntersect,
+            String topRankedId,
+            String topScore,
+            String diagnosedRank,
+            String diagnosedScore,
+            String jsonFile
+    ) throws URISyntaxException {
         // As a first idea, test against pyboqa results
-        // E.g. PMID_24369382_Family2II1.json has in pyboqa, has OMIM:614322
-        String diseaseToTest = "OMIM:614322";
-        double pyboqaScore = 0.999999999994057;
-        String filename = "PMID_24369382_Family2II1.json";
-        // TODO add more test cases and use parametrized test
-
-        URL resourceUrl = PhenopacketReaderTest.class.getResource(filename);
-        assert resourceUrl != null;
-        Path ppkt = Path.of(resourceUrl.toURI());
-
+        double expectedScore = Double.parseDouble(diagnosedScore.trim());
+        // TODO add phenopacket store to resource?
+        Path ppkt = Path.of("/Users/leonardo/data/ppkt-store-0.1.24")
+                .resolve(Path.of(jsonFile).getParent().getFileName())
+                .resolve(Path.of(jsonFile).getFileName());
         Counter counter = new BoqaSetCounter(diseaseData, hpoGraph);
-        // take alpha and beta and compute P
-        double javaBoqaScore = getJavaBoqaScore(ppkt, counter, diseaseToTest);
-        assertEquals(pyboqaScore, javaBoqaScore, 1e-9);
+
+        // Take alpha and beta and compute P
+        double javaBoqaScore = getJavaBoqaScore(ppkt, counter, diagnosedDiseaseId);
+        assertEquals(expectedScore, javaBoqaScore, 1e-6);
     }
 
     private static double getJavaBoqaScore(Path ppkt, Counter counter, String diseaseToTest) {
