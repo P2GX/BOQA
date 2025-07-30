@@ -30,58 +30,72 @@ class BoqaSetCounterTest {
 
     private static DiseaseDataParseIngest diseaseData;
     private static OntologyGraph<TermId> hpoGraph;
+    private static Counter counter;
 
     @BeforeAll
     static void setup() throws IOException {
         // Getting the versions used in pyboqa since, for now, that is the only main test happening here.
-        try (InputStream annotationStream = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-03-03.hpoa.gz"))) {
+        //TODO if we confront with counts, extract a certain set of OMIMs from HPOA and create a limited diseaseData
+        try (InputStream annotationStream = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
             diseaseData = new DiseaseDataParseIngest(annotationStream);
         }
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-03-03.json.gz")))
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-05-06.json.gz")))
         ) {
             hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
         }
+        counter = new BoqaSetCounter(diseaseData, hpoGraph);
     }
-
+    @Test
+    void testCsvPresence() {
+        InputStream is = getClass().getClassLoader().getResourceAsStream("pyboqa_hpo2025-05-06_ppkt-v0-1-24.csv");
+        assertNotNull(is, "CSV file not found in classpath!");
+    }
     @AfterEach
     void tearDown() {
     }
 
+    // As a first idea, test against pyboqa results
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvFileSource(
-            resources = "PYBOQA_phenopacket_store_0.1.24_results_table.tsv",
-            delimiter = '\t',
-            numLinesToSkip = 1,
-            useHeadersInDisplayName = true
+            resources = "pyboqa_hpo2025-05-06_ppkt-v0-1-24.csv",
+            delimiter = ',',
+            numLinesToSkip = 1
+            // useHeadersInDisplayName = true // does not work, don't use it
     )
-    void testComputeBoqaCounts(
-            String phenopacketId,
-            String status,
+    void testComputeBoqaCountsAgainstPyboqa(
+            String jsonFile,
             String diagnosedDiseaseId,
-            String nAnnotated,
-            String nIncluded,
-            String nExcluded,
-            String nIntersect,
-            String topRankedId,
-            String topScore,
-            String diagnosedRank,
-            String diagnosedScore,
-            String jsonFile
-    ) throws URISyntaxException {
-        // As a first idea, test against pyboqa results
-        double expectedScore = Double.parseDouble(diagnosedScore.trim());
-        // TODO add phenopacket store to resource?
-        Path ppkt = Path.of("/Users/leonardo/data/ppkt-store-0.1.24")
-                .resolve(Path.of(jsonFile).getParent().getFileName())
-                .resolve(Path.of(jsonFile).getFileName());
-        Counter counter = new BoqaSetCounter(diseaseData, hpoGraph);
+            String tnExp,
+            String fnExp,
+            String fpExp,
+            String tpExp
+            ) throws URISyntaxException, IOException {
+        int tnExpInt = Integer.parseInt(tnExp.trim());
+        int fnExpInt = Integer.parseInt(fnExp.trim());
+        int tpExpInt = Integer.parseInt(tpExp.trim());
+        int fpExpInt = Integer.parseInt(fpExp.trim());
 
-        // Take alpha and beta and compute P
-        double javaBoqaScore = getJavaBoqaScore(ppkt, counter, diagnosedDiseaseId);
-        assertEquals(expectedScore, javaBoqaScore, 1e-6);
+        BoqaCounts pyboqaCounts = new BoqaCounts(
+                diagnosedDiseaseId,
+                tpExpInt,
+                fpExpInt,
+                tnExpInt,
+                fnExpInt
+        );
+
+        URL resourceUrl = PhenopacketReaderTest.class.getResource("phenopackets/" + jsonFile);
+        if (resourceUrl == null) {
+            throw new IOException("Resource not found: " + jsonFile);
+        }
+        Path ppkt = Path.of(resourceUrl.toURI());
+        Analysis analysis = new AnalysisDummy(new PhenopacketReader(ppkt), counter);
+        analysis.run();
+        Map<String, BoqaCounts> boqaCountsMap = analysis.getResults().getBoqaCounts();
+        assertEquals(boqaCountsMap.get(diagnosedDiseaseId), pyboqaCounts);
     }
 
+    //TODO move the next two methods elsewhere
     private static double getJavaBoqaScore(Path ppkt, Counter counter, String diseaseToTest) {
         double alpha = 1.0/19077; // the denominator is the size of onto_dict for the version used
         double beta = 0.1;
