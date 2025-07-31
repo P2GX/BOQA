@@ -72,11 +72,12 @@ public class BoqaSetCounter implements Counter {
                 betaCounts += 1;
             }
         }
+        //TODO the following is probably too expensive?
         int offNodesCount = 0; // exponent of 1-alpha
         for(TermId qobs : queryLayerInitialized){
             Set<TermId> children = new HashSet<>();
             children.addAll( graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
-            // Go through all children and find those that are off, increase counter iff *all* parents are ON
+            // Go through all children of ON terms and find those that are off, increase counter iff *all* parents are ON
             for(TermId child : children){
                 if(!queryLayerInitialized.contains(child)){
                     // increase counter iff all parents are ON

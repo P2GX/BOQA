@@ -38,8 +38,11 @@ class GraphTraversing {
     Set<TermId> initLayer(Set<TermId> hpoTerms){
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true)));
-        // We only want phenotypic abnormalities!
-        initializedLayer.remove(TermId.of("HP:0000001"));
+        boolean testPyboqaMode = Boolean.getBoolean("test.mode");
+        if(!testPyboqaMode) {
+            // We only want phenotypic abnormalities!
+            initializedLayer.remove(TermId.of("HP:0000001"));
+        }
         return initializedLayer;
     }
 
@@ -54,6 +57,9 @@ class GraphTraversing {
     public boolean allParentsActive(TermId node, Set<TermId> activeNodes){
         Set<TermId> parents = new HashSet<>();
         parents.addAll( hpoGraph.extendWithParents(node, false));
+        if (parents.isEmpty()){
+            return true; // should only happen for root term
+        }
         parents.removeAll(activeNodes);
         return parents.isEmpty();
     }

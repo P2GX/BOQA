@@ -1,7 +1,9 @@
 package com.github.p2gx.boqa.core;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Bookkeeping class that contains the query along with the results of a BoqaAnalysis.
@@ -28,4 +30,29 @@ public class AnalysisResults {
         boqaCountsMap.put(boqaCounts.diseaseId(), boqaCounts);
     }
 
+    private Map<String, Double> computeBoqaScore(String diseaseToTest) {
+        double alpha = 1.0/19077; // TODO move elsewhere
+        double beta = 0.1; // TODO move elsewhere
+        Map<String, Double> probabilityMap = boqaCountsMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> computeUnnormalizedProbability(alpha, beta, entry.getValue())
+                ));
+        double normalizationFactor = probabilityMap.values().stream()
+                .mapToDouble(Double::doubleValue)
+                .sum();
+        //TODO the following return needs checking
+        return probabilityMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        entry -> entry.getValue() / normalizationFactor
+                ));
+    }
+
+    private static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
+        return Math.pow(alpha, counts.fpExponent())*
+                Math.pow(beta, counts.fnExponent())*
+                Math.pow(1-alpha, counts.tnExponent())*
+                Math.pow(1-beta, counts.tpExponent());
+    }
 }
