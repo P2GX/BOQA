@@ -64,6 +64,7 @@ public class BoqaSetCounter implements Counter {
         Set<TermId> falsePositives = new HashSet<>(queryLayerInitialized); // FP
         falsePositives.removeAll(diseaseLayer);
         Set<TermId> falseNegatives = new HashSet<>(diseaseLayer); // FN
+        //falseNegatives.removeAll(queryLayerInitialized); // TODO is this the right one?
         falseNegatives.removeAll(intersection); // Now iterate over these and count only those with all parents ON
         int betaCounts = 0; // exponent of beta
         for(TermId node : falseNegatives) {

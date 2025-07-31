@@ -46,11 +46,7 @@ class BoqaSetCounterTest {
         }
         counter = new BoqaSetCounter(diseaseData, hpoGraph);
     }
-    @Test
-    void testCsvPresence() {
-        InputStream is = getClass().getClassLoader().getResourceAsStream("pyboqa_hpo2025-05-06_ppkt-v0-1-24.csv");
-        assertNotNull(is, "CSV file not found in classpath!");
-    }
+
     @AfterEach
     void tearDown() {
     }
@@ -58,7 +54,7 @@ class BoqaSetCounterTest {
     // As a first idea, test against pyboqa results
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvFileSource(
-            resources = "pyboqa_hpo2025-05-06_ppkt-v0-1-24.csv",
+            resources = "pyboqa_counts_for_top_ranked_diseases.csv",
             delimiter = ',',
             numLinesToSkip = 1
             // useHeadersInDisplayName = true // does not work, don't use it
@@ -78,6 +74,7 @@ class BoqaSetCounterTest {
 
         BoqaCounts pyboqaCounts = new BoqaCounts(
                 diagnosedDiseaseId,
+                //tpExpInt-1, // remove HP:0000001 from pyboqa
                 tpExpInt,
                 fpExpInt,
                 tnExpInt,
@@ -92,7 +89,7 @@ class BoqaSetCounterTest {
         Analysis analysis = new AnalysisDummy(new PhenopacketReader(ppkt), counter);
         analysis.run();
         Map<String, BoqaCounts> boqaCountsMap = analysis.getResults().getBoqaCounts();
-        assertEquals(boqaCountsMap.get(diagnosedDiseaseId), pyboqaCounts);
+        assertEquals(pyboqaCounts, boqaCountsMap.get(diagnosedDiseaseId));
     }
 
     //TODO move the next two methods elsewhere

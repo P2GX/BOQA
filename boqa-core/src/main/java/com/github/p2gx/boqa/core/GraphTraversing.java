@@ -47,8 +47,8 @@ class GraphTraversing {
      * Computes the parents of a node and confronts it with a Set of active nodes.
      * If all parents are in the Set of active nodes, the method returns true.
      *
-     * @param node The width of the rectangle.
-     * @param activeNodes The height of the rectangle.
+     * @param node The node which we want to check.
+     * @param activeNodes The reference against which we want to check.
      * @return true if all parents are active, false otherwise.
      */
     public boolean allParentsActive(TermId node, Set<TermId> activeNodes){
