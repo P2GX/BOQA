@@ -16,12 +16,14 @@ import java.util.Set;
 class GraphTraversing {
 
     private final OntologyGraph<TermId> hpoGraph;
+    private final boolean fullOntology;
 
     public OntologyGraph<TermId> getHpoGraph() {
         return hpoGraph;
     }
-    public GraphTraversing(OntologyGraph<TermId> hpoGraph) {
+    public GraphTraversing(OntologyGraph<TermId> hpoGraph, boolean fullOntology) {
         this.hpoGraph = hpoGraph;
+        this.fullOntology = fullOntology;
     }
 
     /**
@@ -38,8 +40,7 @@ class GraphTraversing {
     Set<TermId> initLayer(Set<TermId> hpoTerms){
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true)));
-        boolean testPyboqaMode = Boolean.getBoolean("test.mode");
-        if(!testPyboqaMode) {
+        if(!fullOntology) {
             // We only want phenotypic abnormalities!
             initializedLayer.remove(TermId.of("HP:0000001"));
         }

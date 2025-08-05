@@ -29,10 +29,6 @@ class BoqaSetCounterTest {
     private static OntologyGraph<TermId> hpoGraph;
     private static Counter counter;
 
-    @BeforeAll
-    static void enableTestMode() {
-        System.setProperty("test.mode", "true");
-    }
 
     @BeforeAll
     static void setup() throws IOException {
@@ -44,7 +40,7 @@ class BoqaSetCounterTest {
         ) {
             hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
         }
-        counter = new BoqaSetCounter(diseaseData, hpoGraph);
+        counter = new BoqaSetCounter(diseaseData, hpoGraph, true);
     }
 
     @AfterAll
@@ -52,7 +48,7 @@ class BoqaSetCounterTest {
         System.clearProperty("test.mode");
     }
 
-    // As a first idea, test against pyboqa results
+    @Tag("expensive_test")
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvFileSource(
             resources = "pyboqa_counts_for_top_ranked_diseases.csv",
@@ -60,6 +56,31 @@ class BoqaSetCounterTest {
             numLinesToSkip = 2
             // useHeadersInDisplayName = true // does not work, don't use it
     )
+    void testPyboqaFull(
+            String jsonFile,
+            String diagnosedDiseaseId,
+            String tnExp,
+            String fnExp,
+            String fpExp,
+            String tpExp
+    ) throws URISyntaxException, IOException {
+        testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
+    }
+
+    // As a first idea, test against pyboqa results
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvFileSource(resources = "few_examples_pyboqa_counts_for_top_ranked_diseases.csv", numLinesToSkip = 2)
+    void testPyboqaSubset(
+            String jsonFile,
+            String diagnosedDiseaseId,
+            String tnExp,
+            String fnExp,
+            String fpExp,
+            String tpExp
+    ) throws URISyntaxException, IOException {
+        testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
+    }
+
     void testComputeBoqaCountsAgainstPyboqa(
             String jsonFile,
             String diagnosedDiseaseId,
@@ -67,7 +88,7 @@ class BoqaSetCounterTest {
             String fnExp,
             String fpExp,
             String tpExp
-            ) throws URISyntaxException, IOException {
+    ) throws URISyntaxException, IOException {
         int tnExpInt = Integer.parseInt(tnExp.trim());
         int fnExpInt = Integer.parseInt(fnExp.trim());
         int tpExpInt = Integer.parseInt(tpExp.trim());

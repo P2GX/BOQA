@@ -77,7 +77,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Initialize Counter
-        Counter counter = new BoqaSetCounter(diseaseData, hpoGraph);
+        Counter counter = new BoqaSetCounter(diseaseData, hpoGraph, false);
 
         Set<AnalysisResults> analysisResults = new HashSet<>();
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults

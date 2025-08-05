@@ -31,7 +31,7 @@ class GraphTraversingTest {
             InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-05-06.json.gz")))
         ) {
             OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
-            this.graphTraverser = new GraphTraversing(hpoGraph);
+            this.graphTraverser = new GraphTraversing(hpoGraph, false);
         }
     }
 
