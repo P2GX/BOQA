@@ -10,15 +10,20 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "master", "develop" ]
-  pull_request:
     branches: [ "master" ]
+  pull_request:
+    branches: [ "master" , "develop"]
 
 jobs:
   build:
+    if: |
+        (github.event_name == 'push') ||
+        (github.event.pull_request.base.ref == 'master') ||
+        (github.event.pull_request.base.ref == 'develop' && github.event.action == 'closed')
+
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
