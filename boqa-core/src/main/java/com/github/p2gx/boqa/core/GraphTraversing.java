@@ -15,6 +15,7 @@ import java.util.Set;
  */
 class GraphTraversing {
 
+    public static final String HPO_ROOT_TERM = "HP:0000001";
     private final OntologyGraph<TermId> hpoGraph;
     private final boolean fullOntology;
 
@@ -42,7 +43,7 @@ class GraphTraversing {
         hpoTerms.forEach(t -> initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true)));
         if(!fullOntology) {
             // We only want phenotypic abnormalities!
-            initializedLayer.remove(TermId.of("HP:0000001"));
+            initializedLayer.remove(TermId.of(HPO_ROOT_TERM));
         }
         return initializedLayer;
     }
