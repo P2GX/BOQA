@@ -18,7 +18,16 @@ import org.json.simple.parser.JSONParser;
 import com.google.protobuf.util.JsonFormat;
 import org.json.simple.parser.ParseException;
 import org.phenopackets.schema.v2.core.*;
-
+/**
+ * This class reads in a Path to a phenopacket file and reads it in as a
+ * {@link org.phenopackets.schema.v2.Phenopacket Phenopacket} object.
+ * <p>
+ * Observed and Excluded phenotypic features,
+ * as well as the Phenopacket ID can be queried through {@link #getObservedTerms() getObservedTerms},
+ * {@link #getExcludedTerms() getExcludedTerms}, and {@link #getID() getID}.
+ * <p>
+ * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ */
 public class PhenopacketReader implements PatientData {
 
     private final Logger LOGGER = LoggerFactory.getLogger(PhenopacketReader.class);
@@ -28,15 +37,8 @@ public class PhenopacketReader implements PatientData {
     private final String ppktID;
 
     /**
-     * This class reads in a Path to a phenopacket file and reads it in as a
-     * {@link org.phenopackets.schema.v2.Phenopacket Phenopacket} object.
-     * <p>
-     * Observed and Excluded phenotypic features,
-     * as well as the Phenopacket ID can be queried through {@link #getObservedTerms() getObservedTerms},
-     * {@link #getExcludedTerms() getExcludedTerms}, and {@link #getID() getID}.
+     *
      * @param phenopacketFile
-     * <p>
-     * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
      */
     public PhenopacketReader(Path phenopacketFile) {
         JSONParser parser = new JSONParser();

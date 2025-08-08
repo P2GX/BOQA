@@ -34,7 +34,7 @@ class PhenopacketReaderTest {
         };
         for (String filename : filenames) {
             try {
-                URL resourceUrl = PhenopacketReaderTest.class.getResource(filename);
+                URL resourceUrl = PhenopacketReaderTest.class.getResource("phenopackets/" + filename);
                 if (resourceUrl == null) {
                     throw new IOException("Resource not found: " + filename);
                 }

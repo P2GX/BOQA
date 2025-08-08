@@ -1,6 +1,7 @@
 package com.github.p2gx.boqa.core;
 
 import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +16,12 @@ import java.util.stream.Collectors;
  * Its method {@link #computeBoqaCounts(String, Set<TermId>) ComputeBoqaCounts} contains the BOQA algorithm which, for
  * a given set of observed HPO terms as TermIds belonging to a patient, counts the four integers needed to compute each
  * disease's probability, see also the record {@link BoqaCounts BoqaCounts}.
- * <p>TODO implement serialization via XML or JSON, no need to recompute diseaseLayers each time.
+ * <p>
+ * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ * <p>
+ * TODO implement serialization via XML or JSON, no need to recompute diseaseLayers each time.
  * Try to avoid Serialization, since it is heavily criticized and deprecated.
- * Especially important for melded/digenic where combinatorial complexity increases
+ * Especially important for melded/digenic where combinatorial complexity increases.
  */
 public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
@@ -27,9 +31,10 @@ public class BoqaSetCounter implements Counter {
     private final Set<String> diseaseIds;
 
     // TODO for each disease in diseaseData compute ancestors OR load from disk
-    public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph){
-        this.graphTraverser = new GraphTraversing(hpoGraph);
+    public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph, boolean fullOntology){
+        this.graphTraverser = new GraphTraversing(hpoGraph, fullOntology);
         this.diseaseIds = diseaseData.getDiseaseIds();
+        //TermId PHNTABN = TermId.of("HP:123");
         diseaseIds.forEach(
                 d -> diseaseLayers.put(
                         TermId.of(d),
@@ -38,6 +43,7 @@ public class BoqaSetCounter implements Counter {
                                     .getIncludedDiseaseFeatures(d)
                                     .parallelStream()
                                     .map(TermId::of)
+                                    //.filter(tId -> graphTraverser.getHpoGraph().existsPath(tId, PHNTABN)) // filter for is descendant of phenotypic abnoramlity
                                     .collect(Collectors.toSet() )
                         )
                 )
@@ -48,12 +54,10 @@ public class BoqaSetCounter implements Counter {
      * This method computes counts given a disease ID and a patient's observed HPO terms.
      * These counts are related to true/false positives and true/false negatives, and are used to compute the
      * probability that a patient has the input disease. The probability is computed as <p>
-     * P = alpha^tpExponent * beta^fpExponent * (1-alpha)^fnExponent * (1-beta)^tpExponent
+     * P = alpha^tpBoqaCount * beta^fpBoqaCount * (1-alpha)^fnBoqaCount * (1-beta)^tpBoqaCount
      * @param diseaseId
      * @param observedHpos
      * @return BoqaCounts record containing four counts associated to a diseases-patient pair.
-     * <p>
-     * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
      */
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos){
@@ -64,23 +68,34 @@ public class BoqaSetCounter implements Counter {
         Set<TermId> falsePositives = new HashSet<>(queryLayerInitialized); // FP
         falsePositives.removeAll(diseaseLayer);
         Set<TermId> falseNegatives = new HashSet<>(diseaseLayer); // FN
-        falseNegatives.removeAll(intersection); // Now iterate over these and count only those with all parents ON
+        falseNegatives.removeAll(queryLayerInitialized); // equivalent with removeAll(intersection)
+        // Now iterate over these and count only those with all parents ON
         int betaCounts = 0; // exponent of beta
         for(TermId node : falseNegatives) {
             if (graphTraverser.allParentsActive(node, queryLayerInitialized)) {
                 betaCounts += 1;
             }
         }
+        //TODO the following is probably too expensive?
         int offNodesCount = 0; // exponent of 1-alpha
+        Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
         for(TermId qobs : queryLayerInitialized){
-            Set<TermId> children = new HashSet<>();
-            children.addAll( graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
-            // Go through all children and find those that are off, increase counter iff *all* parents are ON
-            for(TermId child : children){
-                if(!queryLayerInitialized.contains(child)){
-                    // increase counter iff all parents are ON
-                    if (graphTraverser.allParentsActive(child, queryLayerInitialized)){
-                        offNodesCount +=1 ;
+            Set<TermId> children = new HashSet<>(
+                    graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
+            // Go through all children of ON terms
+            for(TermId child : children){ // TODO consider a set with children of all of the terms
+                // Find those that are off
+                if (!queryLayerInitialized.contains(child)) {
+                    // Check if they are also off in the disease Layer
+                    if(!diseaseLayer.contains(child)) {
+                        // Make sure the node has not already been counted
+                        if (!checkedNodes.contains(child)) {
+                            // increase counter iff all parents are ON
+                            if (graphTraverser.allParentsActive(child, queryLayerInitialized)) {
+                                offNodesCount += 1;
+                                checkedNodes.add(child);
+                            }
+                        }
                     }
                 }
             }

@@ -15,13 +15,16 @@ import java.util.Set;
  */
 class GraphTraversing {
 
+    public static final String HPO_ROOT_TERM = "HP:0000001";
     private final OntologyGraph<TermId> hpoGraph;
+    private final boolean fullOntology;
 
     public OntologyGraph<TermId> getHpoGraph() {
         return hpoGraph;
     }
-    public GraphTraversing(OntologyGraph<TermId> hpoGraph) {
+    public GraphTraversing(OntologyGraph<TermId> hpoGraph, boolean fullOntology) {
         this.hpoGraph = hpoGraph;
+        this.fullOntology = fullOntology;
     }
 
     /**
@@ -38,8 +41,10 @@ class GraphTraversing {
     Set<TermId> initLayer(Set<TermId> hpoTerms){
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true)));
-        // We only want phenotypic abnormalities!
-        initializedLayer.remove(TermId.of("HP:0000001"));
+        if(!fullOntology) {
+            // We only want phenotypic abnormalities!
+            initializedLayer.remove(TermId.of(HPO_ROOT_TERM));
+        }
         return initializedLayer;
     }
 
@@ -47,13 +52,16 @@ class GraphTraversing {
      * Computes the parents of a node and confronts it with a Set of active nodes.
      * If all parents are in the Set of active nodes, the method returns true.
      *
-     * @param node The width of the rectangle.
-     * @param activeNodes The height of the rectangle.
+     * @param node The node which we want to check.
+     * @param activeNodes The reference against which we want to check.
      * @return true if all parents are active, false otherwise.
      */
     public boolean allParentsActive(TermId node, Set<TermId> activeNodes){
         Set<TermId> parents = new HashSet<>();
         parents.addAll( hpoGraph.extendWithParents(node, false));
+        if (parents.isEmpty()){
+            return true; // should only happen for root term
+        }
         parents.removeAll(activeNodes);
         return parents.isEmpty();
     }

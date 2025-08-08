@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class GraphTraversingTest {
 
     GraphTraversing graphTraverser;
-    OntologyGraph<TermId> hpoGraph;
 
     // TODO: Daniel suggests using Extensions API rather then TestBase and extensions thereof, more modern.
     @BeforeAll
@@ -32,7 +31,7 @@ class GraphTraversingTest {
             InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-05-06.json.gz")))
         ) {
             OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
-            this.graphTraverser = new GraphTraversing(hpoGraph);
+            this.graphTraverser = new GraphTraversing(hpoGraph, false);
         }
     }
 
