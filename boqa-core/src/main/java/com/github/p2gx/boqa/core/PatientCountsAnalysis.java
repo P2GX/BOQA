@@ -1,0 +1,40 @@
+package com.github.p2gx.boqa.core;
+
+import java.util.List;
+
+/**
+ * An implementation of the {@link Analysis} interface for a single patient.
+ * This class uses a shared {@link Counter} object to compute {@link BoqaCounts}
+ * for all diseases and stores the result in an {@link AnalysisResults} instance.
+ * <p>
+ * Each instance corresponds to one patient. The analysis generates
+ * disease-wise {@code BoqaCounts}, through which are diseases probabilities
+ * are computed at a later step.
+ */
+public class PatientCountsAnalysis implements Analysis {
+
+    private final Counter counter;
+    private final AnalysisResults results;
+
+    public PatientCountsAnalysis(PatientData queryData, Counter counter) {
+        this.results = new AnalysisResults(queryData);
+        this.counter = counter;
+    }
+
+    @Override
+    public void run() {
+        List<BoqaCounts> countsList = counter.getDiseaseIds()
+                .parallelStream() // much faster!
+                .map(dId ->  counter.computeBoqaCounts(
+                        dId,
+                        results.getPatientData().getObservedTerms()
+                ))
+                .toList();
+        countsList.forEach(results::addBoqaCounts);
+    }
+
+    @Override
+    public AnalysisResults getResults() {
+       return this.results;
+    }
+}

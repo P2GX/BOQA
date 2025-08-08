@@ -12,9 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
@@ -83,7 +81,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
             stream.map(Path::of).forEach(singleFile -> {
-                Analysis analysis = new AnalysisDummy(new PhenopacketReader(singleFile), counter);
+                Analysis analysis = new PatientCountsAnalysis(new PhenopacketReader(singleFile), counter);
                 analysis.run();
                 analysisResults.add(analysis.getResults());
             });

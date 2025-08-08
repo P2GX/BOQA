@@ -1,6 +1,5 @@
 package com.github.p2gx.boqa.core;
 
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,9 +49,9 @@ public class AnalysisResults {
     }
 
     private static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
-        return Math.pow(alpha, counts.fpExponent())*
-                Math.pow(beta, counts.fnExponent())*
-                Math.pow(1-alpha, counts.tnExponent())*
-                Math.pow(1-beta, counts.tpExponent());
+        return Math.pow(alpha, counts.fpBoqaCount())*
+                Math.pow(beta, counts.fnBoqaCount())*
+                Math.pow(1-alpha, counts.tnBoqaCount())*
+                Math.pow(1-beta, counts.tpBoqaCount());
     }
 }

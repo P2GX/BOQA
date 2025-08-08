@@ -2,23 +2,17 @@ package com.github.p2gx.boqa.core;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.RecordComponent;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -107,7 +101,7 @@ class BoqaSetCounterTest {
             throw new IOException("Resource not found: " + jsonFile);
         }
         Path ppkt = Path.of(resourceUrl.toURI());
-        Analysis analysis = new AnalysisDummy(new PhenopacketReader(ppkt), counter);
+        Analysis analysis = new PatientCountsAnalysis(new PhenopacketReader(ppkt), counter);
         analysis.run();
         Map<String, BoqaCounts> boqaCountsMap = analysis.getResults().getBoqaCounts();
         assertEquals(pyboqaCounts, boqaCountsMap.get(diagnosedDiseaseId));

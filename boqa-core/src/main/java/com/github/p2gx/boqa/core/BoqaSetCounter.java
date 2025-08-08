@@ -1,6 +1,7 @@
 package com.github.p2gx.boqa.core;
 
 import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class BoqaSetCounter implements Counter {
     public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph, boolean fullOntology){
         this.graphTraverser = new GraphTraversing(hpoGraph, fullOntology);
         this.diseaseIds = diseaseData.getDiseaseIds();
+        //TermId PHNTABN = TermId.of("HP:123");
         diseaseIds.forEach(
                 d -> diseaseLayers.put(
                         TermId.of(d),
@@ -41,6 +43,7 @@ public class BoqaSetCounter implements Counter {
                                     .getIncludedDiseaseFeatures(d)
                                     .parallelStream()
                                     .map(TermId::of)
+                                    //.filter(tId -> graphTraverser.getHpoGraph().existsPath(tId, PHNTABN)) // filter for is descendant of phenotypic abnoramlity
                                     .collect(Collectors.toSet() )
                         )
                 )
@@ -51,7 +54,7 @@ public class BoqaSetCounter implements Counter {
      * This method computes counts given a disease ID and a patient's observed HPO terms.
      * These counts are related to true/false positives and true/false negatives, and are used to compute the
      * probability that a patient has the input disease. The probability is computed as <p>
-     * P = alpha^tpExponent * beta^fpExponent * (1-alpha)^fnExponent * (1-beta)^tpExponent
+     * P = alpha^tpBoqaCount * beta^fpBoqaCount * (1-alpha)^fnBoqaCount * (1-beta)^tpBoqaCount
      * @param diseaseId
      * @param observedHpos
      * @return BoqaCounts record containing four counts associated to a diseases-patient pair.
@@ -80,7 +83,7 @@ public class BoqaSetCounter implements Counter {
             Set<TermId> children = new HashSet<>(
                     graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
             // Go through all children of ON terms
-            for(TermId child : children){
+            for(TermId child : children){ // TODO consider a set with children of all of the terms
                 // Find those that are off
                 if (!queryLayerInitialized.contains(child)) {
                     // Check if they are also off in the disease Layer
