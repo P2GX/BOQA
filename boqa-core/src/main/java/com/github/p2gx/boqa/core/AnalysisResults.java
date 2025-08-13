@@ -1,6 +1,7 @@
 package com.github.p2gx.boqa.core;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -10,8 +11,13 @@ import java.util.stream.Collectors;
  */
 public class AnalysisResults {
 
+    private double alpha = 1.0/19077; // TODO move elsewhere?
+    private double beta = 0.1; // TODO move elsewhere?
+
     private PatientData patientData;
-    private Map<String, BoqaCounts> boqaCountsMap = new HashMap<>();
+    // Extra record with score to ease development phase without changing future code
+    public record BoqaResult(BoqaCounts counts, Double rawScore) {}
+    private Map<String, BoqaResult> resultsMap = new HashMap<>();
 
     public AnalysisResults(PatientData patientData) {
         this.patientData = patientData;
@@ -20,32 +26,31 @@ public class AnalysisResults {
     public PatientData getPatientData() {
         return patientData;
     }
-
+    public Map<String, BoqaResult> getBoqaResult(){
+        return resultsMap;
+    }
     public Map<String, BoqaCounts> getBoqaCounts() {
+        // Create a new map containing only the BoqaCounts, for testing against pyboqa
+        Map<String, BoqaCounts> boqaCountsMap = new HashMap<>();
+        for (Map.Entry<String, BoqaResult> entry : resultsMap.entrySet()) {
+            boqaCountsMap.put(entry.getKey(), entry.getValue().counts());
+        }
         return boqaCountsMap;
     }
 
-    public void addBoqaCounts(BoqaCounts boqaCounts) {
-        boqaCountsMap.put(boqaCounts.diseaseId(), boqaCounts);
-    }
-
-    private Map<String, Double> computeBoqaScore(String diseaseToTest) {
-        double alpha = 1.0/19077; // TODO move elsewhere
-        double beta = 0.1; // TODO move elsewhere
-        Map<String, Double> probabilityMap = boqaCountsMap.entrySet().stream()
+    public void computeBoqaResults(List<BoqaCounts> boqaCountsList) {
+        Map<String, Double> rawScores = boqaCountsList.stream()
                 .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> computeUnnormalizedProbability(alpha, beta, entry.getValue())
+                        BoqaCounts::diseaseId,
+                        bc -> computeUnnormalizedProbability(alpha, beta, bc)
                 ));
-        double normalizationFactor = probabilityMap.values().stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-        //TODO the following return needs checking
-        return probabilityMap.entrySet().stream()
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue() / normalizationFactor
-                ));
+        double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
+        boqaCountsList.forEach(bc-> {
+            double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
+            resultsMap.put(bc.diseaseId(),
+                    new BoqaResult(bc, normalizedScore)
+            );
+        });
     }
 
     private static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
@@ -54,4 +59,5 @@ public class AnalysisResults {
                 Math.pow(1-alpha, counts.tnBoqaCount())*
                 Math.pow(1-beta, counts.tpBoqaCount());
     }
+
 }

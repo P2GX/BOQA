@@ -23,6 +23,7 @@ public class PatientCountsAnalysis implements Analysis {
 
     @Override
     public void run() {
+        // Compute BoqaCounts for all diseases
         List<BoqaCounts> countsList = counter.getDiseaseIds()
                 .parallelStream() // much faster!
                 .map(dId ->  counter.computeBoqaCounts(
@@ -30,7 +31,8 @@ public class PatientCountsAnalysis implements Analysis {
                         results.getPatientData().getObservedTerms()
                 ))
                 .toList();
-        countsList.forEach(results::addBoqaCounts);
+        // Compute unnormalized probabilities and populate results with BoqaResults
+        results.computeBoqaResults(countsList);
     }
 
     @Override

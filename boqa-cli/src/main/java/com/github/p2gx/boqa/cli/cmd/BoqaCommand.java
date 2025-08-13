@@ -97,7 +97,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
                     System.out.println("Observed HPOs: " + result.getPatientData().getObservedTerms());
                     System.out.println("Excluded HPOs: " + result.getPatientData().getExcludedTerms());
 
-                    String boqaStr = result.getBoqaCounts().toString();
+                    String boqaStr = result.getBoqaResult().toString();
                     int n = 200; // number of chars to print
                     String shortBoqaStr = boqaStr.length() > n ? boqaStr.substring(0, n) + "..." : boqaStr;
                     System.out.println("\nBoqaCounts (first " + n + " chars): " + shortBoqaStr);
