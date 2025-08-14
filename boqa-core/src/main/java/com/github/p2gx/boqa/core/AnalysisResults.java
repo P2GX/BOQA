@@ -6,19 +6,47 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Bookkeeping class that contains the query along with the results of a BoqaAnalysis.
- * Functions for calculating scores, ranking and reporting should be implemented here.
+ * Bookkeeping class that holds the results of a Boqa Analysis for a single patient.
+ *
+ * <p>This class stores:
+ * <ul>
+ *   <li>The input {@link PatientData} used for analysis.</li>
+ *   <li>Computed {@link BoqaCounts} for each disease.</li>
+ *   <li>Associated BOQA scores, normalized across all diseases.</li>
+ * </ul>
+ *
+ * <p>Provides methods for:
+ * <ul>
+ *   <li>Retrieving counts and scores for all diseases.</li>
+ *   <li>Computing un-normalized and normalized BOQA probabilities from counts.</li>
+ * </ul>
+ *
+ * <p>Scores are stored alongside counts in a {@link BoqaResult} record
+ * to allow flexible experimentation without altering the primary counts structure.
+ *
+ * <p><strong>Thread-safety:</strong> Results are stored in a HashMap (mutable) without synchronization,
+ * so multiple threads accessing it may cause problem. This class is not thread-safe. Results should be computed
+ * and accessed in a single-threaded context or with external synchronization.
  */
 public class AnalysisResults {
 
-    private double alpha = 1.0/19077; // TODO move elsewhere?
-    private double beta = 0.1; // TODO move elsewhere?
-
     private PatientData patientData;
-    // Extra record with score to ease development phase without changing future code
+    /**
+     * Extra record with wrapping around {@link BoqaCounts} and adding the score.
+     *
+     * <p> Useful to ease development phase without changing future code.
+     *
+     * @param counts    The BOQA counts for a disease.
+     * @param boqaScore The normalized BOQA score for that disease.
+     */
     public record BoqaResult(BoqaCounts counts, Double boqaScore) {}
     private Map<String, BoqaResult> resultsMap = new HashMap<>();
 
+    /**
+     * Constructs a new results container for a given patient.
+     *
+     * @param patientData The patient data used to compute BOQA scores.
+     */
     public AnalysisResults(PatientData patientData) {
         this.patientData = patientData;
     }
@@ -29,8 +57,14 @@ public class AnalysisResults {
     public Map<String, BoqaResult> getBoqaResult(){
         return resultsMap;
     }
+
+    /**
+     * Returns only a copy of the {@link BoqaCounts} for each disease, discarding scores.
+     * <p>Useful for comparing counts against the pyboqa implementation.
+     *
+     * @return A map from disease ID to {@link BoqaCounts}.
+     */
     public Map<String, BoqaCounts> getBoqaCounts() {
-        // Create a new map containing only the BoqaCounts, for testing against pyboqa
         Map<String, BoqaCounts> boqaCountsMap = new HashMap<>();
         for (Map.Entry<String, BoqaResult> entry : resultsMap.entrySet()) {
             boqaCountsMap.put(entry.getKey(), entry.getValue().counts());
@@ -38,11 +72,25 @@ public class AnalysisResults {
         return boqaCountsMap;
     }
 
+    /**
+     * Computes normalized BOQA scores (probabilities) from a list of {@link BoqaCounts}.
+     *
+     * <p>This method:
+     * <ol>
+     *   <li>Computes un-normalized probabilities for each disease.</li>
+     *   <li>Normalizes them by dividing by the sum across all diseases.</li>
+     *   <li>Stores the resulting {@link BoqaResult} in {@code resultsMap}.</li>
+     * </ol>
+     * <p>
+     * TODO consider using again pyboqa scores results, but this is trivial at this point
+     *
+     * @param boqaCountsList List of BoqaCounts for all diseases in the analysis.
+     */
     public void computeBoqaResults(List<BoqaCounts> boqaCountsList) {
         Map<String, Double> rawScores = boqaCountsList.stream()
                 .collect(Collectors.toMap(
                         BoqaCounts::diseaseId,
-                        bc -> computeUnnormalizedProbability(alpha, beta, bc)
+                        bc -> computeUnnormalizedProbability(AlgorithmParameters.ALPHA, AlgorithmParameters.BETA, bc)
                 ));
         double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
         boqaCountsList.forEach(bc-> {
@@ -53,6 +101,14 @@ public class AnalysisResults {
         });
     }
 
+    /**
+     * Computes the un-normalized BOQA probability for a given set of BoqaCounts and parameters.
+     *
+     * @param alpha  False positive rate parameter.
+     * @param beta   False negative rate parameter.
+     * @param counts The {@link BoqaCounts} for a disease.
+     * @return The un-normalized probability score.
+     */
     static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
         return Math.pow(alpha, counts.fpBoqaCount())*
                 Math.pow(beta, counts.fnBoqaCount())*
