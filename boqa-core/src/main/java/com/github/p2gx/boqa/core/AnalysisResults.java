@@ -16,7 +16,7 @@ public class AnalysisResults {
 
     private PatientData patientData;
     // Extra record with score to ease development phase without changing future code
-    public record BoqaResult(BoqaCounts counts, Double rawScore) {}
+    public record BoqaResult(BoqaCounts counts, Double boqaScore) {}
     private Map<String, BoqaResult> resultsMap = new HashMap<>();
 
     public AnalysisResults(PatientData patientData) {
@@ -53,7 +53,7 @@ public class AnalysisResults {
         });
     }
 
-    private static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
+    static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
         return Math.pow(alpha, counts.fpBoqaCount())*
                 Math.pow(beta, counts.fnBoqaCount())*
                 Math.pow(1-alpha, counts.tnBoqaCount())*
