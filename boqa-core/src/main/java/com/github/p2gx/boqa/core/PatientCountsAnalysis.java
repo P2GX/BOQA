@@ -16,21 +16,23 @@ public class PatientCountsAnalysis implements Analysis {
     private final Counter counter;
     private final AnalysisResults results;
 
-    public PatientCountsAnalysis(PatientData queryData, Counter counter) {
-        this.results = new AnalysisResults(queryData);
+    public PatientCountsAnalysis(PatientData patientData, Counter counter) {
+        this.results = new AnalysisResults(patientData);
         this.counter = counter;
     }
 
     @Override
     public void run() {
+        // Compute BoqaCounts for all diseases
         List<BoqaCounts> countsList = counter.getDiseaseIds()
                 .parallelStream() // much faster!
                 .map(dId ->  counter.computeBoqaCounts(
                         dId,
-                        results.getPatientData().getObservedTerms()
+                        results.getPatientData()
                 ))
                 .toList();
-        countsList.forEach(results::addBoqaCounts);
+        // Compute normalized probabilities and populate results with BoqaResults
+        results.computeBoqaResults(countsList);
     }
 
     @Override

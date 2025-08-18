@@ -22,7 +22,7 @@ public class CounterDummy implements Counter{
 
 
     @Override
-    public BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos) {
+    public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
         return new BoqaCounts(diseaseId, 10, 10, 10, 10);
     }
 

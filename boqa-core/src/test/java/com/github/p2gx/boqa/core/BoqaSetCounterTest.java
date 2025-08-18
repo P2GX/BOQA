@@ -37,11 +37,6 @@ class BoqaSetCounterTest {
         counter = new BoqaSetCounter(diseaseData, hpoGraph, true);
     }
 
-    @AfterAll
-    static void disableTestMode() {
-        System.clearProperty("test.mode");
-    }
-
     @Tag("expensive_test")
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvFileSource(
