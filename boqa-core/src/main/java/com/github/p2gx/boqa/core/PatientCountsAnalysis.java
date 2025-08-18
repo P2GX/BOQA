@@ -16,8 +16,8 @@ public class PatientCountsAnalysis implements Analysis {
     private final Counter counter;
     private final AnalysisResults results;
 
-    public PatientCountsAnalysis(PatientData queryData, Counter counter) {
-        this.results = new AnalysisResults(queryData);
+    public PatientCountsAnalysis(PatientData patientData, Counter counter) {
+        this.results = new AnalysisResults(patientData);
         this.counter = counter;
     }
 
@@ -28,10 +28,10 @@ public class PatientCountsAnalysis implements Analysis {
                 .parallelStream() // much faster!
                 .map(dId ->  counter.computeBoqaCounts(
                         dId,
-                        results.getPatientData().getObservedTerms()
+                        results.getPatientData()
                 ))
                 .toList();
-        // Compute unnormalized probabilities and populate results with BoqaResults
+        // Compute normalized probabilities and populate results with BoqaResults
         results.computeBoqaResults(countsList);
     }
 

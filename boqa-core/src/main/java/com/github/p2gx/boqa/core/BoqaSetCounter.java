@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 /**
  * This class initializes all disease layers through its constructor, i.e. it computes the full induced HPO graph via
  * disease-phenotype annotations for all diseases. <p>
- * Its method {@link #computeBoqaCounts(String, Set<TermId>) ComputeBoqaCounts} contains the BOQA algorithm which, for
+ * Its method {@link #computeBoqaCounts(String, PatientData) ComputeBoqaCounts} contains the BOQA algorithm which, for
  * a given set of observed HPO terms as TermIds belonging to a patient, counts the four integers needed to compute each
  * disease's probability, see also the record {@link BoqaCounts BoqaCounts}.
  * <p>
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
 
-    private GraphTraversing graphTraverser;
+    private final GraphTraversing graphTraverser;
     private final Map<TermId, Set<TermId>> diseaseLayers = new HashMap<>();
     private final Set<String> diseaseIds;
 
@@ -34,7 +34,7 @@ public class BoqaSetCounter implements Counter {
     public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph, boolean fullOntology){
         this.graphTraverser = new GraphTraversing(hpoGraph, fullOntology);
         this.diseaseIds = diseaseData.getDiseaseIds();
-        //TermId PHNTABN = TermId.of("HP:123");
+        TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
         diseaseIds.forEach(
                 d -> diseaseLayers.put(
                         TermId.of(d),
@@ -43,7 +43,9 @@ public class BoqaSetCounter implements Counter {
                                     .getIncludedDiseaseFeatures(d)
                                     .parallelStream()
                                     .map(TermId::of)
-                                    //.filter(tId -> graphTraverser.getHpoGraph().existsPath(tId, PHNTABN)) // filter for is descendant of phenotypic abnoramlity
+                                    .filter(tId -> fullOntology || graphTraverser // only filter when fullOntology is false
+                                            .getHpoGraph()
+                                            .isDescendantOf(tId, PHENOTYPIC_ABNORMALITY)) // filter for descendants
                                     .collect(Collectors.toSet() )
                         )
                 )
@@ -56,11 +58,12 @@ public class BoqaSetCounter implements Counter {
      * probability that a patient has the input disease. The probability is computed as <p>
      * P = alpha^tpBoqaCount * beta^fpBoqaCount * (1-alpha)^fnBoqaCount * (1-beta)^tpBoqaCount
      * @param diseaseId
-     * @param observedHpos
+     * @param patientData
      * @return BoqaCounts record containing four counts associated to a diseases-patient pair.
      */
     @Override
-    public BoqaCounts computeBoqaCounts(String diseaseId, Set<TermId> observedHpos){
+    public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData){
+        Set<TermId> observedHpos = patientData.getObservedTerms();
         Set<TermId> queryLayerInitialized = graphTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
         Set<TermId> intersection = new HashSet<>(diseaseLayer); // use copy constructor
