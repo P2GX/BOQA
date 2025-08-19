@@ -111,6 +111,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
         Given an HPOA frequency string like "1/4", "20%" or “2.5”, return a float like 0.2, 0.205 or 0.25.
         */
         double freqFloat;
+        freqString = freqString.trim();
         if (Pattern.matches("\\d{1,}/\\d{1,}", freqString)) {
             // E.g., 1/4
             double numerator = Integer.parseInt(freqString.split("/")[0]);
