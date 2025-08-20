@@ -1,8 +1,6 @@
 package com.github.p2gx.boqa.core;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,8 +37,17 @@ public class AnalysisResults {
      * @param counts    The BOQA counts for a disease.
      * @param boqaScore The normalized BOQA score for that disease.
      */
-    public record BoqaResult(BoqaCounts counts, Double boqaScore) {}
+    public record BoqaResult(BoqaCounts counts, Double boqaScore) implements Comparable<BoqaResult>{
+        @Override
+        public int compareTo(BoqaResult other) {
+            return this.boqaScore.compareTo(other.boqaScore);
+        }
+    }
     private Map<String, BoqaResult> resultsMap = new HashMap<>();
+
+    // TODO consider getting rid of state here and making the function static
+    private List<BoqaResult> resultsList = new ArrayList<>();
+
 
     /**
      * Constructs a new results container for a given patient.
@@ -116,4 +123,20 @@ public class AnalysisResults {
                 Math.pow(1-beta, counts.tpBoqaCount());
     }
 
+
+    public void computeBoqaListResults(List<BoqaCounts> boqaCountsList) {
+        //ArrayList<BoqaResult> resultsList = new ArrayList<>();
+        Map<String, Double> rawScores = boqaCountsList.stream()
+                .collect(Collectors.toMap(
+                        BoqaCounts::diseaseId,
+                        bc -> computeUnnormalizedProbability(AlgorithmParameters.ALPHA, AlgorithmParameters.BETA, bc)
+                ));
+        double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
+        boqaCountsList.forEach(bc-> {
+            double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
+            resultsList.add(new BoqaResult(bc, normalizedScore));
+        });
+        Collections.sort(resultsList);
+        //return resultList;
+    }
 }
