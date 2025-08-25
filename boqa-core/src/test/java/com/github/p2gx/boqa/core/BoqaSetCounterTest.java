@@ -82,9 +82,10 @@ class BoqaSetCounterTest {
         int fnExpInt = Integer.parseInt(fnExp.trim());
         int tpExpInt = Integer.parseInt(tpExp.trim());
         int fpExpInt = Integer.parseInt(fpExp.trim());
-
+        HashMap<String,String> idToLabel = diseaseData.getIdToLabel();
         BoqaCounts pyboqaCounts = new BoqaCounts(
                 diagnosedDiseaseId,
+                idToLabel.get(diagnosedDiseaseId),
                 tpExpInt,
                 fpExpInt,
                 tnExpInt,

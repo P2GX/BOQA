@@ -40,14 +40,15 @@ public class AnalysisResults {
     public record BoqaResult(BoqaCounts counts, Double boqaScore) implements Comparable<BoqaResult>{
         @Override
         public int compareTo(BoqaResult other) {
-            return this.boqaScore.compareTo(other.boqaScore);
+            return other.boqaScore.compareTo(this.boqaScore);
         }
     }
-    private Map<String, BoqaResult> resultsMap = new HashMap<>();
 
     // TODO consider getting rid of state here and making the function static
-    private List<BoqaResult> resultsList = new ArrayList<>();
-
+    private final List<BoqaResult> resultsList = new ArrayList<>();
+    public List<BoqaResult> getBoqaResults() {
+        return resultsList;
+    }
 
     /**
      * Constructs a new results container for a given patient.
@@ -60,9 +61,6 @@ public class AnalysisResults {
 
     public PatientData getPatientData() {
         return patientData;
-    }
-    public Map<String, BoqaResult> getBoqaResult(){
-        return resultsMap;
     }
 
     /**
@@ -87,14 +85,15 @@ public class AnalysisResults {
      * <ol>
      *   <li>Computes un-normalized probabilities for each disease.</li>
      *   <li>Normalizes them by dividing by the sum across all diseases.</li>
-     *   <li>Stores the resulting {@link BoqaResult} in {@code resultsMap}.</li>
+     *   <li>Stores the resulting {@link BoqaResult} in {@code resultsList}, sorted by boqaScore.</li>
      * </ol>
      * <p>
      * TODO consider using again pyboqa scores results, but this is trivial at this point
      *
      * @param boqaCountsList List of BoqaCounts for all diseases in the analysis.
      */
-    public void computeBoqaResults(List<BoqaCounts> boqaCountsList) {
+    public void computeBoqaListResults(List<BoqaCounts> boqaCountsList) {
+        //ArrayList<BoqaResult> resultsList = new ArrayList<>();
         Map<String, Double> rawScores = boqaCountsList.stream()
                 .collect(Collectors.toMap(
                         BoqaCounts::diseaseId,
@@ -103,10 +102,10 @@ public class AnalysisResults {
         double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
         boqaCountsList.forEach(bc-> {
             double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
-            resultsMap.put(bc.diseaseId(),
-                    new BoqaResult(bc, normalizedScore)
-            );
+            resultsList.add(new BoqaResult(bc, normalizedScore));
         });
+        Collections.sort(resultsList);
+        //return resultList;
     }
 
     /**
@@ -125,19 +124,5 @@ public class AnalysisResults {
     }
 
 
-    public void computeBoqaListResults(List<BoqaCounts> boqaCountsList) {
-        //ArrayList<BoqaResult> resultsList = new ArrayList<>();
-        Map<String, Double> rawScores = boqaCountsList.stream()
-                .collect(Collectors.toMap(
-                        BoqaCounts::diseaseId,
-                        bc -> computeUnnormalizedProbability(AlgorithmParameters.ALPHA, AlgorithmParameters.BETA, bc)
-                ));
-        double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
-        boqaCountsList.forEach(bc-> {
-            double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
-            resultsList.add(new BoqaResult(bc, normalizedScore));
-        });
-        Collections.sort(resultsList);
-        //return resultList;
-    }
+
 }

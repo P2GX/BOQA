@@ -29,9 +29,14 @@ public class BoqaSetCounter implements Counter {
     private final GraphTraversing graphTraverser;
     private final Map<TermId, Set<TermId>> diseaseLayers = new HashMap<>();
     private final Set<String> diseaseIds;
+    private final Map<String, String> idToLabel;
 
     // TODO for each disease in diseaseData compute ancestors OR load from disk
-    public BoqaSetCounter(DiseaseData diseaseData, OntologyGraph<TermId> hpoGraph, boolean fullOntology){
+    public BoqaSetCounter(DiseaseData diseaseData,
+                          OntologyGraph<TermId> hpoGraph,
+                          boolean fullOntology
+    ){
+        this.idToLabel = diseaseData.getIdToLabel();
         this.graphTraverser = new GraphTraversing(hpoGraph, fullOntology);
         this.diseaseIds = diseaseData.getDiseaseIds();
         TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
@@ -103,7 +108,7 @@ public class BoqaSetCounter implements Counter {
                 }
             }
         }
-        return new BoqaCounts(diseaseId, intersection.size(), falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), intersection.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override

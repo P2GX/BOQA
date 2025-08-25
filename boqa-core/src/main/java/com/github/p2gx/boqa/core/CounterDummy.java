@@ -23,7 +23,7 @@ public class CounterDummy implements Counter{
 
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
-        return new BoqaCounts(diseaseId, 10, 10, 10, 10);
+        return new BoqaCounts(diseaseId, "unimportantHere", 10, 10, 10, 10);
     }
 
     @Override

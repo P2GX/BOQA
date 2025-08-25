@@ -104,37 +104,18 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         } catch (IOException e) {
             LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
         }
-        diseaseData.getIdToLabel();
 
-
-        //GPT STARTS HERE
-        // Get CLI args as string
-        String cliArgs = spec.commandLine().getParseResult().originalArgs()
-                .stream().collect(Collectors.joining(" "));
-
-        // Write everything
-        ResultWriter.writeResults(
+        String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
+        Writer writer = new JsonResultWriter();
+        writer.writeResults(
                 analysisResults,
+                Paths.get(ontologyFile).toFile(),
+                phenotypeAnnotationFile.toFile(),
                 cliArgs,
                 Map.of("alpha", AlgorithmParameters.ALPHA, "beta", AlgorithmParameters.BETA),
                 outFile
         );
 
-        //GPT ENDS HERE
-
-        // TODO This is just a placeholder to print out something to look at
-        analysisResults.stream()
-                .findFirst()
-                .ifPresent(result -> {
-                    System.out.println("\n\nPatientData\nPhenopacket ID: " + result.getPatientData().getID());
-                    System.out.println("Observed HPOs: " + result.getPatientData().getObservedTerms());
-                    System.out.println("Excluded HPOs: " + result.getPatientData().getExcludedTerms());
-
-                    String boqaStr = result.getBoqaResult().toString();
-                    int n = 200; // number of chars to print
-                    String shortBoqaStr = boqaStr.length() > n ? boqaStr.substring(0, n) + "..." : boqaStr;
-                    System.out.println("\nBoqaCounts (first " + n + " chars): " + shortBoqaStr);
-                });
         return 0;
     }
 }

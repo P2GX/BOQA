@@ -56,7 +56,7 @@ class AnalysisResultsTest {
         double expectedScore = Double.parseDouble(score);
 
         // Initialize BoqaCounts
-        BoqaCounts counts = new BoqaCounts("unimportantId", count1mb, countA, count1ma, countB);
+        BoqaCounts counts = new BoqaCounts("idIsUnimportant", "labelIsUnimportant", count1mb, countA, count1ma, countB);
         double actualScore = computeUnnormalizedProbability(alphaVal, betaVal, counts);
 
         // Assert with small delta for floating-point comparison
