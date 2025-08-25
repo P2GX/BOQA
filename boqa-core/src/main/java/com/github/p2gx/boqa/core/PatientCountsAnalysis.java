@@ -31,8 +31,6 @@ public class PatientCountsAnalysis implements Analysis {
                         results.getPatientData()
                 ))
                 .toList();
-        //results.computeBoqaResults(countsList);
-        // List<AnalysisResults.BoqaResult> resultsList = ...
 
         // Compute normalized probabilities and populate results with BoqaResults
         results.computeBoqaListResults(countsList);

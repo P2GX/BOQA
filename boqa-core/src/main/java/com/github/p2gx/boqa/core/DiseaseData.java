@@ -1,5 +1,6 @@
 package com.github.p2gx.boqa.core;
 
+import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -9,7 +10,6 @@ import java.util.Set;
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
 public interface DiseaseData {
-
     // Return number of diseases in dictionary
     int size();
 
@@ -30,4 +30,9 @@ public interface DiseaseData {
 
     // Return gene symbols associated with a disease
     Set<String> getDiseaseGeneSymbols(String diseaseId);
+
+    default HashMap<String, String> getIdToLabel() {
+        return new HashMap<>();
+    };
+
 }

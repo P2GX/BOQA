@@ -21,6 +21,13 @@ public class DiseaseDataParseIngest implements DiseaseData {
     List<String> hpoFreqTermList;
     List<String> hpoExcludedHpoFreqTermList;
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
+
+    @Override
+    public HashMap<String, String> getIdToLabel() {
+        return idToLabel;
+    }
+
+    HashMap<String, String> idToLabel = new HashMap<>();;
     HashMap<String, String> geneIdToSymbolDict;
 
     /**
@@ -78,6 +85,8 @@ public class DiseaseDataParseIngest implements DiseaseData {
                 break;
             }
             String disease_id = fields[0];
+            String disease_label = fields[1];
+            this.idToLabel.put(disease_id, disease_label);
             String qualifier = fields[2];
             String hpo_id = fields[3];
             String frequency = fields[7];

@@ -1,5 +1,7 @@
 package com.github.p2gx.boqa.cli.cmd;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.p2gx.boqa.core.*;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -7,17 +9,22 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
+import picocli.CommandLine.Model.CommandSpec;
+import picocli.CommandLine.Spec;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.nio.file.Files.lines;
 
 @CommandLine.Command(
         name = "plain",
@@ -26,6 +33,9 @@ import static java.nio.file.Files.lines;
         sortOptions = false)
 public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
+
+    @Spec
+    CommandSpec spec;
 
     @CommandLine.Option(
             names={"-dp","--disease-phenotype-associations"},
@@ -63,11 +73,17 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             defaultValue = "1")
     private int numOfProcesses;
 
+    @CommandLine.Option(
+            names = "--out",
+            description = "Output JSON file",
+            required = true)
+    File outFile;
 
     public BoqaCommand(){}
 
     @Override
     public Integer call() throws Exception {
+
         //TODO Ielis suggests to only load the ontology once at the beginning, change DiseasesData
         OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile()).graph();
 
@@ -88,6 +104,23 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         } catch (IOException e) {
             LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
         }
+        diseaseData.getIdToLabel();
+
+
+        //GPT STARTS HERE
+        // Get CLI args as string
+        String cliArgs = spec.commandLine().getParseResult().originalArgs()
+                .stream().collect(Collectors.joining(" "));
+
+        // Write everything
+        ResultWriter.writeResults(
+                analysisResults,
+                cliArgs,
+                Map.of("alpha", AlgorithmParameters.ALPHA, "beta", AlgorithmParameters.BETA),
+                outFile
+        );
+
+        //GPT ENDS HERE
 
         // TODO This is just a placeholder to print out something to look at
         analysisResults.stream()

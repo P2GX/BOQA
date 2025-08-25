@@ -73,8 +73,9 @@ public class AnalysisResults {
      */
     public Map<String, BoqaCounts> getBoqaCounts() {
         Map<String, BoqaCounts> boqaCountsMap = new HashMap<>();
-        for (Map.Entry<String, BoqaResult> entry : resultsMap.entrySet()) {
-            boqaCountsMap.put(entry.getKey(), entry.getValue().counts());
+        for (BoqaResult result : resultsList) {
+            String id = result.counts.diseaseId();
+            boqaCountsMap.put(id, result.counts());
         }
         return boqaCountsMap;
     }
