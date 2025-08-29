@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.patient;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,7 +34,8 @@ class PhenopacketDataTest {
         };
         for (String filename : filenames) {
             try {
-                URL resourceUrl = PhenopacketDataTest.class.getResource("phenopackets/" + filename);
+                URL resourceUrl = PhenopacketDataTest.class
+                        .getResource("/com/github/p2gx/boqa/core/phenopackets/" + filename);
                 if (resourceUrl == null) {
                     throw new IOException("Resource not found: " + filename);
                 }
@@ -53,8 +54,8 @@ class PhenopacketDataTest {
     @Test
     void testGetObservedTerms() throws IOException, URISyntaxException {
         // Read the line from a file (assuming it's all on one line)
-        String csvLine = Files.readString(Path.of(PhenopacketDataTest.class.
-                getResource("PMID_30569521_proband_features.csv").toURI())).trim();
+        String csvLine = Files.readString(Path.of(PhenopacketDataTest.class
+                .getResource("PMID_30569521_proband_features.csv").toURI())).trim();
         // Convert to Set<String>
         Set<TermId> termSet = Arrays.stream(csvLine.split(","))
                 .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes

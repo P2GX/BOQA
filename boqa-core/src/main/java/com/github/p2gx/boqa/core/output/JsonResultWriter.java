@@ -1,8 +1,10 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.output;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.p2gx.boqa.core.Writer;
+import com.github.p2gx.boqa.core.analysis.AnalysisResults;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +13,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
 
-public class JsonResultWriter implements Writer{
+public class JsonResultWriter implements Writer {
 
     @Override
     public void writeResults(Set<AnalysisResults> analysisResults,

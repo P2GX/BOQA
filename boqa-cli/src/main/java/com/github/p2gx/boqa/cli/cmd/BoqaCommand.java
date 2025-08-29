@@ -1,8 +1,13 @@
 package com.github.p2gx.boqa.cli.cmd;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.p2gx.boqa.core.*;
+import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
+import com.github.p2gx.boqa.core.algorithm.BoqaSetCounter;
+import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis;
+import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.output.JsonResultWriter;
+import com.github.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -17,12 +22,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 

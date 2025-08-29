@@ -1,4 +1,6 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.diseases;
+
+import com.github.p2gx.boqa.core.DiseaseData;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +17,7 @@ import java.util.stream.Collectors;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-public class BlendedDiseaseData implements DiseaseData{
+public class BlendedDiseaseData implements DiseaseData {
 
     private final DiseaseData plainDiseaseData;
     HashMap<String, HashMap<String, Set<String>>> blendedDiseaseFeaturesDict;

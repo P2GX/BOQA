@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.algorithm;
 
 /**
  * Global BOQA configuration parameters.

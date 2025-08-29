@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.output;
 
 import java.util.Map;
 

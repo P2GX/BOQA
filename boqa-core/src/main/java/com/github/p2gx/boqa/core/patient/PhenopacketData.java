@@ -1,6 +1,7 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.patient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.p2gx.boqa.core.PatientData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.Disease;

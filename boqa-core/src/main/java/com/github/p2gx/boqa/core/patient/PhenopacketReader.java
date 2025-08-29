@@ -1,25 +1,18 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.patient;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import org.phenopackets.schema.v2.Phenopacket;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import com.google.protobuf.util.JsonFormat;
 import org.json.simple.parser.ParseException;
-import org.phenopackets.schema.v2.core.*;
 
 public class PhenopacketReader {
 

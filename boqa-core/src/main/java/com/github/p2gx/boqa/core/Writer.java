@@ -1,6 +1,7 @@
 package com.github.p2gx.boqa.core;
 
-import java.util.HashMap;
+import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+
 import java.util.Set;
 import java.util.Map;
 import java.io.File;

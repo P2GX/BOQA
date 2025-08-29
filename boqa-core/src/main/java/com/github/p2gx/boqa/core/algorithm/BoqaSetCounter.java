@@ -1,12 +1,13 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.algorithm;
 
+import com.github.p2gx.boqa.core.Counter;
+import com.github.p2gx.boqa.core.DiseaseData;
+import com.github.p2gx.boqa.core.PatientData;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
-import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 

@@ -1,5 +1,10 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.algorithm;
 
+import com.github.p2gx.boqa.core.Analysis;
+import com.github.p2gx.boqa.core.Counter;
+import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis;
+import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
@@ -26,11 +31,13 @@ class BoqaSetCounterTest {
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream annotationStream = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
+        try (InputStream annotationStream = new GZIPInputStream(BoqaSetCounterTest.class
+                .getResourceAsStream("/com/github/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
             diseaseData = new DiseaseDataParseIngest(annotationStream);
         }
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-05-06.json.gz")))
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
+                    .getResourceAsStream("/com/github/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
             hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
         }
@@ -92,7 +99,8 @@ class BoqaSetCounterTest {
                 fnExpInt
         );
 
-        URL resourceUrl = PhenopacketDataTest.class.getResource("phenopackets/" + jsonFile);
+        URL resourceUrl = BoqaSetCounterTest.class
+                .getResource("/com/github/p2gx/boqa/core/phenopackets/" + jsonFile);
         if (resourceUrl == null) {
             throw new IOException("Resource not found: " + jsonFile);
         }

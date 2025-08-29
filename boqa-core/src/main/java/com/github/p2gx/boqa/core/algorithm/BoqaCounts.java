@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.algorithm;
 
 /**
  * Java record containing the exponents of alpha, beta, 1-alpha, 1-beta

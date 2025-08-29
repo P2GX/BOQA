@@ -1,4 +1,8 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.analysis;
+
+import com.github.p2gx.boqa.core.PatientData;
+import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
+import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.diseases;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,10 +17,12 @@ class BlendedDiseaseDataTest {
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
+        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.
+                getResourceAsStream("/com/github/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
             testDiseaseData = new DiseaseDataParseIngest(is);
         }
-        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("genes_to_disease.txt.gz"))) {
+        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.
+                getResourceAsStream("/com/github/p2gx/boqa/core/genes_to_disease.txt.gz"))) {
             testDiseaseData.addDiseaseGeneAssociations(is);
         }
     }

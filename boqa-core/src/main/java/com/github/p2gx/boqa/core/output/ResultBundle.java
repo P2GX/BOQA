@@ -1,4 +1,6 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.output;
+import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+
 import java.util.Set;
 
 public class ResultBundle {

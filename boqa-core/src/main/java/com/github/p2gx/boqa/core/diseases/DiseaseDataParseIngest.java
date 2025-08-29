@@ -1,5 +1,6 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.diseases;
 
+import com.github.p2gx.boqa.core.DiseaseData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

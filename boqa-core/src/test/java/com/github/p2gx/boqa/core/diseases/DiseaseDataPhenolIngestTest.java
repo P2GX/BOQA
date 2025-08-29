@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.diseases;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -32,8 +32,10 @@ class DiseaseDataPhenolIngestTest {
     @BeforeAll
     static void setup() throws IOException {
         try (
-            InputStream ontologyStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class.getResourceAsStream("hp.v2025-05-06.json.gz"));
-            InputStream annotationStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"));
+            InputStream ontologyStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
+                    .getResourceAsStream("/com/github/p2gx/boqa/core/hp.v2025-05-06.json.gz"));
+            InputStream annotationStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
+                    .getResourceAsStream("/com/github/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"));
         ) {
             testDiseaseDict = new DiseaseDataPhenolIngest(ontologyStream, annotationStream);
         }

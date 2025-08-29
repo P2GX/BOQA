@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.algorithm;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -28,7 +28,8 @@ class GraphTraversingTest {
     @BeforeAll
     void setUp() throws IOException {
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-05-06.json.gz")))
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
+                    .getResourceAsStream("/com/github/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
             OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
             this.graphTraverser = new GraphTraversing(hpoGraph, false);
