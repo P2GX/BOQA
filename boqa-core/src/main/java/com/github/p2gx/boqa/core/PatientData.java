@@ -16,7 +16,6 @@ import java.util.Set;
  *     <li> Maybe other formats
  * </ul>
  * <p>
- * TODO: Add parameters alpha and beta
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  *

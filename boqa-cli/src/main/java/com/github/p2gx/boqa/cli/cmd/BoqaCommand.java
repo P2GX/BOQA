@@ -97,7 +97,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
             stream.map(Path::of).forEach(singleFile -> {
-                Analysis analysis = new PatientCountsAnalysis(new PhenopacketReader(singleFile), counter);
+                Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(singleFile), counter);
                 analysis.run();
                 analysisResults.add(analysis.getResults());
             });

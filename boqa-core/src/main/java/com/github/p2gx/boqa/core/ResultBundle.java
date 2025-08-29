@@ -2,12 +2,12 @@ package com.github.p2gx.boqa.core;
 import java.util.Set;
 
 public class ResultBundle {
-    private Metadata metadata;
-    private Set<AnalysisResults> results;
+    private final Metadata metadata;
+    private final Set<AnalysisResults> results;
 
-    public ResultBundle(Metadata metadata, Set<AnalysisResults> results) {
+    public ResultBundle(Metadata metadata, Set<AnalysisResults> analysisResults) {
         this.metadata = metadata;
-        this.results = results;
+        this.results = analysisResults;
     }
 
     public Metadata getMetadata() {

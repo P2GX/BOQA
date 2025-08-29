@@ -9,10 +9,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class JsonResultWriter implements Writer{
 
@@ -57,7 +54,6 @@ public class JsonResultWriter implements Writer{
         );
 
         ResultBundle bundle = new ResultBundle(metadata, analysisResults);
-
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.writeValue(outFile, bundle);
     }

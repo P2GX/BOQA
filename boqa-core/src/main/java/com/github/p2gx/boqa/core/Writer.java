@@ -15,5 +15,4 @@ public interface Writer {
                       String cliArgs,
                       Map<String, Object> algorithmParams,
                       File outFile) throws IOException;
-
 }

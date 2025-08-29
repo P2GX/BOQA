@@ -27,7 +27,7 @@ public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
 
     private final GraphTraversing graphTraverser;
-    private final Map<TermId, Set<TermId>> diseaseLayers = new HashMap<>();
+    private final Map<TermId, Set<TermId>> diseaseLayers;
     private final Set<String> diseaseIds;
     private final Map<String, String> idToLabel;
 
@@ -36,12 +36,13 @@ public class BoqaSetCounter implements Counter {
                           OntologyGraph<TermId> hpoGraph,
                           boolean fullOntology
     ){
-        this.idToLabel = diseaseData.getIdToLabel();
-        this.graphTraverser = new GraphTraversing(hpoGraph, fullOntology);
-        this.diseaseIds = diseaseData.getDiseaseIds();
+        this.idToLabel = diseaseData.getIdToLabel(); // TODO make immutable or get rid of this
+        this.graphTraverser = new GraphTraversing(hpoGraph, fullOntology); // immutable?
+        this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds()); // immutable
+        Map<TermId, Set<TermId>> dLayers = new HashMap<>(); // TODO change to stream ?
         TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
         diseaseIds.forEach(
-                d -> diseaseLayers.put(
+                d -> dLayers.put(
                         TermId.of(d),
                         graphTraverser.initLayer(
                             diseaseData
@@ -55,6 +56,7 @@ public class BoqaSetCounter implements Counter {
                         )
                 )
         );
+        this.diseaseLayers = Map.copyOf(dLayers);
     }
 
     /**

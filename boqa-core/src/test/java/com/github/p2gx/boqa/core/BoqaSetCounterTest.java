@@ -92,12 +92,12 @@ class BoqaSetCounterTest {
                 fnExpInt
         );
 
-        URL resourceUrl = PhenopacketReaderTest.class.getResource("phenopackets/" + jsonFile);
+        URL resourceUrl = PhenopacketDataTest.class.getResource("phenopackets/" + jsonFile);
         if (resourceUrl == null) {
             throw new IOException("Resource not found: " + jsonFile);
         }
         Path ppkt = Path.of(resourceUrl.toURI());
-        Analysis analysis = new PatientCountsAnalysis(new PhenopacketReader(ppkt), counter);
+        Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(ppkt), counter);
         analysis.run();
         Map<String, BoqaCounts> boqaCountsMap = analysis.getResults().getBoqaCounts();
         assertEquals(pyboqaCounts, boqaCountsMap.get(diagnosedDiseaseId));
