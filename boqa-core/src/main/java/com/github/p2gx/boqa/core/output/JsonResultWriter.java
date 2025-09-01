@@ -12,28 +12,35 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class JsonResultWriter implements Writer {
 
+    private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+
     @Override
     public void writeResults(Set<AnalysisResults> analysisResults,
-                             Path hpoFile,
-                             Path hpoa,
+                             Path hpoPath,
+                             Path hpoaPath,
                              String cliArgs,
                              Map<String, Object> algorithmParams,
                              Path outPath) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
+        JsonNode root;
+        try (InputStream in = Files.newInputStream(hpoPath)) {
+            root = mapper.readTree(in);
+        }
 
-        JsonNode root = mapper.readTree(hpoFile.toFile());
         String versionUrl = root
                 .path("graphs")
                 .get(0)
                 .path("meta")
                 .path("version")
                 .asText();
+
         String hpoVersion = extractHpVersion(versionUrl);
-        String hpoaVersion = readHpoaVersion(hpoa);
+        String hpoaVersion = readHpoaVersion(hpoaPath);
         String boqaVersion = JsonResultWriter.class
                 .getPackage()
                 .getImplementationVersion();
@@ -63,13 +70,13 @@ public class JsonResultWriter implements Writer {
 
     public static String extractHpVersion(String versionUrl) {
         return Arrays.stream(versionUrl.split("/"))
-                .filter(part -> part.matches("\\d{4}-\\d{2}-\\d{2}"))
+                .filter(part -> DATE_PATTERN.matcher(part).matches())
                 .findFirst()
                 .orElse("unknown");
     }
 
-    public static String readHpoaVersion(Path hpoaFile) throws IOException {
-        try (BufferedReader reader = Files.newBufferedReader(hpoaFile, StandardCharsets.UTF_8)) {
+    public static String readHpoaVersion(Path hpoaPath) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(hpoaPath, StandardCharsets.UTF_8)) {
             return readVersionFromReader(reader);
         }
     }

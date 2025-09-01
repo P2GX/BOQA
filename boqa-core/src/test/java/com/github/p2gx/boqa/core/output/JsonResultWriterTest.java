@@ -24,6 +24,12 @@ class JsonResultWriterTest {
 
     @Test
     void testExtractHpVersion() {
+        assertEquals("2025-05-06", JsonResultWriter.extractHpVersion(
+                "http://purl.obolibrary.org/obo/hp/releases/2025-05-06/hp.json"));
+        assertEquals("unknown", JsonResultWriter.extractHpVersion(
+                "http://purl.obolibrary.org/obo/hp/releases/225-05-06/hp.json"));
+        assertEquals("unknown", JsonResultWriter.extractHpVersion(
+                "http://purl.obolion"));
     }
 
     @Test
