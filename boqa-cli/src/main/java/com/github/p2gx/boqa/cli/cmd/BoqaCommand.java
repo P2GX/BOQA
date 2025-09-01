@@ -82,6 +82,12 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             required = true)
     Path outPath;
 
+    @CommandLine.Option(
+            names = {"-L", "--limit"},
+            description = "Limit number of diseases reported in output.",
+            required = false)
+    Integer resultsLimit;
+
     public BoqaCommand(){}
 
     @Override
@@ -96,11 +102,13 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         // Initialize Counter
         Counter counter = new BoqaSetCounter(diseaseData, hpoGraph, false);
 
+        int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         Set<AnalysisResults> analysisResults = new HashSet<>();
+
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
             stream.map(Path::of).forEach(singleFile -> {
-                Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(singleFile), counter);
+                Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(singleFile), counter, limit);
                 analysis.run();
                 analysisResults.add(analysis.getResults());
             });

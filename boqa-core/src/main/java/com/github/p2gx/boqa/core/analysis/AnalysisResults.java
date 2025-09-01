@@ -1,5 +1,6 @@
 package com.github.p2gx.boqa.core.analysis;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.p2gx.boqa.core.PatientData;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class AnalysisResults {
 
     private PatientData patientData;
+    private final int resultsLimit;
     /**
      * Extra record with wrapping around {@link BoqaCounts} and adding the score.
      *
@@ -59,9 +61,11 @@ public class AnalysisResults {
      *
      * @param patientData The patient data used to compute BOQA scores.
      */
-    public AnalysisResults(PatientData patientData) {
+    public AnalysisResults(PatientData patientData, int resultsLimit) {
         this.patientData = patientData;
+        this.resultsLimit = resultsLimit;
     }
+
 
     public PatientData getPatientData() {
         return patientData;
@@ -73,6 +77,7 @@ public class AnalysisResults {
      *
      * @return A map from disease ID to {@link BoqaCounts}.
      */
+    @JsonIgnore
     public Map<String, BoqaCounts> getBoqaCounts() {
         Map<String, BoqaCounts> boqaCountsMap = new HashMap<>();
         for (BoqaResult result : resultsList) {
@@ -104,11 +109,16 @@ public class AnalysisResults {
                         bc -> computeUnnormalizedProbability(AlgorithmParameters.ALPHA, AlgorithmParameters.BETA, bc)
                 ));
         double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
+        List<BoqaResult> allResults = new ArrayList<>();
         boqaCountsList.forEach(bc-> {
             double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
-            resultsList.add(new BoqaResult(bc, normalizedScore));
+            allResults.add(new BoqaResult(bc, normalizedScore));
         });
-        Collections.sort(resultsList);
+
+        Collections.sort(allResults);
+        resultsList.addAll(allResults.stream()
+                .limit(resultsLimit)
+                .collect(Collectors.toList()));
         //return resultList;
     }
 
@@ -126,7 +136,5 @@ public class AnalysisResults {
                 Math.pow(1-alpha, counts.tnBoqaCount())*
                 Math.pow(1-beta, counts.tpBoqaCount());
     }
-
-
 
 }

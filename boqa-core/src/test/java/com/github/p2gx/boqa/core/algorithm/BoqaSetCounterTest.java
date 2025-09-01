@@ -105,7 +105,8 @@ class BoqaSetCounterTest {
             throw new IOException("Resource not found: " + jsonFile);
         }
         Path ppkt = Path.of(resourceUrl.toURI());
-        Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(ppkt), counter);
+        int limit =  Integer.MAX_VALUE;
+        Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(ppkt), counter, limit);
         analysis.run();
         Map<String, BoqaCounts> boqaCountsMap = analysis.getResults().getBoqaCounts();
         assertEquals(pyboqaCounts, boqaCountsMap.get(diagnosedDiseaseId));

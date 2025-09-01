@@ -21,8 +21,8 @@ public class PatientCountsAnalysis implements Analysis {
     private final Counter counter;
     private final AnalysisResults results;
 
-    public PatientCountsAnalysis(PatientData patientData, Counter counter) {
-        this.results = new AnalysisResults(patientData);
+    public PatientCountsAnalysis(PatientData patientData, Counter counter, int resultsLimit) {
+        this.results = new AnalysisResults(patientData, resultsLimit);
         this.counter = counter;
     }
 

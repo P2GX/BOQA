@@ -1,17 +1,17 @@
 package com.github.p2gx.boqa.core.output;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 class JsonResultWriterTest {
 
     static JsonResultWriter writer;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeAll
     static void setUp() {
@@ -19,7 +19,8 @@ class JsonResultWriterTest {
     }
 
     @Test
-    void testWriteResults() {
+    void testWriteResults(){
+        //TODO add integration test if needed
     }
 
     @Test
@@ -45,7 +46,6 @@ class JsonResultWriterTest {
         // File without a line starting with #version, such as this phenopacket.
         String invalidFile = JsonResultWriter.readHpoaVersion(JsonResultWriterTest.class
                 .getResourceAsStream("/com/github/p2gx/boqa/core/phenopackets/PMID_10077612_FamilyB.json"));
-
         assertEquals("unknown", invalidFile);
     }
 }
