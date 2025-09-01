@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 
@@ -104,6 +105,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         Set<AnalysisResults> analysisResults = new HashSet<>();
+        AtomicInteger fileCount = new AtomicInteger(0);
 
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
@@ -111,6 +113,11 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
                 Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(singleFile), counter, limit);
                 analysis.run();
                 analysisResults.add(analysis.getResults());
+
+                int count = fileCount.incrementAndGet();
+                if (count % 10 == 0) {
+                    System.out.println("Processed: " + count);
+                }
             });
         } catch (IOException e) {
             LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
