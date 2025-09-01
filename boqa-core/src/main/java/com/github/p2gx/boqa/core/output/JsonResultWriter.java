@@ -6,10 +6,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.p2gx.boqa.core.Writer;
 import com.github.p2gx.boqa.core.analysis.AnalysisResults;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.*;
 
@@ -17,15 +17,15 @@ public class JsonResultWriter implements Writer {
 
     @Override
     public void writeResults(Set<AnalysisResults> analysisResults,
-                             File hpoFile,
-                             File hpoa,
+                             Path hpoFile,
+                             Path hpoa,
                              String cliArgs,
                              Map<String, Object> algorithmParams,
-                             File outFile) throws IOException {
+                             Path outPath) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
 
-        JsonNode root = mapper.readTree(hpoFile);
+        JsonNode root = mapper.readTree(hpoFile.toFile());
         String versionUrl = root
                 .path("graphs")
                 .get(0)
@@ -57,8 +57,9 @@ public class JsonResultWriter implements Writer {
 
         ResultBundle bundle = new ResultBundle(metadata, analysisResults);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.writeValue(outFile, bundle);
-    }
+        try (OutputStream out = Files.newOutputStream(outPath)) {
+            mapper.writeValue(out, bundle);
+        }    }
 
     public static String extractHpVersion(String versionUrl) {
         return Arrays.stream(versionUrl.split("/"))
@@ -67,17 +68,27 @@ public class JsonResultWriter implements Writer {
                 .orElse("unknown");
     }
 
-    public static String readHpoaVersion(File hpoaFile) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(hpoaFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.startsWith("#version:")) {
-                    return line.substring("#version:".length()).trim();
-                }
+    public static String readHpoaVersion(Path hpoaFile) throws IOException {
+        try (BufferedReader reader = Files.newBufferedReader(hpoaFile, StandardCharsets.UTF_8)) {
+            return readVersionFromReader(reader);
+        }
+    }
+    // Overload for testing purposes.
+    public static String readHpoaVersion(InputStream inputStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+            return readVersionFromReader(reader);
+        }
+    }
+
+    private static String readVersionFromReader(BufferedReader reader) throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.startsWith("#version:")) {
+                return line.substring("#version:".length()).trim();
             }
         }
-        return "unknown"; // fallback if not found
+        return "unknown";
     }
 
 }

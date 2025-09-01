@@ -9,40 +9,44 @@ import org.phenopackets.schema.v2.core.OntologyClass;
 import org.phenopackets.schema.v2.core.PhenotypicFeature;
 
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * This class reads in a Path to a phenopacket file and reads it in as a
- * {@link org.phenopackets.schema.v2.Phenopacket Phenopacket} object.
+ * This class is constructed with a {@link org.phenopackets.schema.v2.Phenopacket Phenopacket}
+ * or a Path to a phenopacket file, read with {@link PhenopacketReader#readPhenopacket(Path)}.
  * <p>
  * Observed and Excluded phenotypic features,
  * as well as the Phenopacket ID can be queried through {@link #getObservedTerms() getObservedTerms},
  * {@link #getExcludedTerms() getExcludedTerms}, and {@link #getID() getID}.
+ * <p>
+ * {@link #getDiseases()} returns a list of {@link DiseaseDTO} records containing OMIM ID and label.
+ * This list can contain no diseases (unknown, unclear), one disease (standard Mendelian disease)
+ * or any number of diseases (blended phenotype).
  * <p>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  */
 public class PhenopacketData implements PatientData {
 
     private final Phenopacket ppkt;
-    private record DiseaseDTO(String id, String label) {}
+    record DiseaseDTO(String id, String label) {}
 
     // Primary constructor
     public PhenopacketData(Phenopacket phenopacket) {
         this.ppkt = phenopacket;
     }
 
-    // Convenience constructor (still allow from file)
+    // Convenience constructor (allow from file)
     public PhenopacketData(Path phenopacketFile) {
         this(PhenopacketReader.readPhenopacket(phenopacketFile));
     }
 
     @JsonProperty("diagnosis")
-    public PhenopacketData.DiseaseDTO getDisease() {
-        Disease disease = ppkt.getDiseasesList().getFirst();
-        OntologyClass term = disease.getTerm();
-        return new PhenopacketData.DiseaseDTO(term.getId(), term.getLabel());
+    List<DiseaseDTO> getDiseases() {
+        return ppkt.getDiseasesList().stream().map(d ->
+            new DiseaseDTO(d.getTerm().getId(), d.getTerm().getLabel())).toList();
     }
 
     @Override

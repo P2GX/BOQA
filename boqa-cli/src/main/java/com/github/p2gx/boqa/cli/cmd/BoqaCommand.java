@@ -80,7 +80,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             names = "--out",
             description = "Output JSON file",
             required = true)
-    File outFile;
+    Path outPath;
 
     public BoqaCommand(){}
 
@@ -112,11 +112,11 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         Writer writer = new JsonResultWriter();
         writer.writeResults(
                 analysisResults,
-                Paths.get(ontologyFile).toFile(),
-                phenotypeAnnotationFile.toFile(),
+                Paths.get(ontologyFile),
+                phenotypeAnnotationFile,
                 cliArgs,
                 Map.of("alpha", AlgorithmParameters.ALPHA, "beta", AlgorithmParameters.BETA),
-                outFile
+                outPath
         );
 
         return 0;

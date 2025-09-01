@@ -2,6 +2,7 @@ package com.github.p2gx.boqa.core;
 
 import com.github.p2gx.boqa.core.analysis.AnalysisResults;
 
+import java.nio.file.Path;
 import java.util.Set;
 import java.util.Map;
 import java.io.File;
@@ -11,9 +12,9 @@ import java.io.IOException;
  */
 public interface Writer {
     void writeResults(Set<AnalysisResults> analysisResults,
-                      File hpo,
-                      File hpoa,
+                      Path hpo,
+                      Path hpoa,
                       String cliArgs,
                       Map<String, Object> algorithmParams,
-                      File outFile) throws IOException;
+                      Path outPath) throws IOException;
 }
