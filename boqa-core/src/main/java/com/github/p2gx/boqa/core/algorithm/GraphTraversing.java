@@ -1,7 +1,10 @@
 package com.github.p2gx.boqa.core.algorithm;
 
+import org.monarchinitiative.phenol.graph.NodeNotPresentInGraphException;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,6 +15,7 @@ import java.util.Set;
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  */
 class GraphTraversing {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphTraversing.class);
 
     public static final String HPO_ROOT_TERM = "HP:0000001";
     private final OntologyGraph<TermId> hpoGraph;
@@ -38,7 +42,13 @@ class GraphTraversing {
      */
     Set<TermId> initLayer(Set<TermId> hpoTerms){
         Set<TermId> initializedLayer = new HashSet<>();
-        hpoTerms.forEach(t -> initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true)));
+        hpoTerms.forEach(t -> {
+            try {
+                initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true));
+            } catch (NodeNotPresentInGraphException e){
+                LOGGER.warn("HPO term not found in graph, skipping: {}", t);
+            }
+        });
         if(!fullOntology) {
             // We only want phenotypic abnormalities!
             initializedLayer.remove(TermId.of(HPO_ROOT_TERM));
