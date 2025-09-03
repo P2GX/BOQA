@@ -10,6 +10,7 @@ import com.github.p2gx.boqa.core.output.JsonResultWriter;
 import com.github.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,12 +97,13 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
         //TODO Ielis suggests to only load the ontology once at the beginning, change DiseasesData
         OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile()).graph();
+        Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
 
         // Prepare DiseaseData
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
 
         // Initialize Counter
-        Counter counter = new BoqaSetCounter(diseaseData, hpoGraph, false);
+        Counter counter = new BoqaSetCounter(diseaseData, hpo, false);
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         Set<AnalysisResults> analysisResults = new HashSet<>();

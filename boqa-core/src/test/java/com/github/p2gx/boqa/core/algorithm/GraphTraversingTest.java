@@ -5,8 +5,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.IOException;
@@ -31,8 +31,8 @@ class GraphTraversingTest {
             InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
                     .getResourceAsStream("/com/github/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
-            OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
-            this.graphTraverser = new GraphTraversing(hpoGraph, false);
+            Ontology hpo = OntologyLoader.loadOntology(ontologyStream);
+            this.graphTraverser = new GraphTraversing(hpo, false);
         }
     }
 

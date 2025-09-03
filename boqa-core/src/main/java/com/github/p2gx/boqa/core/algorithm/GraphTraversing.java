@@ -1,13 +1,17 @@
 package com.github.p2gx.boqa.core.algorithm;
 
 import org.monarchinitiative.phenol.graph.NodeNotPresentInGraphException;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.ontology.data.Term;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This utility class holds the ontology graph and methods acting on it to collect necessary sets of terms.
@@ -16,16 +20,17 @@ import java.util.Set;
  */
 class GraphTraversing {
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphTraversing.class);
+    private static final Set<TermId> LOGGED_REPLACEMENTS = ConcurrentHashMap.newKeySet();
 
     public static final String HPO_ROOT_TERM = "HP:0000001";
-    private final OntologyGraph<TermId> hpoGraph;
+    private final Ontology hpo;
     private final boolean fullOntology;
 
     public OntologyGraph<TermId> getHpoGraph() {
-        return hpoGraph;
+        return hpo.graph();
     }
-    public GraphTraversing(OntologyGraph<TermId> hpoGraph, boolean fullOntology) {
-        this.hpoGraph = hpoGraph;
+    public GraphTraversing(Ontology hpo, boolean fullOntology) {
+        this.hpo = hpo;
         this.fullOntology = fullOntology;
     }
 
@@ -43,11 +48,18 @@ class GraphTraversing {
     Set<TermId> initLayer(Set<TermId> hpoTerms){
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> {
+            Collection<TermId> traversedHpos;
             try {
-                initializedLayer.addAll(hpoGraph.extendWithAncestors(t, true));
+                traversedHpos = hpo.graph().extendWithAncestors(t, true);
             } catch (NodeNotPresentInGraphException e){
-                LOGGER.warn("HPO term not found in graph, skipping: {}", t);
+                TermId primaryTid = hpo.getPrimaryTermId(t);
+                traversedHpos = hpo.graph().extendWithAncestors(primaryTid, true);
+                // Log once only
+                if (LOGGED_REPLACEMENTS.add(t)) {
+                    LOGGER.warn("Replacing {} with primary term {}", t, primaryTid);
+                }
             }
+            initializedLayer.addAll(traversedHpos);
         });
         if(!fullOntology) {
             // We only want phenotypic abnormalities!
@@ -66,7 +78,7 @@ class GraphTraversing {
      */
     public boolean allParentsActive(TermId node, Set<TermId> activeNodes){
         Set<TermId> parents = new HashSet<>();
-        parents.addAll( hpoGraph.extendWithParents(node, false));
+        parents.addAll( hpo.graph().extendWithParents(node, false));
         if (parents.isEmpty()){
             return true; // should only happen for root term
         }

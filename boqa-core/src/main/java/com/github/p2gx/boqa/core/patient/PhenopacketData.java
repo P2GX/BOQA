@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.p2gx.boqa.core.PatientData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v2.Phenopacket;
-import org.phenopackets.schema.v2.core.Disease;
 import org.phenopackets.schema.v2.core.OntologyClass;
 import org.phenopackets.schema.v2.core.PhenotypicFeature;
 
@@ -30,12 +29,30 @@ import java.util.stream.Collectors;
  */
 public class PhenopacketData implements PatientData {
 
-    private final Phenopacket ppkt;
+    private final String ppktId;
+    private final Set<TermId> observedTerms;
+    private final Set<TermId> excludedTerms;
+    private final List<DiseaseDTO> diseases;
+
     record DiseaseDTO(String id, String label) {}
 
     // Primary constructor
     public PhenopacketData(Phenopacket phenopacket) {
-        this.ppkt = phenopacket;
+        this.ppktId = phenopacket.getId();
+        this.observedTerms = phenopacket.getPhenotypicFeaturesList().stream()
+                .filter(Predicate.not(PhenotypicFeature::getExcluded))
+                .map(PhenotypicFeature::getType)
+                .map(OntologyClass::getId)
+                .map(TermId::of)
+                .collect(Collectors.toSet());
+        this.excludedTerms = phenopacket.getPhenotypicFeaturesList().stream()
+                .filter(PhenotypicFeature::getExcluded)
+                .map(PhenotypicFeature::getType)
+                .map(OntologyClass::getId)
+                .map(TermId::of)
+                .collect(Collectors.toSet());
+        this.diseases = phenopacket.getDiseasesList().stream().map(d ->
+                new DiseaseDTO(d.getTerm().getId(), d.getTerm().getLabel())).toList();
     }
 
     // Convenience constructor (allow from file)
@@ -45,32 +62,21 @@ public class PhenopacketData implements PatientData {
 
     @JsonProperty("diagnosis")
     List<DiseaseDTO> getDiseases() {
-        return ppkt.getDiseasesList().stream().map(d ->
-            new DiseaseDTO(d.getTerm().getId(), d.getTerm().getLabel())).toList();
+        return diseases;
     }
 
     @Override
     public Set<TermId> getObservedTerms() {
-        return ppkt.getPhenotypicFeaturesList().stream()
-                .filter(Predicate.not(PhenotypicFeature::getExcluded))
-                .map(PhenotypicFeature::getType)
-                .map(OntologyClass::getId)
-                .map(TermId::of)
-                .collect(Collectors.toSet());
+        return observedTerms;
     }
 
     @Override
     public Set<TermId> getExcludedTerms() {
-        return ppkt.getPhenotypicFeaturesList().stream()
-                .filter(PhenotypicFeature::getExcluded)
-                .map(PhenotypicFeature::getType)
-                .map(OntologyClass::getId)
-                .map(TermId::of)
-                .collect(Collectors.toSet());
+        return excludedTerms;
     }
 
     @Override
     public String getID() {
-        return ppkt.getId();
+        return ppktId;
     }
 }

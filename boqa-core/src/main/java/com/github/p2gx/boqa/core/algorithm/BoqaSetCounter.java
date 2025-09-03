@@ -3,7 +3,7 @@ package com.github.p2gx.boqa.core.algorithm;
 import com.github.p2gx.boqa.core.Counter;
 import com.github.p2gx.boqa.core.DiseaseData;
 import com.github.p2gx.boqa.core.PatientData;
-import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +30,15 @@ public class BoqaSetCounter implements Counter {
     private final GraphTraversing graphTraverser;
     private final Map<TermId, Set<TermId>> diseaseLayers;
     private final Set<String> diseaseIds;
-    private final Map<String, String> idToLabel;
+    private final Map<String, String> idToLabel; //TODO move to disease dataa
 
     // TODO for each disease in diseaseData compute ancestors OR load from disk
     public BoqaSetCounter(DiseaseData diseaseData,
-                          OntologyGraph<TermId> hpoGraph,
+                          Ontology hpo,
                           boolean fullOntology
     ){
         this.idToLabel = diseaseData.getIdToLabel(); // TODO make immutable or get rid of this
-        this.graphTraverser = new GraphTraversing(hpoGraph, fullOntology); // immutable?
+        this.graphTraverser = new GraphTraversing(hpo, fullOntology); // immutable?
         this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds()); // immutable
         Map<TermId, Set<TermId>> dLayers = new HashMap<>(); // TODO change to stream ?
         TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");

@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BoqaSetCounterTest {
 
     private static DiseaseDataParseIngest diseaseData;
-    private static OntologyGraph<TermId> hpoGraph;
+    private static Ontology hpo;
     private static Counter counter;
 
 
@@ -39,9 +40,9 @@ class BoqaSetCounterTest {
             InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
                     .getResourceAsStream("/com/github/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
-            hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
+            hpo = OntologyLoader.loadOntology(ontologyStream);
         }
-        counter = new BoqaSetCounter(diseaseData, hpoGraph, true);
+        counter = new BoqaSetCounter(diseaseData, hpo, true);
     }
 
     @Tag("expensive_test")
