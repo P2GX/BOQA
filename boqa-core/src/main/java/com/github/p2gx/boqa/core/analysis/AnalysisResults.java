@@ -35,6 +35,9 @@ public class AnalysisResults {
 
     private PatientData patientData;
     private final int resultsLimit;
+    // TODO consider getting rid of state here and making the function static
+    private final List<BoqaResult> resultsList = new ArrayList<>();
+
     /**
      * Extra record with wrapping around {@link BoqaCounts} and adding the score.
      *
@@ -50,8 +53,6 @@ public class AnalysisResults {
         }
     }
 
-    // TODO consider getting rid of state here and making the function static
-    private final List<BoqaResult> resultsList = new ArrayList<>();
     public List<BoqaResult> getBoqaResults() {
         return resultsList;
     }

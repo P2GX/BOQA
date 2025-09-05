@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -113,8 +114,8 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
             stream.map(Path::of).forEach(singleFile -> {
                 Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(singleFile), counter, limit);
-                analysis.run();
-                analysisResults.add(analysis.getResults());
+                List<AnalysisResults.BoqaResult> boqaResults = PatientCountsAnalysis.computeBoqaResults(new PhenopacketData(singleFile), counter, limit);
+                analysisResults.add(boqaResults);
 
                 int count = fileCount.incrementAndGet();
                 if (count % 10 == 0) {
