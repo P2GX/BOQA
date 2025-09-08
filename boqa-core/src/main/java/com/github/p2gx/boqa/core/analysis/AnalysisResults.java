@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.p2gx.boqa.core.PatientData;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
+import com.github.p2gx.boqa.core.algorithm.BoqaSetCounter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
  */
 public class AnalysisResults {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnalysisResults.class);
     private PatientData patientData;
     private final int resultsLimit;
     /**
@@ -42,6 +46,9 @@ public class AnalysisResults {
      *
      * @param counts    The BOQA counts for a disease.
      * @param boqaScore The normalized BOQA score for that disease.
+     *
+     * <p>
+     * TODO add check/handling for boqaScore = NaN
      */
     public record BoqaResult(BoqaCounts counts, Double boqaScore) implements Comparable<BoqaResult>{
         @Override

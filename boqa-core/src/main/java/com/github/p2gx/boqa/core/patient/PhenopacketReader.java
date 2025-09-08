@@ -19,9 +19,13 @@ public class PhenopacketReader {
     private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketReader.class);
 
     /**
+     * Reads a Phenopacket from the given JSON file.
      *
-     * @param phenopacketFile
+     * @param phenopacketFile the path to the JSON file containing the phenopacket
+     * @return a {@link Phenopacket} object representing the patient data
+     * @throws PhenolRuntimeException if there is an I/O error or the JSON cannot be parsed
      */
+
     public static Phenopacket readPhenopacket(Path phenopacketFile) {
         JSONParser parser = new JSONParser();
         try {

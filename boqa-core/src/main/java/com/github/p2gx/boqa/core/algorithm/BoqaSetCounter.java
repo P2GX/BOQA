@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
  * <p>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  * <p>
- * TODO implement serialization via XML or JSON, no need to recompute diseaseLayers each time.
- * Try to avoid Serialization, since it is heavily criticized and deprecated.
+ * @implNote  Consider implementing XML or JSON serialization to cache disease layers, avoiding recomputation.
+ * Avoid `Serializable` interface, since it is heavily criticized and deprecated.
  * Especially important for melded/digenic where combinatorial complexity increases.
  */
 public class BoqaSetCounter implements Counter {
@@ -38,8 +38,8 @@ public class BoqaSetCounter implements Counter {
                           boolean fullOntology
     ){
         this.idToLabel = diseaseData.getIdToLabel(); // TODO make immutable or get rid of this
-        this.graphTraverser = new GraphTraversing(hpo, fullOntology); // immutable?
-        this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds()); // immutable
+        this.graphTraverser = new GraphTraversing(hpo, fullOntology);
+        this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds());
         Map<TermId, Set<TermId>> dLayers = new HashMap<>(); // TODO change to stream ?
         TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
         diseaseIds.forEach(
@@ -65,9 +65,10 @@ public class BoqaSetCounter implements Counter {
      * These counts are related to true/false positives and true/false negatives, and are used to compute the
      * probability that a patient has the input disease. The probability is computed as <p>
      * P = alpha^tpBoqaCount * beta^fpBoqaCount * (1-alpha)^fnBoqaCount * (1-beta)^tpBoqaCount
-     * @param diseaseId
-     * @param patientData
-     * @return BoqaCounts record containing four counts associated to a diseases-patient pair.
+     * @param diseaseId    the unique OMIM ID of the disease whose counts are computed
+     * @param patientData  the patient data containing observed HPO terms and patient ID
+     * @return             a {@link BoqaCounts} record containing the four counts for this disease-patient pair
+     * @implNote         Consider caching children of all ON nodes to improve offNodesCount calculation.
      */
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData){
@@ -87,7 +88,6 @@ public class BoqaSetCounter implements Counter {
                 betaCounts += 1;
             }
         }
-        //TODO the following is probably too expensive?
         int offNodesCount = 0; // exponent of 1-alpha
         Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
         for(TermId qobs : queryLayerInitialized){
