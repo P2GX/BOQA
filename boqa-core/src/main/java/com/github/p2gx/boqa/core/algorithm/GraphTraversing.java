@@ -85,4 +85,14 @@ class GraphTraversing {
         parents.removeAll(activeNodes);
         return parents.isEmpty();
     }
+
+    public boolean allChildrenInactive(TermId node, Set<TermId> activeNodes){
+        Set<TermId> children = new HashSet<>();
+        children.addAll( hpo.graph().extendWithChildren(node, false));
+        // if any children are in active nodes, return false, if not, return true
+        if (children.retainAll(activeNodes)){
+            return false;
+        }
+        else return true;
+    }
 }

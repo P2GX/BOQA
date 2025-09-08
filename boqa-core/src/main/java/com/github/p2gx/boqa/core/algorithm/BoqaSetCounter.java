@@ -78,6 +78,13 @@ public class BoqaSetCounter implements Counter {
         intersection.retainAll(queryLayerInitialized); // TP
         Set<TermId> falsePositives = new HashSet<>(queryLayerInitialized); // FP
         falsePositives.removeAll(diseaseLayer);
+        // Do not overcount fps
+        int fpcount = 0;
+        for(TermId node : falsePositives){
+            if (graphTraverser.allChildrenInactive(node, queryLayerInitialized)){
+                fpcount += 1;
+            }
+        }
         Set<TermId> falseNegatives = new HashSet<>(diseaseLayer); // FN
         falseNegatives.removeAll(queryLayerInitialized); // equivalent with removeAll(intersection)
         // Now iterate over these and count only those with all parents ON
@@ -111,7 +118,7 @@ public class BoqaSetCounter implements Counter {
                 }
             }
         }
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), intersection.size(), falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), intersection.size(), fpcount, offNodesCount, betaCounts);
     }
 
     @Override
