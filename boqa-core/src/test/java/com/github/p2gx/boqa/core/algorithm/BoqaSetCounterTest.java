@@ -1,6 +1,5 @@
 package com.github.p2gx.boqa.core.algorithm;
 
-import com.github.p2gx.boqa.core.Analysis;
 import com.github.p2gx.boqa.core.Counter;
 import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis;
 import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
@@ -8,10 +7,8 @@ import com.github.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +18,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
+import static com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.computeBoqaResults;
+import static com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.BoqaResult;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BoqaSetCounterTest {
@@ -107,10 +106,17 @@ class BoqaSetCounterTest {
         }
         Path ppkt = Path.of(resourceUrl.toURI());
         int limit =  Integer.MAX_VALUE;
-        Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(ppkt), counter, limit);
-        analysis.run();
-        Map<String, BoqaCounts> boqaCountsMap = analysis.getResults().getBoqaCounts();
-        assertEquals(pyboqaCounts, boqaCountsMap.get(diagnosedDiseaseId));
+        List<BoqaResult> boqaResults = computeBoqaResults(
+                new PhenopacketData(ppkt), counter, limit);
+
+        BoqaCounts match = null;
+        for (BoqaResult br : boqaResults){
+            if (br.counts().diseaseId().equals(diagnosedDiseaseId)) {
+                match = br.counts();
+                break;
+            }
+        }
+        assertEquals(pyboqaCounts, match);
     }
 
     @Test

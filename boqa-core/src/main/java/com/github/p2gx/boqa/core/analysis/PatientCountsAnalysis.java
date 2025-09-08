@@ -23,18 +23,28 @@ import java.util.stream.Collectors;
  * disease-wise {@code BoqaCounts}, through which are diseases probabilities
  * are computed at a later step.
  */
-public class PatientCountsAnalysis implements Analysis {
+public class PatientCountsAnalysis {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PatientCountsAnalysis.class);
-    private final Counter counter;
-    private final AnalysisResults results;
-
-    public PatientCountsAnalysis(PatientData patientData, Counter counter, int resultsLimit) {
-        this.results = new AnalysisResults(patientData, resultsLimit);
-        this.counter = counter;
+    /**
+     * Extra record with wrapping around {@link BoqaCounts} and adding the score.
+     *
+     * <p> Useful to ease development phase without changing future code.
+     *
+     * @param counts    The BOQA counts for a disease.
+     * @param boqaScore The normalized BOQA score for that disease.
+     *
+     * <p>
+     * TODO add check/handling for boqaScore = NaN
+     */
+    public record BoqaResult(BoqaCounts counts, Double boqaScore) implements Comparable<BoqaResult>{
+        @Override
+        public int compareTo(BoqaResult other) {
+            return other.boqaScore.compareTo(this.boqaScore);
+        }
     }
 
-    public static List<AnalysisResults.BoqaResult> computeBoqaResults(PatientData patientData, Counter counter, int resultsLimit) {
+    public static List<BoqaResult> computeBoqaResults(PatientData patientData, Counter counter, int resultsLimit) {
         List<BoqaCounts> countsList = counter.getDiseaseIds()
                 .parallelStream() // much faster!
                 .map(dId ->  counter.computeBoqaCounts(
@@ -50,10 +60,10 @@ public class PatientCountsAnalysis implements Analysis {
                         bc -> computeUnnormalizedProbability(AlgorithmParameters.ALPHA, AlgorithmParameters.BETA, bc)
                 ));
         double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
-        List<AnalysisResults.BoqaResult> allResults = new ArrayList<>();
+        List<BoqaResult> allResults = new ArrayList<>();
         countsList.forEach(bc-> {
             double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
-            allResults.add(new AnalysisResults.BoqaResult(bc, normalizedScore));
+            allResults.add(new BoqaResult(bc, normalizedScore));
         });
 
         Collections.sort(allResults);
@@ -75,26 +85,6 @@ public class PatientCountsAnalysis implements Analysis {
                 Math.pow(beta, counts.fnBoqaCount())*
                 Math.pow(1-alpha, counts.tnBoqaCount())*
                 Math.pow(1-beta, counts.tpBoqaCount());
-    }
-
-    @Override
-    public void run() {
-        // Compute BoqaCounts for all diseases
-        List<BoqaCounts> countsList = counter.getDiseaseIds()
-                .parallelStream() // much faster!
-                .map(dId ->  counter.computeBoqaCounts(
-                        dId,
-                        results.getPatientData()
-                ))
-                .toList();
-
-        // Compute normalized probabilities and populate results with BoqaResults
-        results.computeBoqaListResults(countsList);
-    }
-
-    @Override
-    public AnalysisResults getResults() {
-       return this.results;
     }
 
 

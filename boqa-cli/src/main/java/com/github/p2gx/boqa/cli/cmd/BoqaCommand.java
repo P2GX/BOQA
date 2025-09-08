@@ -3,7 +3,7 @@ package com.github.p2gx.boqa.cli.cmd;
 import com.github.p2gx.boqa.core.*;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import com.github.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.BoqaResult;
 import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis;
 import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
 import com.github.p2gx.boqa.core.output.JsonResultWriter;
@@ -18,15 +18,11 @@ import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -107,16 +103,18 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         Counter counter = new BoqaSetCounter(diseaseData, hpo, false);
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
-        Set<AnalysisResults> analysisResults = new HashSet<>();
+
+        Map<String, List<BoqaResult>> analysisResults = new HashMap<>();
+
         AtomicInteger fileCount = new AtomicInteger(0);
 
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
             stream.map(Path::of).forEach(singleFile -> {
-                Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(singleFile), counter, limit);
-                List<AnalysisResults.BoqaResult> boqaResults = PatientCountsAnalysis.computeBoqaResults(new PhenopacketData(singleFile), counter, limit);
-                analysisResults.add(boqaResults);
-
+                PatientData ppkt = new PhenopacketData(singleFile);
+                List<BoqaResult> boqaResults = PatientCountsAnalysis.computeBoqaResults(
+                        ppkt, counter, limit);
+                analysisResults.put(ppkt.getID(), boqaResults);
                 int count = fileCount.incrementAndGet();
                 if (count % 10 == 0) {
                     System.out.println("Processed: " + count);

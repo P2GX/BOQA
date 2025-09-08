@@ -1,17 +1,16 @@
 package com.github.p2gx.boqa.core;
 
-import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.BoqaResult;
 
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.List;
 import java.util.Map;
-import java.io.File;
 import java.io.IOException;
 /**
  * Write results to file.
  */
 public interface Writer {
-    void writeResults(Set<AnalysisResults> analysisResults,
+    void writeResults(Map<String, List<BoqaResult>> analysisResults,
                       Path hpo,
                       Path hpoa,
                       String cliArgs,

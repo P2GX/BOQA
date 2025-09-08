@@ -1,13 +1,14 @@
 package com.github.p2gx.boqa.core.output;
-import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.BoqaResult;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
 
 public class ResultBundle {
     private final Metadata metadata;
-    private final Set<AnalysisResults> results;
+    private final Map<String, List<BoqaResult>> results;
 
-    public ResultBundle(Metadata metadata, Set<AnalysisResults> analysisResults) {
+    public ResultBundle(Metadata metadata, Map<String, List<BoqaResult>> analysisResults) {
         this.metadata = metadata;
         this.results = analysisResults;
     }
@@ -16,7 +17,7 @@ public class ResultBundle {
         return metadata;
     }
 
-    public Set<AnalysisResults> getResults() {
+    public Map<String, List<BoqaResult>> getResults() {
         return results;
     }
 }
