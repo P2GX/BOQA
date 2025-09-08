@@ -2,7 +2,7 @@ package com.github.p2gx.boqa.core.algorithm;
 
 /**
  * Java record containing the exponents of alpha, beta, 1-alpha, 1-beta
- * determined for a disease.
+ * determined for a disease, along with its <a href="https://omim.org">OMIM ID</a> and label.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>

@@ -6,6 +6,8 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.OntologyClass;
 import org.phenopackets.schema.v2.core.PhenotypicFeature;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
  */
 public class PhenopacketData implements PatientData {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhenopacketData.class);
     private final String ppktId;
     private final Set<TermId> observedTerms;
     private final Set<TermId> excludedTerms;
@@ -45,7 +48,9 @@ public class PhenopacketData implements PatientData {
                 .map(OntologyClass::getId)
                 .map(TermId::of)
                 .collect(Collectors.toSet());
-        this.excludedTerms = phenopacket.getPhenotypicFeaturesList().stream()
+        if (this.observedTerms.isEmpty()) {
+            LOGGER.warn("Phenopacket {} has no observed phenotypic features!", phenopacket.getId());
+        }        this.excludedTerms = phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(PhenotypicFeature::getExcluded)
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
@@ -62,17 +67,17 @@ public class PhenopacketData implements PatientData {
 
     @JsonProperty("diagnosis")
     List<DiseaseDTO> getDiseases() {
-        return diseases;
+        return List.copyOf(diseases);
     }
 
     @Override
     public Set<TermId> getObservedTerms() {
-        return observedTerms;
+        return Set.copyOf(observedTerms);
     }
 
     @Override
     public Set<TermId> getExcludedTerms() {
-        return excludedTerms;
+        return Set.copyOf(excludedTerms);
     }
 
     @Override

@@ -5,6 +5,8 @@ import com.github.p2gx.boqa.core.Counter;
 import com.github.p2gx.boqa.core.PatientData;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
  */
 public class PatientCountsAnalysis implements Analysis {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PatientCountsAnalysis.class);
     private final Counter counter;
     private final AnalysisResults results;
 
