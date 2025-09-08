@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.p2gx.boqa.core.PatientData;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
-import com.github.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +23,13 @@ import java.util.stream.Collectors;
  * <p>Provides methods for:
  * <ul>
  *   <li>Retrieving counts and scores for all diseases.</li>
- *   <li>Computing un-normalized and normalized BOQA probabilities from counts.</li>
+ *   <li>Computing un-normalized and normalized BOQA probabilities from counts.
+ *       The probability is computed as:
+ *       <pre>
+ *       P = α<sup>tpBoqaCount</sup> × β<sup>fpBoqaCount</sup> ×
+ *           (1-α)<sup>fnBoqaCount</sup> × (1-β)<sup>tpBoqaCount</sup>
+ *       </pre>
+ *   </li>
  * </ul>
  *
  * <p>Scores are stored alongside counts in a {@link BoqaResult} record

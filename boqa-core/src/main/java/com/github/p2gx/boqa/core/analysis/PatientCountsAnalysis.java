@@ -4,7 +4,6 @@ import com.github.p2gx.boqa.core.Analysis;
 import com.github.p2gx.boqa.core.Counter;
 import com.github.p2gx.boqa.core.PatientData;
 import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
-import com.github.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
