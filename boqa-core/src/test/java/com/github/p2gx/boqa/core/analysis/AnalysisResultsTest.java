@@ -1,19 +1,16 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.analysis;
 
-import org.junit.jupiter.api.Test;
+import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import static com.github.p2gx.boqa.core.AnalysisResults.computeUnnormalizedProbability;
+import static com.github.p2gx.boqa.core.analysis.AnalysisResults.computeUnnormalizedProbability;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AnalysisResultsTest {
 
     /**
-     * Parameterized test for {@link  com.github.p2gx.boqa.core.AnalysisResults#computeUnnormalizedProbability(double, double, BoqaCounts)}.
+     * Parameterized test for {@link  AnalysisResults#computeUnnormalizedProbability(double, double, BoqaCounts)}.
      * <p>
      * This test validates that the Java implementation of the un-normalized probability calculation
      * produces identical results to a set of scores created in Python.
@@ -56,7 +53,7 @@ class AnalysisResultsTest {
         double expectedScore = Double.parseDouble(score);
 
         // Initialize BoqaCounts
-        BoqaCounts counts = new BoqaCounts("unimportantId", count1mb, countA, count1ma, countB);
+        BoqaCounts counts = new BoqaCounts("idIsUnimportant", "labelIsUnimportant", count1mb, countA, count1ma, countB);
         double actualScore = computeUnnormalizedProbability(alphaVal, betaVal, counts);
 
         // Assert with small delta for floating-point comparison

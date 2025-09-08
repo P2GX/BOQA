@@ -1,5 +1,6 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.patient;
 
+import com.github.p2gx.boqa.core.PatientData;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 

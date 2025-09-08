@@ -1,10 +1,16 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.algorithm;
 
+import com.github.p2gx.boqa.core.Analysis;
+import com.github.p2gx.boqa.core.Counter;
+import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis;
+import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
+import com.github.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.io.IOException;
@@ -20,21 +26,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class BoqaSetCounterTest {
 
     private static DiseaseDataParseIngest diseaseData;
-    private static OntologyGraph<TermId> hpoGraph;
+    private static Ontology hpo;
     private static Counter counter;
 
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream annotationStream = new GZIPInputStream(DiseaseDataParseIngestTest.class.getResourceAsStream("phenotype.v2025-05-06.hpoa.gz"))) {
+        try (InputStream annotationStream = new GZIPInputStream(BoqaSetCounterTest.class
+                .getResourceAsStream("/com/github/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
             diseaseData = new DiseaseDataParseIngest(annotationStream);
         }
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class.getResourceAsStream("hp.v2025-05-06.json.gz")))
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
+                    .getResourceAsStream("/com/github/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
-            hpoGraph = OntologyLoader.loadOntology(ontologyStream).graph();
+            hpo = OntologyLoader.loadOntology(ontologyStream);
         }
-        counter = new BoqaSetCounter(diseaseData, hpoGraph, true);
+        counter = new BoqaSetCounter(diseaseData, hpo, true);
     }
 
     @Tag("expensive_test")
@@ -82,21 +90,24 @@ class BoqaSetCounterTest {
         int fnExpInt = Integer.parseInt(fnExp.trim());
         int tpExpInt = Integer.parseInt(tpExp.trim());
         int fpExpInt = Integer.parseInt(fpExp.trim());
-
+        HashMap<String,String> idToLabel = diseaseData.getIdToLabel();
         BoqaCounts pyboqaCounts = new BoqaCounts(
                 diagnosedDiseaseId,
+                idToLabel.get(diagnosedDiseaseId),
                 tpExpInt,
                 fpExpInt,
                 tnExpInt,
                 fnExpInt
         );
 
-        URL resourceUrl = PhenopacketReaderTest.class.getResource("phenopackets/" + jsonFile);
+        URL resourceUrl = BoqaSetCounterTest.class
+                .getResource("/com/github/p2gx/boqa/core/phenopackets/" + jsonFile);
         if (resourceUrl == null) {
             throw new IOException("Resource not found: " + jsonFile);
         }
         Path ppkt = Path.of(resourceUrl.toURI());
-        Analysis analysis = new PatientCountsAnalysis(new PhenopacketReader(ppkt), counter);
+        int limit =  Integer.MAX_VALUE;
+        Analysis analysis = new PatientCountsAnalysis(new PhenopacketData(ppkt), counter, limit);
         analysis.run();
         Map<String, BoqaCounts> boqaCountsMap = analysis.getResults().getBoqaCounts();
         assertEquals(pyboqaCounts, boqaCountsMap.get(diagnosedDiseaseId));

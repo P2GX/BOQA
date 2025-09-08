@@ -1,8 +1,13 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.analysis;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.p2gx.boqa.core.PatientData;
+import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
+import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -18,7 +23,13 @@ import java.util.stream.Collectors;
  * <p>Provides methods for:
  * <ul>
  *   <li>Retrieving counts and scores for all diseases.</li>
- *   <li>Computing un-normalized and normalized BOQA probabilities from counts.</li>
+ *   <li>Computing un-normalized and normalized BOQA probabilities from counts.
+ *       The probability is computed as:
+ *       <pre>
+ *       P = α<sup>tpBoqaCount</sup> × β<sup>fpBoqaCount</sup> ×
+ *           (1-α)<sup>fnBoqaCount</sup> × (1-β)<sup>tpBoqaCount</sup>
+ *       </pre>
+ *   </li>
  * </ul>
  *
  * <p>Scores are stored alongside counts in a {@link BoqaResult} record
@@ -30,7 +41,9 @@ import java.util.stream.Collectors;
  */
 public class AnalysisResults {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(AnalysisResults.class);
     private PatientData patientData;
+    private final int resultsLimit;
     /**
      * Extra record with wrapping around {@link BoqaCounts} and adding the score.
      *
@@ -38,24 +51,36 @@ public class AnalysisResults {
      *
      * @param counts    The BOQA counts for a disease.
      * @param boqaScore The normalized BOQA score for that disease.
+     *
+     * <p>
+     * TODO add check/handling for boqaScore = NaN
      */
-    public record BoqaResult(BoqaCounts counts, Double boqaScore) {}
-    private Map<String, BoqaResult> resultsMap = new HashMap<>();
+    public record BoqaResult(BoqaCounts counts, Double boqaScore) implements Comparable<BoqaResult>{
+        @Override
+        public int compareTo(BoqaResult other) {
+            return other.boqaScore.compareTo(this.boqaScore);
+        }
+    }
+
+    // TODO consider getting rid of state here and making the function static
+    private final List<BoqaResult> resultsList = new ArrayList<>();
+    public List<BoqaResult> getBoqaResults() {
+        return resultsList;
+    }
 
     /**
      * Constructs a new results container for a given patient.
      *
      * @param patientData The patient data used to compute BOQA scores.
      */
-    public AnalysisResults(PatientData patientData) {
+    public AnalysisResults(PatientData patientData, int resultsLimit) {
         this.patientData = patientData;
+        this.resultsLimit = resultsLimit;
     }
+
 
     public PatientData getPatientData() {
         return patientData;
-    }
-    public Map<String, BoqaResult> getBoqaResult(){
-        return resultsMap;
     }
 
     /**
@@ -64,10 +89,12 @@ public class AnalysisResults {
      *
      * @return A map from disease ID to {@link BoqaCounts}.
      */
+    @JsonIgnore
     public Map<String, BoqaCounts> getBoqaCounts() {
         Map<String, BoqaCounts> boqaCountsMap = new HashMap<>();
-        for (Map.Entry<String, BoqaResult> entry : resultsMap.entrySet()) {
-            boqaCountsMap.put(entry.getKey(), entry.getValue().counts());
+        for (BoqaResult result : resultsList) {
+            String id = result.counts.diseaseId();
+            boqaCountsMap.put(id, result.counts());
         }
         return boqaCountsMap;
     }
@@ -79,26 +106,32 @@ public class AnalysisResults {
      * <ol>
      *   <li>Computes un-normalized probabilities for each disease.</li>
      *   <li>Normalizes them by dividing by the sum across all diseases.</li>
-     *   <li>Stores the resulting {@link BoqaResult} in {@code resultsMap}.</li>
+     *   <li>Stores the resulting {@link BoqaResult} in {@code resultsList}, sorted by boqaScore.</li>
      * </ol>
      * <p>
      * TODO consider using again pyboqa scores results, but this is trivial at this point
      *
      * @param boqaCountsList List of BoqaCounts for all diseases in the analysis.
      */
-    public void computeBoqaResults(List<BoqaCounts> boqaCountsList) {
+    public void computeBoqaListResults(List<BoqaCounts> boqaCountsList) {
+        //ArrayList<BoqaResult> resultsList = new ArrayList<>();
         Map<String, Double> rawScores = boqaCountsList.stream()
                 .collect(Collectors.toMap(
                         BoqaCounts::diseaseId,
                         bc -> computeUnnormalizedProbability(AlgorithmParameters.ALPHA, AlgorithmParameters.BETA, bc)
                 ));
         double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
+        List<BoqaResult> allResults = new ArrayList<>();
         boqaCountsList.forEach(bc-> {
             double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
-            resultsMap.put(bc.diseaseId(),
-                    new BoqaResult(bc, normalizedScore)
-            );
+            allResults.add(new BoqaResult(bc, normalizedScore));
         });
+
+        Collections.sort(allResults);
+        resultsList.addAll(allResults.stream()
+                .limit(resultsLimit)
+                .collect(Collectors.toList()));
+        //return resultList;
     }
 
     /**

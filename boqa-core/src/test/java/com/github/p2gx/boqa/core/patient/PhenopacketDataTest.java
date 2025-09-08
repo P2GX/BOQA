@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.patient;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PhenopacketReaderTest {
+class PhenopacketDataTest {
 
-    private static List<PhenopacketReader> examplePpkts = new ArrayList<>();
+    private static List<PhenopacketData> examplePpkts = new ArrayList<>();
 
     @BeforeAll
     static void setUp() throws IOException {
@@ -34,12 +34,13 @@ class PhenopacketReaderTest {
         };
         for (String filename : filenames) {
             try {
-                URL resourceUrl = PhenopacketReaderTest.class.getResource("phenopackets/" + filename);
+                URL resourceUrl = PhenopacketDataTest.class
+                        .getResource("/com/github/p2gx/boqa/core/phenopackets/" + filename);
                 if (resourceUrl == null) {
                     throw new IOException("Resource not found: " + filename);
                 }
                 Path ppkt = Path.of(resourceUrl.toURI());
-                examplePpkts.add(new PhenopacketReader(ppkt));
+                examplePpkts.add(new PhenopacketData(ppkt));
             } catch (URISyntaxException e) {
                 throw new IOException("Failed to resolve resource URI", e);
             }
@@ -53,8 +54,8 @@ class PhenopacketReaderTest {
     @Test
     void testGetObservedTerms() throws IOException, URISyntaxException {
         // Read the line from a file (assuming it's all on one line)
-        String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
-                getResource("PMID_30569521_proband_features.csv").toURI())).trim();
+        String csvLine = Files.readString(Path.of(PhenopacketDataTest.class
+                .getResource("PMID_30569521_proband_features.csv").toURI())).trim();
         // Convert to Set<String>
         Set<TermId> termSet = Arrays.stream(csvLine.split(","))
                 .map(s -> s.replaceAll("^\"|\"$", "")) // Remove surrounding quotes
@@ -69,7 +70,7 @@ class PhenopacketReaderTest {
     @Test
     void testGetExcludedTerms() throws IOException, URISyntaxException {
         // Read the line from a file (assuming it's all on one line)
-        String csvLine = Files.readString(Path.of(PhenopacketReaderTest.class.
+        String csvLine = Files.readString(Path.of(PhenopacketDataTest.class.
                 getResource("PMID_30569521_proband_excluded_features.csv").toURI())).trim();
         // Convert to Set<String>
         Set<TermId> termSet = Arrays.stream(csvLine.split(","))

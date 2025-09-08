@@ -1,4 +1,5 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.patient;
+import com.github.p2gx.boqa.core.PatientData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

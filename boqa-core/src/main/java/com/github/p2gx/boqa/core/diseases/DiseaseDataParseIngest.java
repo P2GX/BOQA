@@ -1,5 +1,6 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.diseases;
 
+import com.github.p2gx.boqa.core.DiseaseData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,14 @@ public class DiseaseDataParseIngest implements DiseaseData {
     List<String> hpoFreqTermList;
     List<String> hpoExcludedHpoFreqTermList;
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
+    //TODO consider disease class
+    HashMap<String, String> idToLabel = new HashMap<>();;
+
+    @Override
+    public HashMap<String, String> getIdToLabel() {
+        return idToLabel;
+    }
+
     HashMap<String, String> geneIdToSymbolDict;
 
     /**
@@ -78,6 +87,8 @@ public class DiseaseDataParseIngest implements DiseaseData {
                 break;
             }
             String disease_id = fields[0];
+            String disease_label = fields[1];
+            this.idToLabel.putIfAbsent(disease_id, disease_label);
             String qualifier = fields[2];
             String hpo_id = fields[3];
             String frequency = fields[7];

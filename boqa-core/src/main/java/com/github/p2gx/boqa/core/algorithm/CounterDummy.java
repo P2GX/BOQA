@@ -1,13 +1,15 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.algorithm;
 
-import org.monarchinitiative.phenol.ontology.data.TermId;
+import com.github.p2gx.boqa.core.Counter;
+import com.github.p2gx.boqa.core.DiseaseData;
+import com.github.p2gx.boqa.core.PatientData;
 
 import java.nio.file.Path;
 import java.util.Set;
 /**
  * Dummy class with no functionality. For development. Always returns the same BoqaCounts.
  */
-public class CounterDummy implements Counter{
+public class CounterDummy implements Counter {
 
     Set<String> diseaseIdSet;
 
@@ -23,7 +25,7 @@ public class CounterDummy implements Counter{
 
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
-        return new BoqaCounts(diseaseId, 10, 10, 10, 10);
+        return new BoqaCounts(diseaseId, "unimportantHere", 10, 10, 10, 10);
     }
 
     @Override

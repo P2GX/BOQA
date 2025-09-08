@@ -1,6 +1,6 @@
 package com.github.p2gx.boqa.core;
 
-import org.monarchinitiative.phenol.ontology.data.TermId;
+import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
 
 import java.util.Set;
 

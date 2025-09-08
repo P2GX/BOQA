@@ -1,4 +1,11 @@
-package com.github.p2gx.boqa.core;
+package com.github.p2gx.boqa.core.analysis;
+
+import com.github.p2gx.boqa.core.Analysis;
+import com.github.p2gx.boqa.core.Counter;
+import com.github.p2gx.boqa.core.PatientData;
+import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -13,11 +20,12 @@ import java.util.List;
  */
 public class PatientCountsAnalysis implements Analysis {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PatientCountsAnalysis.class);
     private final Counter counter;
     private final AnalysisResults results;
 
-    public PatientCountsAnalysis(PatientData patientData, Counter counter) {
-        this.results = new AnalysisResults(patientData);
+    public PatientCountsAnalysis(PatientData patientData, Counter counter, int resultsLimit) {
+        this.results = new AnalysisResults(patientData, resultsLimit);
         this.counter = counter;
     }
 
@@ -31,8 +39,9 @@ public class PatientCountsAnalysis implements Analysis {
                         results.getPatientData()
                 ))
                 .toList();
+
         // Compute normalized probabilities and populate results with BoqaResults
-        results.computeBoqaResults(countsList);
+        results.computeBoqaListResults(countsList);
     }
 
     @Override
