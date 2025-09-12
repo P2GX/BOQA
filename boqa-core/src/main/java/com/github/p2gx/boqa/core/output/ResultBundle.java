@@ -1,22 +1,22 @@
 package com.github.p2gx.boqa.core.output;
-import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+import com.github.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 
-import java.util.Set;
+import java.util.List;
 
 public class ResultBundle {
     private final Metadata metadata;
-    private final Set<AnalysisResults> results;
+    private final List<BoqaAnalysisResult> results;
 
-    public ResultBundle(Metadata metadata, Set<AnalysisResults> analysisResults) {
+    public ResultBundle(Metadata metadata, List<BoqaAnalysisResult> boqaAnalysisResults) {
         this.metadata = metadata;
-        this.results = analysisResults;
+        this.results = boqaAnalysisResults;
     }
 
     public Metadata getMetadata() {
         return metadata;
     }
 
-    public Set<AnalysisResults> getResults() {
+    public List<BoqaAnalysisResult> getResults() {
         return results;
     }
 }

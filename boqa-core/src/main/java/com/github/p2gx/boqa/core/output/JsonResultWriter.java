@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.p2gx.boqa.core.Writer;
-import com.github.p2gx.boqa.core.analysis.AnalysisResults;
+import com.github.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import com.github.p2gx.boqa.core.analysis.BoqaResult;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -14,12 +15,33 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * Writes BOQA analysis results to a JSON file.
+ * <p>
+ * This implementation of {@link Writer} serializes a set of {@link BoqaResult} along with
+ * metadata about the HPO ontology, HPOA annotations, algorithm parameters, CLI arguments, and
+ * system information into a human-readable JSON file.
+ * <p>
+ * The JSON output includes:
+ * <ul>
+ *   <li>Metadata with timestamps, versions, and system details.</li>
+ *   <li>The BOQA analysis results.</li>
+ * </ul>
+ * <p>
+ * Version extraction for HPO and HPOA files is handled via {@link #extractHpVersion(String)}
+ * and {@link #readHpoaVersion(Path)} (or the InputStream overload for testing).
+ *
+ * @author
+ *   <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ * @implNote The JSON is indented for readability via {@link com.fasterxml.jackson.databind.SerializationFeature#INDENT_OUTPUT}.
+ * @implNote Future enhancement: Consider parameterizing or customizing JSON output formatting (e.g., compact vs. indented).
+ */
 public class JsonResultWriter implements Writer {
 
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 
     @Override
-    public void writeResults(Set<AnalysisResults> analysisResults,
+    public void writeResults(List<BoqaAnalysisResult> boqaAnalysisResults,
                              Path hpoPath,
                              Path hpoaPath,
                              String cliArgs,
@@ -62,7 +84,7 @@ public class JsonResultWriter implements Writer {
                 )
         );
 
-        ResultBundle bundle = new ResultBundle(metadata, analysisResults);
+        ResultBundle bundle = new ResultBundle(metadata, boqaAnalysisResults);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         try (OutputStream out = Files.newOutputStream(outPath)) {
             mapper.writeValue(out, bundle);
