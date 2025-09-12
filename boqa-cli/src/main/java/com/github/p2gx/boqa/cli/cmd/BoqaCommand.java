@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -106,17 +107,21 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
 
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
-            stream.map(Path::of).forEach(singleFile -> {
-                PatientData ppkt = new PhenopacketData(singleFile);
-                // record containing equivalent map
-                boqaAnalysisResults.add(BoqaPatientAnalyzer.computeBoqaResults(
-                        ppkt, counter, limit)
-                );
-                int count = fileCount.incrementAndGet();
-                if (count % 10 == 0) {
-                    System.out.println("Processed: " + count);
-                }
-            });
+            boqaAnalysisResults = stream
+                    .map(Path::of)
+                    .parallel()
+                    .map(singleFile -> {
+                        PatientData ppkt = new PhenopacketData(singleFile);
+                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
+                                ppkt, counter, limit);
+
+                        int count = fileCount.incrementAndGet();
+                        if (count % 10 == 0) {
+                            System.out.println("Processed: " + count);
+                        }
+                        return result;
+                    })
+                    .toList();
         } catch (IOException e) {
             LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
         }

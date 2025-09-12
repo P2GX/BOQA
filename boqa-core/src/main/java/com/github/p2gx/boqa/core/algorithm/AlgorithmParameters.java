@@ -7,8 +7,8 @@ package com.github.p2gx.boqa.core.algorithm;
  * {@code ALPHA} represents the probability of a false positive, {@code BETA} that of a false negative.
  */
 public final class AlgorithmParameters {
-    public static final double ALPHA = 1.0 / 19077/16;
-    public static final double BETA = 0.8;
+    public static final double ALPHA = 1.0 / 19077/32;
+    public static final double BETA = 0.9;
 
     private AlgorithmParameters() {} // prevent instantiation
 }
