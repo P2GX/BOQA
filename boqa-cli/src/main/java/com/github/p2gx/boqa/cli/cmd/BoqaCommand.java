@@ -3,15 +3,13 @@ package com.github.p2gx.boqa.cli.cmd;
 import com.github.p2gx.boqa.core.*;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import com.github.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.BoqaResult;
-import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis;
+import com.github.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import com.github.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
 import com.github.p2gx.boqa.core.output.JsonResultWriter;
 import com.github.p2gx.boqa.core.patient.PhenopacketData;
-import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -93,7 +91,6 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     public Integer call() throws Exception {
 
         //TODO Ielis suggests to only load the ontology once at the beginning, change DiseasesData
-        OntologyGraph<TermId> hpoGraph = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile()).graph();
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
 
         // Prepare DiseaseData
@@ -103,18 +100,18 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         Counter counter = new BoqaSetCounter(diseaseData, hpo, false);
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
-
-        Map<String, List<BoqaResult>> analysisResults = new HashMap<>();
+        List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
 
         AtomicInteger fileCount = new AtomicInteger(0);
 
-        // For each line in the phenopacketFile compute counts (run the analysis) and add them to analysisResults
+        // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
             stream.map(Path::of).forEach(singleFile -> {
                 PatientData ppkt = new PhenopacketData(singleFile);
-                List<BoqaResult> boqaResults = PatientCountsAnalysis.computeBoqaResults(
-                        ppkt, counter, limit);
-                analysisResults.put(ppkt.getID(), boqaResults);
+                // record containing equivalent map
+                boqaAnalysisResults.add(BoqaPatientAnalyzer.computeBoqaResults(
+                        ppkt, counter, limit)
+                );
                 int count = fileCount.incrementAndGet();
                 if (count % 10 == 0) {
                     System.out.println("Processed: " + count);
@@ -127,7 +124,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
         Writer writer = new JsonResultWriter();
         writer.writeResults(
-                analysisResults,
+                boqaAnalysisResults,
                 Paths.get(ontologyFile),
                 phenotypeAnnotationFile,
                 cliArgs,

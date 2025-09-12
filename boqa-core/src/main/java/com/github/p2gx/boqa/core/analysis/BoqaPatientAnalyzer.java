@@ -1,6 +1,5 @@
 package com.github.p2gx.boqa.core.analysis;
 
-import com.github.p2gx.boqa.core.Analysis;
 import com.github.p2gx.boqa.core.Counter;
 import com.github.p2gx.boqa.core.PatientData;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
@@ -15,36 +14,35 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * An implementation of the {@link Analysis} interface for a single patient.
- * This class uses a shared {@link Counter} object to compute {@link BoqaCounts}
- * for all diseases and stores the result in an {@link AnalysisResults} instance.
- * <p>
- * Each instance corresponds to one patient. The analysis generates
- * disease-wise {@code BoqaCounts}, through which are diseases probabilities
- * are computed at a later step.
+ * Performs BOQA Analysis for individual patients.
+ * <p>This class analyzes a single patient's phenotypic profile against all known
+ * diseases to compute probability scores for diagnostic ranking.
  */
-public class PatientCountsAnalysis {
+public final class BoqaPatientAnalyzer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PatientCountsAnalysis.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaPatientAnalyzer.class);
+
     /**
-     * Extra record with wrapping around {@link BoqaCounts} and adding the score.
+     * Computes normalized BOQA scores (probabilities) for all diseases given a patient's data.
      *
-     * <p> Useful to ease development phase without changing future code.
+     * <p>This method performs the complete BOQA analysis pipeline:
+     * <ol>
+     *   <li>Computes {@link BoqaCounts} for each disease using the provided
+     *   {@link com.github.p2gx.boqa.core.algorithm.BoqaSetCounter}</li>
+     *   <li>Calculates un-normalized probabilities using
+     *   {@link #computeUnnormalizedProbability(double, double, BoqaCounts)}</li>
+     *   <li>Normalizes probabilities so they sum to 1.0 across all diseases</li>
+     *   <li>Sorts results by score (highest first) and limits to top results</li>
+     * </ol>
      *
-     * @param counts    The BOQA counts for a disease.
-     * @param boqaScore The normalized BOQA score for that disease.
-     *
+     * @param patientData  The patient's phenotypic data (observed symptoms/features)
+     * @param counter      The counter object that computes BoqaCounts for diseases
+     * @param resultsLimit Maximum number of top-scoring diseases to return
+     * @return An {@link BoqaAnalysisResult} containing the patient data and sorted disease scores
      * <p>
-     * TODO add check/handling for boqaScore = NaN
+     * TODO consider using again pyboqa scores results, but this is trivial at this point
      */
-    public record BoqaResult(BoqaCounts counts, Double boqaScore) implements Comparable<BoqaResult>{
-        @Override
-        public int compareTo(BoqaResult other) {
-            return other.boqaScore.compareTo(this.boqaScore);
-        }
-    }
-
-    public static List<BoqaResult> computeBoqaResults(PatientData patientData, Counter counter, int resultsLimit) {
+    public static BoqaAnalysisResult computeBoqaResults(PatientData patientData, Counter counter, int resultsLimit) {
         List<BoqaCounts> countsList = counter.getDiseaseIds()
                 .parallelStream() // much faster!
                 .map(dId ->  counter.computeBoqaCounts(
@@ -67,14 +65,15 @@ public class PatientCountsAnalysis {
         });
 
         Collections.sort(allResults);
-        return allResults.stream()
-                .limit(resultsLimit)
-                .toList();
+        return new BoqaAnalysisResult(patientData, allResults.stream().limit(resultsLimit).toList());
     }
 
     /**
-     * Computes the un-normalized BOQA probability for a given set of BoqaCounts and parameters.
-     *
+     * Computes the un-normalized BOQA probability P for a given set of BoqaCounts and parameters
+     * <p>
+     * P = α<sup>fpBoqaCount</sup> × β<sup>fpBoqaCount</sup> ×
+     * (1-α)<sup>fnBoqaCount</sup> × (1-β)<sup>tpBoqaCount</sup>
+     *  </pre>
      * @param alpha  False positive rate parameter.
      * @param beta   False negative rate parameter.
      * @param counts The {@link BoqaCounts} for a disease.

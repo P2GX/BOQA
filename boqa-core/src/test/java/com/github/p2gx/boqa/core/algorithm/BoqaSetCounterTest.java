@@ -1,7 +1,8 @@
 package com.github.p2gx.boqa.core.algorithm;
 
 import com.github.p2gx.boqa.core.Counter;
-import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis;
+import com.github.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import com.github.p2gx.boqa.core.analysis.BoqaResult;
 import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
 import com.github.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
@@ -18,8 +19,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 
-import static com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.computeBoqaResults;
-import static com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.BoqaResult;
+import static com.github.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeBoqaResults;
 import static org.junit.jupiter.api.Assertions.*;
 
 class BoqaSetCounterTest {
@@ -106,11 +106,10 @@ class BoqaSetCounterTest {
         }
         Path ppkt = Path.of(resourceUrl.toURI());
         int limit =  Integer.MAX_VALUE;
-        List<BoqaResult> boqaResults = computeBoqaResults(
-                new PhenopacketData(ppkt), counter, limit);
+        BoqaAnalysisResult boqaAnalysisResult = computeBoqaResults(new PhenopacketData(ppkt), counter, limit);
 
         BoqaCounts match = null;
-        for (BoqaResult br : boqaResults){
+        for (BoqaResult br : boqaAnalysisResult.boqaResults()){
             if (br.counts().diseaseId().equals(diagnosedDiseaseId)) {
                 match = br.counts();
                 break;

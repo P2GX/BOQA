@@ -1,23 +1,22 @@
 package com.github.p2gx.boqa.core.output;
-import com.github.p2gx.boqa.core.analysis.PatientCountsAnalysis.BoqaResult;
+import com.github.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 
 import java.util.List;
-import java.util.Map;
 
 public class ResultBundle {
     private final Metadata metadata;
-    private final Map<String, List<BoqaResult>> results;
+    private final List<BoqaAnalysisResult> results;
 
-    public ResultBundle(Metadata metadata, Map<String, List<BoqaResult>> analysisResults) {
+    public ResultBundle(Metadata metadata, List<BoqaAnalysisResult> boqaAnalysisResults) {
         this.metadata = metadata;
-        this.results = analysisResults;
+        this.results = boqaAnalysisResults;
     }
 
     public Metadata getMetadata() {
         return metadata;
     }
 
-    public Map<String, List<BoqaResult>> getResults() {
+    public List<BoqaAnalysisResult> getResults() {
         return results;
     }
 }

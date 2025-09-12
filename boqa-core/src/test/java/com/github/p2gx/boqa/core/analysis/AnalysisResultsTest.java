@@ -4,13 +4,13 @@ import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 
-import static com.github.p2gx.boqa.core.analysis.AnalysisResults.computeUnnormalizedProbability;
+import static com.github.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeUnnormalizedProbability;
 import static org.junit.jupiter.api.Assertions.*;
 
 class AnalysisResultsTest {
 
     /**
-     * Parameterized test for {@link  AnalysisResults#computeUnnormalizedProbability(double, double, BoqaCounts)}.
+     * Parameterized test for {@link  BoqaPatientAnalyzer#computeUnnormalizedProbability(double, double, BoqaCounts)}.
      * <p>
      * This test validates that the Java implementation of the un-normalized probability calculation
      * produces identical results to a set of scores created in Python.

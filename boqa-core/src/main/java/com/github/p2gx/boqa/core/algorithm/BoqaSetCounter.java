@@ -43,6 +43,7 @@ public class BoqaSetCounter implements Counter {
         Map<TermId, Set<TermId>> dLayers = new HashMap<>(); // TODO change to stream ?
         TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
         LOGGER.info("Initializing disease layers for {} diseases", diseaseIds.size());
+        // TODO consider streaming diseaseIds and making the parallelStream() here
         diseaseIds.forEach(
                 d -> dLayers.put(
                         TermId.of(d),
