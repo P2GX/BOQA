@@ -7,7 +7,7 @@ import org.junit.jupiter.params.provider.CsvFileSource;
 import static com.github.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeUnnormalizedProbability;
 import static org.junit.jupiter.api.Assertions.*;
 
-class AnalysisResultsTest {
+class BoqaPatientAnalyzerTest {
 
     /**
      * Parameterized test for {@link  BoqaPatientAnalyzer#computeUnnormalizedProbability(double, double, BoqaCounts)}.
