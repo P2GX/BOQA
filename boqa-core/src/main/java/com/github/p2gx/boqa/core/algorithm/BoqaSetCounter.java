@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
  * @implNote  Consider implementing XML or JSON serialization to cache disease layers, avoiding recomputation.
  * Avoid `Serializable` interface, since it is heavily criticized and deprecated.
  * Especially important for melded/digenic where combinatorial complexity increases.
+ * @todo should idToLabel live in {@link DiseaseData}
  */
 public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
@@ -30,9 +31,8 @@ public class BoqaSetCounter implements Counter {
     private final GraphTraversing graphTraverser;
     private final Map<TermId, Set<TermId>> diseaseLayers;
     private final Set<String> diseaseIds;
-    private final Map<String, String> idToLabel; //TODO move to disease dataa
+    private final Map<String, String> idToLabel;
 
-    // TODO for each disease in diseaseData compute ancestors OR load from disk
     public BoqaSetCounter(DiseaseData diseaseData,
                           Ontology hpo,
                           boolean fullOntology
@@ -40,24 +40,22 @@ public class BoqaSetCounter implements Counter {
         this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
         this.graphTraverser = new GraphTraversing(hpo, fullOntology);
         this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds());
-        Map<TermId, Set<TermId>> dLayers = new HashMap<>(); // TODO change to stream ?
         TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
         LOGGER.info("Initializing disease layers for {} diseases", diseaseIds.size());
-        diseaseIds.forEach(
-                d -> dLayers.put(
-                        TermId.of(d),
-                        graphTraverser.initLayer(
-                            diseaseData
-                                    .getIncludedDiseaseFeatures(d)
-                                    .parallelStream()
-                                    .map(TermId::of)
-                                    .filter(tId -> fullOntology || graphTraverser // only filter when fullOntology is false
-                                            .getHpoGraph()
-                                            .isDescendantOf(tId, PHENOTYPIC_ABNORMALITY)) // filter for descendants
-                                    .collect(Collectors.toSet() )
+        Map<TermId, Set<TermId>> dLayers = diseaseIds.parallelStream()
+                .collect(Collectors.toConcurrentMap(
+                        d -> TermId.of(d),
+                        d -> graphTraverser.initLayer(
+                                diseaseData
+                                        .getIncludedDiseaseFeatures(d)
+                                        .parallelStream()
+                                        .map(TermId::of)
+                                        .filter(tId -> fullOntology ||
+                                                graphTraverser.getHpoGraph().isDescendantOf(tId, PHENOTYPIC_ABNORMALITY))
+                                        .collect(Collectors.toSet())
                         )
-                )
-        );
+                ));
+
         this.diseaseLayers = Map.copyOf(dLayers);
         LOGGER.info("Finished initializing disease layers");
     }
