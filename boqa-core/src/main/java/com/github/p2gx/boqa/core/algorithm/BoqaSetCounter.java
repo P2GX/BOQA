@@ -75,7 +75,6 @@ public class BoqaSetCounter implements Counter {
         Set<TermId> queryLayerInitialized = graphTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
         Set<TermId> intersection = new HashSet<>(diseaseLayer); // use copy constructor
-        intersection.retainAll(queryLayerInitialized); // TP
         Set<TermId> falsePositives = new HashSet<>(queryLayerInitialized); // FP
         falsePositives.removeAll(diseaseLayer);
         // Do not overcount fps
@@ -85,6 +84,25 @@ public class BoqaSetCounter implements Counter {
                 fpcount += 1;
             }
         }
+        intersection.retainAll(queryLayerInitialized); // TP
+        boolean fullApr = true;
+        int tpCount = 0;
+        if (fullApr){
+            for(TermId node : intersection){
+                Set<TermId> children = new HashSet<>(
+                        graphTraverser.getHpoGraph().extendWithChildren(node, false));
+                // if no child is in Q, namely all children are off in Q
+                // OR if any child is a false positive, then count
+                if (Collections.disjoint(children, queryLayerInitialized) ||
+                        !Collections.disjoint(children, falsePositives)){
+                    tpCount += 1;
+                }
+            }
+        }
+        else {
+            tpCount = intersection.size();
+        }
+
         Set<TermId> falseNegatives = new HashSet<>(diseaseLayer); // FN
         falseNegatives.removeAll(queryLayerInitialized); // equivalent with removeAll(intersection)
         // Now iterate over these and count only those with all parents ON
@@ -118,7 +136,7 @@ public class BoqaSetCounter implements Counter {
                 }
             }
         }
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), intersection.size(), fpcount, offNodesCount, betaCounts);
+        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), tpCount, fpcount, offNodesCount, betaCounts);
     }
 
     @Override

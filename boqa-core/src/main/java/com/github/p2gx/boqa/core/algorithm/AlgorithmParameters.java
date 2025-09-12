@@ -8,10 +8,10 @@ public final class AlgorithmParameters {
     //public static final double ALPHA = 0.0005;
     //public static final double ALPHA = 1.0 / 19077;
     //public static final double ALPHA = 1.0 / 19077/16;
-    public static final double ALPHA = 0.0001;
-    //public static final double ALPHA = 0.0001;
-    //public static final double BETA = 0.2;
-    public static final double BETA = 0.001;
+    public static final double ALPHA = 1.0 / 19077/64;
+    //public static final double ALPHA = 0.05;
+    //public static final double BETA = 0.6;
+    public static final double BETA = 0.8;
 
     private AlgorithmParameters() {} // prevent instantiation
 }
