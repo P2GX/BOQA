@@ -1,10 +1,8 @@
 package com.github.p2gx.boqa.cli;
 
-import com.github.p2gx.boqa.cli.cmd.BoqaCommand;
-import com.github.p2gx.boqa.cli.cmd.BlendedCommand;
+import com.github.p2gx.boqa.cli.cmd.BoqaBenchmarkCommand;
+import com.github.p2gx.boqa.cli.cmd.BlendedBenchmarkCommand;
 import com.github.p2gx.boqa.cli.cmd.DownloadCommand;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 import static picocli.CommandLine.Help.Ansi.Style.*;
@@ -38,8 +36,8 @@ public class Main implements Callable<Integer> {
         CommandLine cline = new CommandLine(new Main())
                 .setColorScheme(COLOR_SCHEME)
                 .addSubcommand("download", new DownloadCommand())
-                .addSubcommand("plain", new BoqaCommand())
-                .addSubcommand("blended", new BlendedCommand());
+                .addSubcommand("plain", new BoqaBenchmarkCommand())
+                .addSubcommand("blended", new BlendedBenchmarkCommand());
         cline.setToggleBooleanFlags(false);
         System.exit(cline.execute(args));
     }

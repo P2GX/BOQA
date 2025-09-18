@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true,
         description = "Performs analysis taking into account that patients may be affected by more than one genetic disease.",
         sortOptions = false)
-public class BlendedCommand extends BoqaCommand implements Callable<Integer> {
+public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Callable<Integer> {
 
     @CommandLine.Option(
             names={"-dg","--disease-gene-associations"},
@@ -25,7 +25,7 @@ public class BlendedCommand extends BoqaCommand implements Callable<Integer> {
     private String anchorGene;
 
 
-    public BlendedCommand(){}
+    public BlendedBenchmarkCommand(){}
 
     @Override
     public Integer call() throws Exception {

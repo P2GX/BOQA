@@ -23,7 +23,6 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -32,8 +31,8 @@ import java.util.stream.Stream;
         mixinStandardHelpOptions = true,
         description = "Performs BOQA analysis as described in PMID:22843981, without taking annotation frequencies into account.",
         sortOptions = false)
-public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaCommand.class);
+public class BoqaBenchmarkCommand implements Callable<Integer>  {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaBenchmarkCommand.class);
 
     @Spec
     CommandSpec spec;
@@ -57,18 +56,6 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
     private Path phenopacketFile;
 
     @CommandLine.Option(
-            names={"-a","--a-param"},
-            description ="Float value between 0 and 5 used to define parameter alpha (default: ${DEFAULT-VALUE}).",
-            defaultValue = "1.0")
-    private float aParam;
-
-    @CommandLine.Option(
-            names={"-b","--b-param"},
-            description ="Float value between 0 and 9 used to define parameter beta (default: ${DEFAULT-VALUE}).",
-            defaultValue = "1.0")
-    private float bParam;
-
-    @CommandLine.Option(
             names={"-n","--num-of-processes"},
             description ="Number of processes that will run in parallel (default: ${DEFAULT-VALUE}).",
             defaultValue = "1")
@@ -78,33 +65,39 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
             names = "--out",
             description = "Output JSON file",
             required = true)
-    Path outPath;
+    private Path outPath;
 
     @CommandLine.Option(
             names = {"-L", "--limit"},
             description = "Limit number of diseases reported in output.",
             required = false)
-    Integer resultsLimit;
+    private Integer resultsLimit;
 
-    public BoqaCommand(){}
+    public BoqaBenchmarkCommand(){}
 
     @Override
     public Integer call() throws Exception {
-
+        LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
         //TODO Ielis suggests to only load the ontology once at the beginning, change DiseasesData
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
+        LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
 
-        // Prepare DiseaseData
+        // Parse disease-HPO associations into DiseaseData object
+        LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
         DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
+        LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
         // Initialize Counter
         Counter counter = new BoqaSetCounter(diseaseData, hpo, false);
+        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
 
         AtomicInteger fileCount = new AtomicInteger(0);
 
+        LOGGER.info("Beginning BOQA analysis for patient phenopackets...");
+        LOGGER.info("Results limit set to {}", limit);
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
             boqaAnalysisResults = stream
@@ -114,9 +107,8 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
                         PatientData ppkt = new PhenopacketData(singleFile);
                         BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
                                 ppkt, counter, limit);
-
                         int count = fileCount.incrementAndGet();
-                        if (count % 10 == 0) {
+                        if (count % 50 == 0) {
                             System.out.println("Processed: " + count);
                         }
                         return result;
@@ -125,7 +117,9 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
         } catch (IOException e) {
             LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
         }
+        LOGGER.info("Finished processing {} patient files.", fileCount.get());
 
+        LOGGER.info("Writing results to {}", outPath);
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
         Writer writer = new JsonResultWriter();
         writer.writeResults(
@@ -136,7 +130,7 @@ public class BoqaCommand extends BaseCommand implements Callable<Integer>  {
                 Map.of("alpha", AlgorithmParameters.ALPHA, "beta", AlgorithmParameters.BETA),
                 outPath
         );
-
+        LOGGER.info("BOQA analysis completed successfully.");
         return 0;
     }
 }
