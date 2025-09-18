@@ -20,9 +20,6 @@ import com.github.p2gx.boqa.core.algorithm.BoqaCounts;
  * @param counts    The BOQA counts for this disease.
  * @param boqaScore The normalized BOQA probability score (0.0 to 1.0), where higher values
  *                  indicate greater diagnostic likelihood.
- *
- * @todo add check/handling for boqaScore = NaN
- * @todo add test to check ordering
  */
 public record BoqaResult(BoqaCounts counts, double boqaScore) implements Comparable<BoqaResult> {
     /**
@@ -36,6 +33,18 @@ public record BoqaResult(BoqaCounts counts, double boqaScore) implements Compara
      */
     @Override
     public int compareTo(BoqaResult other) {
+        boolean isThisNaN = Double.isNaN(this.boqaScore);
+        boolean isOtherNaN = Double.isNaN(other.boqaScore);
+
+        if (isThisNaN && isOtherNaN) {
+            return 0;
+        }
+        if (isThisNaN) {
+            return 1;
+        }
+        if (isOtherNaN) {
+            return -1;
+        }
         return Double.compare(other.boqaScore(), this.boqaScore);
     }
 }
