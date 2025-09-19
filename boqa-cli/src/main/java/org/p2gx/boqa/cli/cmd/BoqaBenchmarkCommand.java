@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.cli.cmd;
+package org.p2gx.boqa.cli.cmd;
 
 import com.github.p2gx.boqa.core.*;
 import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;

@@ -1,8 +1,8 @@
-package com.github.p2gx.boqa.cli;
+package org.p2gx.boqa.cli;
 
-import com.github.p2gx.boqa.cli.cmd.BoqaBenchmarkCommand;
-import com.github.p2gx.boqa.cli.cmd.BlendedBenchmarkCommand;
-import com.github.p2gx.boqa.cli.cmd.DownloadCommand;
+import org.p2gx.boqa.cli.cmd.BoqaBenchmarkCommand;
+import org.p2gx.boqa.cli.cmd.BlendedBenchmarkCommand;
+import org.p2gx.boqa.cli.cmd.DownloadCommand;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 import static picocli.CommandLine.Help.Ansi.Style.*;

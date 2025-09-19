@@ -1,4 +1,4 @@
-package com.github.p2gx.boqa.cli.cmd;
+package org.p2gx.boqa.cli.cmd;
 
 import picocli.CommandLine;
 
