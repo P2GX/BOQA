@@ -17,7 +17,7 @@ public interface DiseaseData {
     Set<String> getDiseaseIds();
 
     // Return HPO terms associated with a disease
-    Set<String> getIncludedDiseaseFeatures(String diseaseId);
+    Set<String> getObservedDiseaseFeatures(String diseaseId);
 
     // Return HPO terms that are explicitly not associated with a disease
     default Set<String> getExcludedDiseaseFeatures(String diseaseId) {

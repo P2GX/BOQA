@@ -85,17 +85,17 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
 
         for (HpoDisease disease : this.diseases) {
 
-            // Included
-            Set<String> includedTerms = disease.annotationTermIdList().stream()
+            // Observed
+            Set<String> observedTerms = disease.annotationTermIdList().stream()
                     .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() != 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
             Set<String> moi_terms = disease.modesOfInheritance().stream() // Include mode of inheritance
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
-            includedTerms.addAll(moi_terms);
+            observedTerms.addAll(moi_terms);
             HashMap<String, Set<String>> iTerms = new HashMap<>();
-            iTerms.put("I", includedTerms);
+            iTerms.put("I", observedTerms);
             diseaseFeaturesDict.putIfAbsent(disease.id().toString(), iTerms);
 
             // Excluded
@@ -132,7 +132,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String diseaseId) {
+    public Set<String> getObservedDiseaseFeatures(String diseaseId) {
         if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
             return this.diseaseFeaturesDict.get(diseaseId).get("I");
         } else {

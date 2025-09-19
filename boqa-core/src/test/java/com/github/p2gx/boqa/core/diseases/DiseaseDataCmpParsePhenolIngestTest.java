@@ -63,8 +63,8 @@ class DiseaseDataCmpParsePhenolIngestTest {
         for (String diseaseId: diseaseSet) {
             System.out.println("------------------------------");
             System.out.println(diseaseId);
-            Set<String> includedTermsParse = testDiseaseDictParse.getIncludedDiseaseFeatures(diseaseId);
-            Set<String> includedTermsPhenol = testDiseaseDictPhenol.getIncludedDiseaseFeatures(diseaseId);
+            Set<String> includedTermsParse = testDiseaseDictParse.getObservedDiseaseFeatures(diseaseId);
+            Set<String> includedTermsPhenol = testDiseaseDictPhenol.getObservedDiseaseFeatures(diseaseId);
             Set<String> excludedTermsParse = testDiseaseDictParse.getExcludedDiseaseFeatures(diseaseId);
             Set<String> excludedTermsPhenol = testDiseaseDictPhenol.getExcludedDiseaseFeatures(diseaseId);
             if (!includedTermsParse.equals(includedTermsPhenol) | !excludedTermsParse.equals(excludedTermsPhenol)) {

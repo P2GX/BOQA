@@ -59,7 +59,7 @@ class DiseaseDataPhenolIngestTest {
         //System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
+        Set<String> actualIncluded = testDiseaseDict.getObservedDiseaseFeatures(diseaseId);
         //System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003233");
@@ -106,7 +106,7 @@ class DiseaseDataPhenolIngestTest {
         System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseDict.getIncludedDiseaseFeatures(diseaseId);
+        Set<String> actualIncluded = testDiseaseDict.getObservedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         //expectedIncluded.add("HP:0003587"); // Clinical modifier: Gradual, very slow onset of disease manifestations.

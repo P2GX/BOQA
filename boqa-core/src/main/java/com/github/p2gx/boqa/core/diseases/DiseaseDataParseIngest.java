@@ -110,7 +110,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
                 // Term is excluded
                 diseaseFeaturesDict.get(disease_id).get("E").add(hpo_id);
             } else {
-                // Term is included
+                // Term is observed
                 diseaseFeaturesDict.get(disease_id).get("I").add(hpo_id);
             }
         }
@@ -267,7 +267,7 @@ public class DiseaseDataParseIngest implements DiseaseData {
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String diseaseId) {
+    public Set<String> getObservedDiseaseFeatures(String diseaseId) {
         if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
             return this.diseaseFeaturesDict.get(diseaseId).get("I");
         } else {

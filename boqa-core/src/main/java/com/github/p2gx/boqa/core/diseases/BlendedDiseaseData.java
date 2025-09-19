@@ -32,7 +32,7 @@ public class BlendedDiseaseData implements DiseaseData {
         for (String diseaseId : geneIdAssociatedDiseases) {
             this.blendedDiseaseFeaturesDict.putIfAbsent(diseaseId, new HashMap<>());
             this.blendedDiseaseFeaturesDict.get(diseaseId).put("I", new HashSet<>());
-            this.blendedDiseaseFeaturesDict.get(diseaseId).get("I").addAll(this.plainDiseaseData.getIncludedDiseaseFeatures(diseaseId));
+            this.blendedDiseaseFeaturesDict.get(diseaseId).get("I").addAll(this.plainDiseaseData.getObservedDiseaseFeatures(diseaseId));
             this.blendedDiseaseFeaturesDict.get(diseaseId).put("E", new HashSet<>());
             this.blendedDiseaseFeaturesDict.get(diseaseId).get("E").addAll(this.plainDiseaseData.getExcludedDiseaseFeatures(diseaseId));
             this.blendedDiseaseFeaturesDict.get(diseaseId).put("G", new HashSet<>());
@@ -49,8 +49,8 @@ public class BlendedDiseaseData implements DiseaseData {
                     String blendedDiseaseId = diseaseId1 + ',' + diseaseId2;
                     this.blendedDiseaseFeaturesDict.putIfAbsent(blendedDiseaseId, new HashMap<>());
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("I", new HashSet<>());
-                    this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(this.plainDiseaseData.getIncludedDiseaseFeatures(diseaseId1));
-                    this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(this.plainDiseaseData.getIncludedDiseaseFeatures(diseaseId2));
+                    this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(this.plainDiseaseData.getObservedDiseaseFeatures(diseaseId1));
+                    this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(this.plainDiseaseData.getObservedDiseaseFeatures(diseaseId2));
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("E", new HashSet<>());
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("E").addAll(this.plainDiseaseData.getExcludedDiseaseFeatures(diseaseId1));
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("E").addAll(this.plainDiseaseData.getExcludedDiseaseFeatures(diseaseId2));
@@ -86,7 +86,7 @@ public class BlendedDiseaseData implements DiseaseData {
     }
 
     @Override
-    public Set<String> getIncludedDiseaseFeatures(String diseaseId) {
+    public Set<String> getObservedDiseaseFeatures(String diseaseId) {
         if (this.blendedDiseaseFeaturesDict.containsKey(diseaseId)) {
             return this.blendedDiseaseFeaturesDict.get(diseaseId).get("I");
         } else {

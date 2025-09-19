@@ -70,7 +70,7 @@ class DiseaseDataParseIngestTest {
         System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseData.getIncludedDiseaseFeatures(diseaseId);
+        Set<String> actualIncluded = testDiseaseData.getObservedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003233");
@@ -117,7 +117,7 @@ class DiseaseDataParseIngestTest {
         System.out.println(diseaseId);
 
         // Included
-        Set<String> actualIncluded = testDiseaseData.getIncludedDiseaseFeatures(diseaseId);
+        Set<String> actualIncluded = testDiseaseData.getObservedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003587");
@@ -342,7 +342,7 @@ class DiseaseDataParseIngestTest {
     void testNonExistentDiseaseId() {
         Throwable exception = assertThrows(
                 IllegalArgumentException.class, () ->
-                        testDiseaseData.getIncludedDiseaseFeatures("OMIM:INCULDED"));
+                        testDiseaseData.getObservedDiseaseFeatures("OMIM:INCULDED"));
 
         assertEquals("Disease ID \"OMIM:INCULDED\" not found!", exception.getMessage());
 

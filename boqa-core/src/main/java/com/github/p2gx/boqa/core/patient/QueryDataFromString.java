@@ -17,8 +17,8 @@ public class QueryDataFromString implements PatientData {
     Set<TermId> observedTerms;
     Set<TermId> excludedTerms;
 
-    public QueryDataFromString(String includedTermListString, String excludedTermListString) {
-        this.observedTerms = Arrays.asList(includedTermListString.split(",")).stream()
+    public QueryDataFromString(String observedTermListString, String excludedTermListString) {
+        this.observedTerms = Arrays.asList(observedTermListString.split(",")).stream()
                 .filter(t -> t.matches("HP:\\d{7}"))
                 .map(TermId::of)
                 .collect(Collectors.toSet());

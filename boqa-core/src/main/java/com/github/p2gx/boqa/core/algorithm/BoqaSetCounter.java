@@ -57,7 +57,7 @@ public class BoqaSetCounter implements Counter {
                         d -> TermId.of(d),
                         d -> graphTraverser.initLayer(
                                 diseaseData
-                                        .getIncludedDiseaseFeatures(d)
+                                        .getObservedDiseaseFeatures(d)
                                         .parallelStream()
                                         .map(TermId::of)
                                         .filter(tId -> fullOntology ||
