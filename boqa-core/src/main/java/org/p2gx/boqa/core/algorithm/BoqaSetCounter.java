@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  * @implNote  Consider implementing XML or JSON serialization to cache disease layers, avoiding recomputation.
  * Avoid `Serializable` interface, since it is heavily criticized and deprecated.
  * Especially important for melded/digenic where combinatorial complexity increases.
- * @todo should idToLabel live in {@link DiseaseData}
+ * @todo should idToLabel live in {@link DiseaseData}?
  */
 public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
@@ -33,15 +33,30 @@ public class BoqaSetCounter implements Counter {
     private final Set<String> diseaseIds;
     private final Map<String, String> idToLabel;
 
+    /**
+     * Constructs a BoqaSetCounter using the default behavior (fullOntology = false).
+     * <p>
+     * This is a convenience constructor that carries out expected behavior, namely it initializes
+     * disease layers by only considering descendants of the "Phenotypic Abnormality" term.
+     *
+     * @param diseaseData the disease data containing disease IDs, labels, and observed phenotypes
+     * @param hpo the HPO ontology used to traverse and expand phenotype terms
+     */
     public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo){
         this(diseaseData, hpo,false);
     }
 
     /**
+     * Constructs a BoqaSetCounter and initializes all disease layers.
+     * <p>
+     * Precomputes the induced HPO graph for each disease based on observed phenotypes from {@link DiseaseData}.
+     * The computation considers only descendants of the "Phenotypic Abnormality" term unless {@code fullOntology}
+     * is set to true.
      *
-     * @param diseaseData
-     * @param hpo
-     * @param fullOntology this extra parameter only for testing purposes
+     * @param diseaseData the disease data containing disease IDs, labels, and observed phenotypes
+     * @param hpo the HPO ontology used to traverse and expand phenotype terms
+     * @param fullOntology if true, include all terms in the ontology without filtering by Phenotypic Abnormality;
+     *                     primarily for legacy testing purposes
      */
     BoqaSetCounter(DiseaseData diseaseData,
                           Ontology hpo,
