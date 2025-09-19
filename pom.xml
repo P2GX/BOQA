@@ -9,7 +9,6 @@
     <version>0.1.0-SNAPSHOT</version>
     <modules>
         <module>boqa-core</module>
-        <module>boqa-exomiser-adapter</module>
         <module>boqa-cli</module>
     </modules>
 
@@ -24,7 +23,6 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <phenol.version>[2.1.2,3.0.0)</phenol.version>
 
-        <exomiser.version>14.1.0</exomiser.version>
         <phenopacket-schema.version>2.0.2</phenopacket-schema.version>
         <protobuf.version>3.21.7</protobuf.version>
 
@@ -48,12 +46,6 @@
                 <groupId>org.monarchinitiative.phenol</groupId>
                 <artifactId>phenol-io</artifactId>
                 <version>${phenol.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.monarchinitiative.exomiser</groupId>
-                <artifactId>exomiser-core</artifactId>
-                <version>${exomiser.version}</version>
             </dependency>
 
             <dependency>
