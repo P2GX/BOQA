@@ -1,13 +1,13 @@
 package org.p2gx.boqa.cli.cmd;
 
-import com.github.p2gx.boqa.core.*;
-import com.github.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import com.github.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import com.github.p2gx.boqa.core.analysis.BoqaAnalysisResult;
-import com.github.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
-import com.github.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
-import com.github.p2gx.boqa.core.output.JsonResultWriter;
-import com.github.p2gx.boqa.core.patient.PhenopacketData;
+import org.p2gx.boqa.core.*;
+import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
+import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
+import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
+import org.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
+import org.p2gx.boqa.core.output.JsonResultWriter;
+import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.slf4j.Logger;
