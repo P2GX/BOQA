@@ -33,7 +33,17 @@ public class BoqaSetCounter implements Counter {
     private final Set<String> diseaseIds;
     private final Map<String, String> idToLabel;
 
-    public BoqaSetCounter(DiseaseData diseaseData,
+    public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo){
+        this(diseaseData, hpo,false);
+    }
+
+    /**
+     *
+     * @param diseaseData
+     * @param hpo
+     * @param fullOntology this extra parameter only for testing purposes
+     */
+    BoqaSetCounter(DiseaseData diseaseData,
                           Ontology hpo,
                           boolean fullOntology
     ){
@@ -55,7 +65,6 @@ public class BoqaSetCounter implements Counter {
                                         .collect(Collectors.toSet())
                         )
                 ));
-
         this.diseaseLayers = Map.copyOf(dLayers);
         LOGGER.info("Finished initializing disease layers");
     }

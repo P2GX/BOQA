@@ -88,7 +88,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
         // Initialize Counter
-        Counter counter = new BoqaSetCounter(diseaseData, hpo, false);
+        Counter counter = new BoqaSetCounter(diseaseData, hpo);
         LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
