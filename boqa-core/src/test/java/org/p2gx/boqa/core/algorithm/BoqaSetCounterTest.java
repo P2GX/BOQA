@@ -55,10 +55,10 @@ class BoqaSetCounterTest {
     void testPyboqaFull(
             String jsonFile,
             String diagnosedDiseaseId,
-            String tnExp,
-            String fnExp,
-            String fpExp,
-            String tpExp
+            int tnExp,
+            int fnExp,
+            int fpExp,
+            int tpExp
     ) throws URISyntaxException, IOException {
         testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
     }
@@ -69,10 +69,10 @@ class BoqaSetCounterTest {
     void testPyboqaSubset(
             String jsonFile,
             String diagnosedDiseaseId,
-            String tnExp,
-            String fnExp,
-            String fpExp,
-            String tpExp
+            int tnExp,
+            int fnExp,
+            int fpExp,
+            int tpExp
     ) throws URISyntaxException, IOException {
         testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
     }
@@ -80,23 +80,19 @@ class BoqaSetCounterTest {
     void testComputeBoqaCountsAgainstPyboqa(
             String jsonFile,
             String diagnosedDiseaseId,
-            String tnExp,
-            String fnExp,
-            String fpExp,
-            String tpExp
+            int tnExp,
+            int fnExp,
+            int fpExp,
+            int tpExp
     ) throws URISyntaxException, IOException {
-        int tnExpInt = Integer.parseInt(tnExp.trim());
-        int fnExpInt = Integer.parseInt(fnExp.trim());
-        int tpExpInt = Integer.parseInt(tpExp.trim());
-        int fpExpInt = Integer.parseInt(fpExp.trim());
-        HashMap<String,String> idToLabel = diseaseData.getIdToLabel();
+        Map<String,String> idToLabel = diseaseData.getIdToLabel();
         BoqaCounts pyboqaCounts = new BoqaCounts(
                 diagnosedDiseaseId,
                 idToLabel.get(diagnosedDiseaseId),
-                tpExpInt,
-                fpExpInt,
-                tnExpInt,
-                fnExpInt
+                tpExp,
+                fpExp,
+                tnExp,
+                fnExp
         );
 
         URL resourceUrl = BoqaSetCounterTest.class
@@ -116,9 +112,5 @@ class BoqaSetCounterTest {
             }
         }
         assertEquals(pyboqaCounts, match);
-    }
-
-    @Test
-    void testGetDiseaseIds() {
     }
 }
