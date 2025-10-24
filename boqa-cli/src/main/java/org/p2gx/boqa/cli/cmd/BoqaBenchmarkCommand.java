@@ -5,7 +5,7 @@ import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
-import org.p2gx.boqa.core.diseases.DiseaseDataParseIngest;
+import org.p2gx.boqa.core.diseases.DiseaseDataParser;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -73,18 +73,15 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             required = false)
     private Integer resultsLimit;
 
-    public BoqaBenchmarkCommand(){}
-
     @Override
     public Integer call() throws Exception {
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
-        //TODO Ielis suggests to only load the ontology once at the beginning, change DiseasesData
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
 
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
-        DiseaseData diseaseData = DiseaseDataParseIngest.fromPath(phenotypeAnnotationFile);
+        DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
         // Initialize Counter
@@ -105,8 +102,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     .parallel()
                     .map(singleFile -> {
                         PatientData ppkt = new PhenopacketData(singleFile);
-                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
-                                ppkt, counter, limit);
+                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(ppkt, counter, limit);
                         int count = fileCount.incrementAndGet();
                         if (count % 50 == 0) {
                             System.out.println("Processed: " + count);

@@ -24,9 +24,6 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                     "The aim of the analysis is to identify a second gene based on the phenotypic features observed.")
     private String anchorGene;
 
-
-    public BlendedBenchmarkCommand(){}
-
     @Override
     public Integer call() throws Exception {
 

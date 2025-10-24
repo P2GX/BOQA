@@ -3,6 +3,7 @@ package org.p2gx.boqa.core.diseases;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.p2gx.boqa.core.DiseaseData;
 
 
 import java.io.*;
@@ -20,14 +21,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class DiseaseDataCmpParsePhenolIngestTest {
 
-    private static DiseaseDataParseIngest testDiseaseDictParse;
-    private static DiseaseDataPhenolIngest testDiseaseDictPhenol;
+    private static DiseaseData testDiseaseDictParse;
+    private static DiseaseData testDiseaseDictPhenol;
 
     @BeforeAll
     static void setup() throws IOException {
         try (InputStream is = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
-            testDiseaseDictParse = new DiseaseDataParseIngest(is);
+            testDiseaseDictParse = DiseaseDataParser.parseDiseaseDataFromHpoa(is);
         }
 
         try (
@@ -59,7 +60,7 @@ class DiseaseDataCmpParsePhenolIngestTest {
          */
 
         // Get List of all disease keys
-        Set<String> diseaseSet = testDiseaseDictParse.diseaseFeaturesDict.keySet();
+        Set<String> diseaseSet = testDiseaseDictParse.getDiseaseIds();
         for (String diseaseId: diseaseSet) {
             System.out.println("------------------------------");
             System.out.println(diseaseId);
@@ -67,7 +68,7 @@ class DiseaseDataCmpParsePhenolIngestTest {
             Set<String> includedTermsPhenol = testDiseaseDictPhenol.getObservedDiseaseFeatures(diseaseId);
             Set<String> excludedTermsParse = testDiseaseDictParse.getExcludedDiseaseFeatures(diseaseId);
             Set<String> excludedTermsPhenol = testDiseaseDictPhenol.getExcludedDiseaseFeatures(diseaseId);
-            if (!includedTermsParse.equals(includedTermsPhenol) | !excludedTermsParse.equals(excludedTermsPhenol)) {
+            if (!includedTermsParse.equals(includedTermsPhenol) || !excludedTermsParse.equals(excludedTermsPhenol)) {
                 System.out.println("Failed!");
                 Set<String> differenceSet = includedTermsParse.stream()
                         .filter(val -> !includedTermsPhenol.contains(val))

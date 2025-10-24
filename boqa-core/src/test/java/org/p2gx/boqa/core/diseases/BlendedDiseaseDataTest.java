@@ -2,9 +2,11 @@ package org.p2gx.boqa.core.diseases;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.p2gx.boqa.core.DiseaseData;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
@@ -13,17 +15,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class BlendedDiseaseDataTest {
 
     //private static BlendedDiseaseData testBlendedDiseaseData;
-    private static DiseaseDataParseIngest testDiseaseData;
+    private static DiseaseData testDiseaseData;
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.
-                getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
-            testDiseaseData = new DiseaseDataParseIngest(is);
-        }
-        try (InputStream is = new GZIPInputStream(DiseaseDataParseIngestTest.class.
-                getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.txt.gz"))) {
-            testDiseaseData.addDiseaseGeneAssociations(is);
+        try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
+                getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")));
+             InputStream geneAssociations = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
+                     getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.txt.gz")))) {
+            testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoaWithGeneAssociations(hpoa, geneAssociations);
         }
     }
 

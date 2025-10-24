@@ -1,6 +1,6 @@
 package org.p2gx.boqa.core;
 
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,8 +31,8 @@ public interface DiseaseData {
     // Return gene symbols associated with a disease
     Set<String> getDiseaseGeneSymbols(String diseaseId);
 
-    default HashMap<String, String> getIdToLabel() {
-        return new HashMap<>();
-    };
+    default Map<String, String> getIdToLabel() {
+        return Map.of();
+    }
 
 }
