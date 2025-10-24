@@ -1,8 +1,10 @@
 package org.p2gx.boqa.core.algorithm;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.monarchinitiative.phenol.graph.NodeNotPresentInGraphException;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,23 +53,25 @@ import java.util.concurrent.ConcurrentHashMap;
  * boolean parentsActive = traverser.allParentsActive(TermId.of("HP:0004322"), initialized);
  * }</pre>
  *
- * @author
- *   <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
+ * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  */
-class GraphTraversing {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GraphTraversing.class);
+class GraphTraverser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GraphTraverser.class);
     private static final Set<TermId> LOGGED_REPLACEMENTS = ConcurrentHashMap.newKeySet();
 
-    public static final String HPO_ROOT_TERM = "HP:0000001";
     private final Ontology hpo;
     private final boolean fullOntology;
-    public OntologyGraph<TermId> getHpoGraph() {
-        return hpo.graph();
-    }
+    private final OntologyGraph<TermId> hpoGraph;
+    private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine.newBuilder().maximumSize(500).build();
 
-    public GraphTraversing(Ontology hpo, boolean fullOntology) {
+    public GraphTraverser(Ontology hpo, boolean fullOntology) {
         this.hpo = hpo;
         this.fullOntology = fullOntology;
+        hpoGraph = hpo.graph();
+    }
+
+    public OntologyGraph<TermId> getHpoGraph() {
+        return hpoGraph;
     }
 
     /**
@@ -80,28 +84,30 @@ class GraphTraversing {
      * <pre>
      *      Set&lt;TermId&gt; someLayerInitialized = graphTraverser.initLayer(observedHpos);
      * </pre>
+     *
      * @param hpoTerms the set of observed HPO terms to initialize from
      * @return the initialized layer of terms including ancestors
      */
-    Set<TermId> initLayer(Set<TermId> hpoTerms){
+    Set<TermId> initLayer(Set<TermId> hpoTerms) {
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> {
-            Collection<TermId> traversedHpos;
-            try {
-                traversedHpos = hpo.graph().extendWithAncestors(t, true);
-            } catch (NodeNotPresentInGraphException e){
-                TermId primaryTid = hpo.getPrimaryTermId(t);
-                traversedHpos = hpo.graph().extendWithAncestors(primaryTid, true);
-                // Log once only
-                if (LOGGED_REPLACEMENTS.add(t)) {
+            TermId primaryTid = hpo.getPrimaryTermId(t);
+            if (primaryTid == null) {
+                LOGGER.warn("Invalid HPO term {}! Skipping...", t);
+            } else {
+                // Do we really care?
+                if (!t.equals(primaryTid) && LOGGED_REPLACEMENTS.add(t)) {
                     LOGGER.warn("Replacing {} with primary term {}", t, primaryTid);
                 }
+                // this can be expensive, so use a light cache
+                Collection<TermId> ancestorTermIds = hpoAncestorsCache.get(t, termId -> hpoGraph.extendWithAncestors(primaryTid, true));
+                initializedLayer.addAll(ancestorTermIds);
             }
-            initializedLayer.addAll(traversedHpos);
         });
-        if(!fullOntology) {
+        if (!fullOntology) {
             // We only want phenotypic abnormalities!
-            initializedLayer.remove(TermId.of(HPO_ROOT_TERM));
+            // TODO: is this correct? Should it nt be removing all terms which are not descendents of phenotypic abnormality?
+            initializedLayer.remove(hpoGraph.root());
         }
         return initializedLayer;
     }
@@ -110,14 +116,13 @@ class GraphTraversing {
      * Computes the parents of a {@code node} and confronts it with a Set of {@code activeNodes}.
      * If all parents are in the Set of activeNodes, the method returns true.
      *
-     * @param node The node we check.
+     * @param node        The node we check.
      * @param activeNodes The reference against which node is checked.
      * @return true if all parents are active, false otherwise.
      */
-    public boolean allParentsActive(TermId node, Set<TermId> activeNodes){
-        Set<TermId> parents = new HashSet<>();
-        parents.addAll( hpo.graph().extendWithParents(node, false));
-        if (parents.isEmpty()){
+    public boolean allParentsActive(TermId node, Set<TermId> activeNodes) {
+        Set<TermId> parents = new HashSet<>(hpoGraph.extendWithParents(node, false));
+        if (parents.isEmpty()) {
             return true; // should only happen for root term
         }
         parents.removeAll(activeNodes);

@@ -1,14 +1,17 @@
 package org.p2gx.boqa.core.algorithm;
 
+import org.monarchinitiative.phenol.graph.OntologyGraph;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
-import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -18,17 +21,19 @@ import java.util.stream.Collectors;
  * a given set of observed HPO terms as TermIds belonging to a patient, counts the four integers needed to compute each
  * disease's probability, see also the record {@link BoqaCounts BoqaCounts}.
  * <p>
+ *
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  * <p>
- * @implNote  Consider implementing XML or JSON serialization to cache disease layers, avoiding recomputation.
+ * @implNote Consider implementing XML or JSON serialization to cache disease layers, avoiding recomputation.
  * Avoid `Serializable` interface, since it is heavily criticized and deprecated.
  * Especially important for melded/digenic where combinatorial complexity increases.
  * @todo should idToLabel live in {@link DiseaseData}?
  */
 public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
+    private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
-    private final GraphTraversing graphTraverser;
+    private final GraphTraverser graphTraverser;
     private final Map<TermId, Set<TermId>> diseaseLayers;
     private final Set<String> diseaseIds;
     private final Map<String, String> idToLabel;
@@ -40,47 +45,39 @@ public class BoqaSetCounter implements Counter {
      * disease layers by only considering descendants of the "Phenotypic Abnormality" term.
      *
      * @param diseaseData the disease data containing disease IDs, labels, and observed phenotypes
-     * @param hpo the HPO ontology used to traverse and expand phenotype terms
+     * @param hpo         the HPO ontology used to traverse and expand phenotype terms
      */
-    public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo){
-        this(diseaseData, hpo,false);
+    public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo) {
+        this(diseaseData, hpo, false);
     }
 
     /**
      * Constructs a BoqaSetCounter and initializes all disease layers.
      * <p>
      * Precomputes the induced HPO graph for each disease based on observed phenotypes from {@link DiseaseData}.
-     * The computation considers only descendants of the "Phenotypic Abnormality" term unless {@code fullOntology}
+     * The computation considers only descendants of the "Phenotypic Abnormality" term unless {@code useFullOntology}
      * is set to true.
      *
-     * @param diseaseData the disease data containing disease IDs, labels, and observed phenotypes
-     * @param hpo the HPO ontology used to traverse and expand phenotype terms
-     * @param fullOntology if true, include all terms in the ontology without filtering by Phenotypic Abnormality;
-     *                     primarily for legacy testing purposes
+     * @param diseaseData     the disease data containing disease IDs, labels, and observed phenotypes
+     * @param hpo             the HPO ontology used to traverse and expand phenotype terms
+     * @param useFullOntology if true, include all terms in the ontology without filtering by Phenotypic Abnormality;
+     *                        primarily for legacy testing purposes
      */
-    BoqaSetCounter(DiseaseData diseaseData,
-                          Ontology hpo,
-                          boolean fullOntology
-    ){
+    BoqaSetCounter(DiseaseData diseaseData, Ontology hpo, boolean useFullOntology) {
         this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
-        this.graphTraverser = new GraphTraversing(hpo, fullOntology);
+        this.graphTraverser = new GraphTraverser(hpo, useFullOntology);
         this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds());
-        TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
         LOGGER.info("Initializing disease layers for {} diseases", diseaseIds.size());
-        Map<TermId, Set<TermId>> dLayers = diseaseIds.parallelStream()
-                .collect(Collectors.toConcurrentMap(
-                        d -> TermId.of(d),
-                        d -> graphTraverser.initLayer(
-                                diseaseData
-                                        .getObservedDiseaseFeatures(d)
-                                        .parallelStream()
-                                        .map(TermId::of)
-                                        .filter(tId -> fullOntology ||
-                                                graphTraverser.getHpoGraph().isDescendantOf(tId, PHENOTYPIC_ABNORMALITY))
-                                        .collect(Collectors.toSet())
-                        )
-                ));
-        this.diseaseLayers = Map.copyOf(dLayers);
+        OntologyGraph<TermId> hpoGraph = graphTraverser.getHpoGraph();
+        Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(useFullOntology ? hpoGraph.root() : PHENOTYPIC_ABNORMALITY));
+        this.diseaseLayers = diseaseIds.parallelStream()
+                .collect(Collectors.toUnmodifiableMap(TermId::of, diseaseId -> {
+                    Set<TermId> diseasePhenotypes = diseaseData.getObservedDiseaseFeatures(diseaseId).stream()
+                            .map(TermId::of)
+                            .filter(phenotypicAbnormalities::contains)
+                            .collect(Collectors.toSet());
+                    return graphTraverser.initLayer(diseasePhenotypes);
+                }));
         LOGGER.info("Finished initializing disease layers");
     }
 
@@ -88,44 +85,50 @@ public class BoqaSetCounter implements Counter {
      * This method computes counts given a disease ID and a patient's observed HPO terms.
      * These counts are related to true/false positives and true/false negatives, and are used later to compute the
      * probability that a patient has the input disease.
-     * @param diseaseId the unique OMIM ID of the disease whose counts are computed
+     *
+     * @param diseaseId   the unique OMIM ID of the disease whose counts are computed
      * @param patientData the patient data containing observed HPO terms and patient ID
      * @return a {@link BoqaCounts} record containing the four counts for this disease-patient pair
      * @implNote Consider caching children of all ON nodes to improve offNodesCount calculation.
      */
     @Override
-    public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData){
+    public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
         Set<TermId> observedHpos = patientData.getObservedTerms();
-        Set<TermId> queryLayerInitialized = graphTraverser.initLayer(observedHpos);
+        Set<TermId> queryLayer = graphTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
-        Set<TermId> intersection = new HashSet<>(diseaseLayer); // use copy constructor
-        intersection.retainAll(queryLayerInitialized); // TP
-        Set<TermId> falsePositives = new HashSet<>(queryLayerInitialized); // FP
+
+        // TP
+        Set<TermId> truePositives = new HashSet<>(diseaseLayer);
+        truePositives.retainAll(queryLayer);
+
+        // FP
+        Set<TermId> falsePositives = new HashSet<>(queryLayer);
         falsePositives.removeAll(diseaseLayer);
-        Set<TermId> falseNegatives = new HashSet<>(diseaseLayer); // FN
-        falseNegatives.removeAll(queryLayerInitialized); // equivalent with removeAll(intersection)
+
+        // FN
+        Set<TermId> falseNegatives = new HashSet<>(diseaseLayer);
+        falseNegatives.removeAll(queryLayer); // equivalent with removeAll(intersection)
         // Now iterate over these and count only those with all parents ON
         int betaCounts = 0; // exponent of beta
-        for(TermId node : falseNegatives) {
-            if (graphTraverser.allParentsActive(node, queryLayerInitialized)) {
+        for (TermId node : falseNegatives) {
+            if (graphTraverser.allParentsActive(node, queryLayer)) {
                 betaCounts += 1;
             }
         }
         int offNodesCount = 0; // exponent of 1-alpha
         Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
-        for(TermId qobs : queryLayerInitialized){
-            Set<TermId> children = new HashSet<>(
-                    graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
+        for (TermId qobs : queryLayer) {
+            Set<TermId> children = new HashSet<>(graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
             // Go through all children of ON terms
-            for(TermId child : children){ // TODO consider a set with children of all of the terms
+            for (TermId child : children) { // TODO consider a set with children of all of the terms
                 // Find those that are off
-                if (!queryLayerInitialized.contains(child)) {
+                if (!queryLayer.contains(child)) {
                     // Check if they are also off in the disease Layer
-                    if(!diseaseLayer.contains(child)) {
+                    if (!diseaseLayer.contains(child)) {
                         // Make sure the node has not already been counted
                         if (!checkedNodes.contains(child)) {
                             // increase counter iff all parents are ON
-                            if (graphTraverser.allParentsActive(child, queryLayerInitialized)) {
+                            if (graphTraverser.allParentsActive(child, queryLayer)) {
                                 offNodesCount += 1;
                                 checkedNodes.add(child);
                             }
@@ -134,16 +137,10 @@ public class BoqaSetCounter implements Counter {
                 }
             }
         }
-        LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}",
-                intersection.size(), falsePositives.size(), offNodesCount, betaCounts);
+        LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
         LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
 
-        return new BoqaCounts(diseaseId,
-                idToLabel.get(diseaseId),
-                intersection.size(),
-                falsePositives.size(),
-                offNodesCount,
-                betaCounts);
+        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override

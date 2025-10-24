@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GraphTraversingTest {
 
-    GraphTraversing graphTraverser;
+    GraphTraverser graphTraverser;
 
     // TODO: Daniel suggests using Extensions API rather then TestBase and extensions thereof, more modern.
     @BeforeAll
@@ -32,7 +32,7 @@ class GraphTraversingTest {
                     .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
             Ontology hpo = OntologyLoader.loadOntology(ontologyStream);
-            this.graphTraverser = new GraphTraversing(hpo, false);
+            this.graphTraverser = new GraphTraverser(hpo, false);
         }
     }
 
@@ -60,8 +60,20 @@ class GraphTraversingTest {
                         Set.of(TermId.of("HP:0001166"))),
                 Arguments.of("Two observed HPOs",
                         queryTermsFromTwo,
-                        Set.of(TermId.of("HP:0010787"),TermId.of("HP:0001635")))
-                );
+                        Set.of(TermId.of("HP:0010787"),TermId.of("HP:0001635"))),
+                // HP:0001505 is an alt id of HP:0001166-Arachnodactyly
+                Arguments.of("Alternate HPO IDs",
+                        queryTermsFromOne,
+                        Set.of(TermId.of("HP:0001505"))),
+                // repeat - should only see one warning about replacing alternate ID with a primary one
+                Arguments.of("Alternate HPO IDs",
+                        queryTermsFromOne,
+                        Set.of(TermId.of("HP:0001505"))),
+                Arguments.of("Unrecognized HPO IDs",
+                        Set.of(),
+                        Set.of(TermId.of("HP:000000000")))
+                )
+        ;
     }
 
     @ParameterizedTest(name = "{0}")
