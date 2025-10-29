@@ -1,0 +1,116 @@
+package org.p2gx.boqa.core.algorithm;
+
+import org.p2gx.boqa.core.Counter;
+import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import org.p2gx.boqa.core.analysis.BoqaResult;
+import org.p2gx.boqa.core.diseases.DiseaseDataParser;
+import org.p2gx.boqa.core.patient.PhenopacketData;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvFileSource;
+import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
+
+import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeBoqaResults;
+import static org.junit.jupiter.api.Assertions.*;
+
+class BoqaSetCounterTest {
+
+    private static DiseaseData diseaseData;
+    private static Counter counter;
+
+    @BeforeAll
+    static void setup() throws IOException {
+        try (InputStream annotationStream = new GZIPInputStream(BoqaSetCounterTest.class
+                .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
+            diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
+        }
+        Ontology hpo;
+        try (
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
+                    .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
+        ) {
+            hpo = OntologyLoader.loadOntology(ontologyStream);
+        }
+        counter = new BoqaSetCounter(diseaseData, hpo, true);
+    }
+
+    @Tag("expensive_test")
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvFileSource(
+            resources = "pyboqa_counts_for_top_ranked_diseases.csv",
+            delimiter = ',',
+            numLinesToSkip = 2
+            // useHeadersInDisplayName = true // does not work, don't use it
+    )
+    void testPyboqaFull(
+            String jsonFile,
+            String diagnosedDiseaseId,
+            int tnExp,
+            int fnExp,
+            int fpExp,
+            int tpExp
+    ) throws URISyntaxException, IOException {
+        testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
+    }
+
+    // As a first idea, test against pyboqa results
+    @ParameterizedTest(name = "[{index}] {arguments}")
+    @CsvFileSource(resources = "few_examples_pyboqa_counts_for_top_ranked_diseases.csv", numLinesToSkip = 2)
+    void testPyboqaSubset(
+            String jsonFile,
+            String diagnosedDiseaseId,
+            int tnExp,
+            int fnExp,
+            int fpExp,
+            int tpExp
+    ) throws URISyntaxException, IOException {
+        testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
+    }
+
+    void testComputeBoqaCountsAgainstPyboqa(
+            String jsonFile,
+            String diagnosedDiseaseId,
+            int tnExp,
+            int fnExp,
+            int fpExp,
+            int tpExp
+    ) throws URISyntaxException, IOException {
+        Map<String,String> idToLabel = diseaseData.getIdToLabel();
+        BoqaCounts pyboqaCounts = new BoqaCounts(
+                diagnosedDiseaseId,
+                idToLabel.get(diagnosedDiseaseId),
+                tpExp,
+                fpExp,
+                tnExp,
+                fnExp
+        );
+
+        URL resourceUrl = BoqaSetCounterTest.class
+                .getResource("/org/p2gx/boqa/core/phenopackets/" + jsonFile);
+        if (resourceUrl == null) {
+            throw new IOException("Resource not found: " + jsonFile);
+        }
+        Path ppkt = Path.of(resourceUrl.toURI());
+        int limit =  Integer.MAX_VALUE;
+        BoqaAnalysisResult boqaAnalysisResult = computeBoqaResults(new PhenopacketData(ppkt), counter, limit);
+
+        BoqaCounts match = null;
+        for (BoqaResult br : boqaAnalysisResult.boqaResults()){
+            if (br.counts().diseaseId().equals(diagnosedDiseaseId)) {
+                match = br.counts();
+                break;
+            }
+        }
+        assertEquals(pyboqaCounts, match);
+    }
+}
