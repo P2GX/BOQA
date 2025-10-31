@@ -98,8 +98,14 @@ public class BoqaSetCounter implements Counter {
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
 
         // TP
-        Set<TermId> truePositives = new HashSet<>(diseaseLayer);
-        truePositives.retainAll(queryLayer);
+        Set<TermId> intersection = new HashSet<>(diseaseLayer);
+        intersection.retainAll(queryLayer);
+        int tpCounts=0;
+        for (TermId node : intersection) {
+            if (graphTraverser.allChildrenInactive(node, queryLayer)) {
+                tpCounts += 1;
+            }
+        }
 
         // FP
         Set<TermId> falsePositives = new HashSet<>(queryLayer);
@@ -137,10 +143,10 @@ public class BoqaSetCounter implements Counter {
                 }
             }
         }
-        LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", tpCounts, falsePositives.size(), offNodesCount, betaCounts);
         LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
 
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), tpCounts, falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override
