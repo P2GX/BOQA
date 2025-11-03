@@ -110,6 +110,18 @@ public class BoqaSetCounter implements Counter {
         // FP
         Set<TermId> falsePositives = new HashSet<>(queryLayer);
         falsePositives.removeAll(diseaseLayer);
+        boolean fullAnnotPropRule = true;
+        int fpCounts=0;
+        if(fullAnnotPropRule){
+            for (TermId node : falsePositives){
+                if(graphTraverser.allChildrenInactive(node, queryLayer)){
+                    fpCounts += 1 ;
+                }
+            }
+        }
+        else {
+            fpCounts=falsePositives.size();
+        }
 
         // FN
         Set<TermId> falseNegatives = new HashSet<>(diseaseLayer);
@@ -146,7 +158,7 @@ public class BoqaSetCounter implements Counter {
         LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", tpCounts, falsePositives.size(), offNodesCount, betaCounts);
         LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
 
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), tpCounts, falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), tpCounts, fpCounts, offNodesCount, betaCounts);
     }
 
     @Override
