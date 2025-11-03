@@ -41,7 +41,7 @@ class BoqaSetCounterTest {
         ) {
             hpo = OntologyLoader.loadOntology(ontologyStream);
         }
-        counter = new BoqaSetCounter(diseaseData, hpo, true);
+        counter = new BoqaSetCounter(diseaseData, hpo);
     }
 
     @Tag("expensive_test")
