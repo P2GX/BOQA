@@ -47,6 +47,7 @@ public class BoqaSetCounter implements Counter {
      *
      * @param diseaseData     the disease data containing disease IDs, labels, and observed phenotypes
      * @param hpo             the HPO ontology used to traverse and expand phenotype terms
+     * @todo remove filtering after successful testing in exomiser and modification to diseaseData
      */
     public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo) {
         this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
