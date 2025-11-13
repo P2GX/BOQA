@@ -32,7 +32,7 @@ class GraphTraversingTest {
                     .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
             Ontology hpo = OntologyLoader.loadOntology(ontologyStream);
-            this.graphTraverser = new GraphTraverser(hpo, false);
+            this.graphTraverser = new GraphTraverser(hpo);
         }
     }
 

@@ -31,9 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *   <li>If an outdated {@link TermId} is encountered (raising
  *   {@link NodeNotPresentInGraphException}), the primary replacement is resolved
  *   via {@link Ontology#getPrimaryTermId(TermId)} and logged (once only, through {@code LOGGED_REPLACEMENTS}).</li>
- *   <li>If {@code fullOntology} is set to {@code false}, the initialized layer excludes
- *   the root HPO term ({@code HP:0000001}), thereby retaining only phenotypic
- *   abnormalities.</li>
  * </ul>
  *
  * <h3>Thread safety</h3>
@@ -45,7 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * <h3>Usage example</h3>
  * <pre>{@code
  * Ontology hpo = ...;
- * GraphTraversing traverser = new GraphTraversing(hpo, false);
+ * GraphTraversing traverser = new GraphTraversing(hpo);
  *
  * Set<TermId> observed = Set.of(TermId.of("HP:0004322"));
  * Set<TermId> initialized = traverser.initLayer(observed);
@@ -60,13 +57,11 @@ class GraphTraverser {
     private static final Set<TermId> LOGGED_REPLACEMENTS = ConcurrentHashMap.newKeySet();
 
     private final Ontology hpo;
-    private final boolean fullOntology;
     private final OntologyGraph<TermId> hpoGraph;
     private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine.newBuilder().maximumSize(500).build();
 
-    public GraphTraverser(Ontology hpo, boolean fullOntology) {
+    public GraphTraverser(Ontology hpo) {
         this.hpo = hpo;
-        this.fullOntology = fullOntology;
         hpoGraph = hpo.graph();
     }
 
@@ -95,7 +90,6 @@ class GraphTraverser {
             if (primaryTid == null) {
                 LOGGER.warn("Invalid HPO term {}! Skipping...", t);
             } else {
-                // Do we really care?
                 if (!t.equals(primaryTid) && LOGGED_REPLACEMENTS.add(t)) {
                     LOGGER.warn("Replacing {} with primary term {}", t, primaryTid);
                 }
@@ -104,11 +98,7 @@ class GraphTraverser {
                 initializedLayer.addAll(ancestorTermIds);
             }
         });
-        if (!fullOntology) {
-            // We only want phenotypic abnormalities!
-            // TODO: is this correct? Should it nt be removing all terms which are not descendents of phenotypic abnormality?
-            initializedLayer.remove(hpoGraph.root());
-        }
+        initializedLayer.remove(hpoGraph.root());
         return initializedLayer;
     }
 
