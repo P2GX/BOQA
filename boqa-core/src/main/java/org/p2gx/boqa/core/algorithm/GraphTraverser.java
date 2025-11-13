@@ -90,7 +90,6 @@ class GraphTraverser {
             if (primaryTid == null) {
                 LOGGER.warn("Invalid HPO term {}! Skipping...", t);
             } else {
-                // Do we really care?
                 if (!t.equals(primaryTid) && LOGGED_REPLACEMENTS.add(t)) {
                     LOGGER.warn("Replacing {} with primary term {}", t, primaryTid);
                 }
