@@ -97,22 +97,30 @@ public class BoqaSetCounter implements Counter {
         Set<TermId> queryLayer = graphTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
 
+        boolean fpFullAnnotPropRule = false;
+        boolean tpFullAnnotPropRule = false;
+        boolean fnFullAnnotPropRule = false;
+        //boolean tnFullAnnotPropRule = true;
+
+
         // TP
         Set<TermId> intersection = new HashSet<>(diseaseLayer);
         intersection.retainAll(queryLayer);
         int tpCounts=0;
-        for (TermId node : intersection) {
-            if (graphTraverser.allChildrenInactive(node, queryLayer)) {
-                tpCounts += 1;
+        if (tpFullAnnotPropRule) {
+            for (TermId node : intersection) {
+                if (graphTraverser.allChildrenInactive(node, queryLayer)) {
+                    tpCounts += 1;
+                }
             }
         }
+        else tpCounts = intersection.size();
 
         // FP
         Set<TermId> falsePositives = new HashSet<>(queryLayer);
         falsePositives.removeAll(diseaseLayer);
-        boolean fullAnnotPropRule = true;
         int fpCounts=0;
-        if(fullAnnotPropRule){
+        if(fpFullAnnotPropRule){
             for (TermId node : falsePositives){
                 if(graphTraverser.allChildrenInactive(node, queryLayer)){
                     fpCounts += 1 ;
@@ -128,13 +136,18 @@ public class BoqaSetCounter implements Counter {
         falseNegatives.removeAll(queryLayer); // equivalent with removeAll(intersection)
         // Now iterate over these and count only those with all parents ON
         int betaCounts = 0; // exponent of beta
-        for (TermId node : falseNegatives) {
-            if (graphTraverser.allParentsActive(node, queryLayer)) {
-                betaCounts += 1;
+        if(fpFullAnnotPropRule) {
+            for (TermId node : falseNegatives) {
+                if (graphTraverser.allParentsActive(node, queryLayer)) {
+                    betaCounts += 1;
+                }
             }
         }
+        else betaCounts = falseNegatives.size();
+
         int offNodesCount = 0; // exponent of 1-alpha
         Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
+        // TODO  actually I think we always need a third condition for TNs...
         for (TermId qobs : queryLayer) {
             Set<TermId> children = new HashSet<>(graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
             // Go through all children of ON terms
