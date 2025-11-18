@@ -64,8 +64,14 @@ public class OntologyTraverser {
     private final OntologyGraph<TermId> hpoGraph;
     private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine.newBuilder().maximumSize(500).build();
 
+    /**
+     *
+     * @param hpo
+     *
+     * @todo .extractSubgraph(PHENOTYPIC_ABNORMALITY) or .subOntology(PHENOTYPIC_ABNORMALITY) in phenol don't seem to work.
+     */
     public OntologyTraverser(Ontology hpo) {
-        OntologyTraverser.hpo = hpo;//.subOntology(PHENOTYPIC_ABNORMALITY);
+        OntologyTraverser.hpo = hpo;
         hpoGraph = OntologyTraverser.hpo.graph();
     }
 
@@ -144,11 +150,12 @@ public class OntologyTraverser {
 
     /**
      * @todo this is a stub, could not find a way of getting it to work in DefaultDiseaseData withouth refactoring everything
+     * Keeping the filter in BoqaSetCounter's constructor, for now.
      * @param observedTerms
      * @return
      */
     public Set<TermId> filterPhenotypicAbnormalities(Set<TermId> observedTerms) {
-        Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(hpoGraph.root()));
+        Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
         return observedTerms.stream()
                 .filter(phenotypicAbnormalities::contains)
                 .collect(Collectors.toSet());
