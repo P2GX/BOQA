@@ -1,4 +1,4 @@
-package org.p2gx.boqa.core.algorithm;
+package org.p2gx.boqa.core.internal;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -20,19 +20,19 @@ import java.util.zip.GZIPInputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class GraphTraversingTest {
+public class OntologyTraverserTest {
 
-    GraphTraverser graphTraverser;
+    OntologyTraverser ontologyTraverser;
 
     // TODO: Daniel suggests using Extensions API rather then TestBase and extensions thereof, more modern.
     @BeforeAll
     void setUp() throws IOException {
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
                     .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
             Ontology hpo = OntologyLoader.loadOntology(ontologyStream);
-            this.graphTraverser = new GraphTraverser(hpo);
+            this.ontologyTraverser = new OntologyTraverser(hpo);
         }
     }
 
@@ -42,7 +42,7 @@ class GraphTraversingTest {
         Set<TermId> expectedNodesTermIds = expectedNodes.stream()
                 .map(TermId::of)
                 .collect(Collectors.toSet());
-        assertEquals(expectedNodesTermIds, graphTraverser.initLayer(observedNodes));
+        assertEquals(expectedNodesTermIds, ontologyTraverser.initLayer(observedNodes));
     }
     // TODO: Daniel suggests using @CsvSource
     private static Stream<Arguments> activeLayers(){
@@ -79,7 +79,7 @@ class GraphTraversingTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("parentsActiveCases")
     void testAllParentsActive(String testName, TermId node, Set<TermId> activeParents, boolean expectation) {
-        assertEquals(expectation, graphTraverser.allParentsActive(node, activeParents));
+        assertEquals(expectation, ontologyTraverser.allParentsActive(node, activeParents));
     }
 
     private static Stream<Arguments> parentsActiveCases(){
