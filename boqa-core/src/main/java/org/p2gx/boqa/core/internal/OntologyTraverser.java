@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * INTERNAL USE ONLY.
@@ -57,14 +58,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class OntologyTraverser {
     private static final Logger LOGGER = LoggerFactory.getLogger(OntologyTraverser.class);
     private static final Set<TermId> LOGGED_REPLACEMENTS = ConcurrentHashMap.newKeySet();
+    private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
     private static Ontology hpo = null;
     private final OntologyGraph<TermId> hpoGraph;
     private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine.newBuilder().maximumSize(500).build();
 
     public OntologyTraverser(Ontology hpo) {
-        OntologyTraverser.hpo = hpo;
-        hpoGraph = hpo.graph();
+        OntologyTraverser.hpo = hpo;//.subOntology(PHENOTYPIC_ABNORMALITY);
+        hpoGraph = OntologyTraverser.hpo.graph();
     }
 
     public OntologyGraph<TermId> getHpoGraph() {
@@ -85,21 +87,14 @@ public class OntologyTraverser {
      * @param hpoTerms the set of observed HPO terms to initialize from
      * @return the initialized layer of terms including ancestors
      *
-     * @todo remove getPrimaryTermId call and rename primaryTermId to t after such a method call has been
-     * implemented in PatientData and DiseaseData
      */
     public Set<TermId> initLayer(Set<TermId> hpoTerms) {
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> {
-            TermId primaryTermId = getPrimaryTermId(t);
-            if (primaryTermId == null) {
-                LOGGER.warn("Invalid HPO term {}! Skipping...", t);
-            } else {
-                // this can be expensive, so use a light cache
-                Collection<TermId> ancestorTermIds = hpoAncestorsCache.get(primaryTermId,
-                        termId -> hpoGraph.extendWithAncestors(primaryTermId, true));
-                initializedLayer.addAll(ancestorTermIds);
-            }
+            // this can be expensive, so use a light cache
+            Collection<TermId> ancestorTermIds = hpoAncestorsCache.get(t,
+                    termId -> hpoGraph.extendWithAncestors(t, true));
+            initializedLayer.addAll(ancestorTermIds);
         });
         initializedLayer.remove(hpoGraph.root());
         return initializedLayer;
@@ -120,8 +115,12 @@ public class OntologyTraverser {
      */
     public static TermId getPrimaryTermId(TermId t){
         TermId primaryTermId = hpo.getPrimaryTermId(t);
-        if (!t.equals(primaryTermId) && LOGGED_REPLACEMENTS.add(t)) {
-            LOGGER.info("Replacing {} with primary term {}", t, primaryTermId);
+        if (primaryTermId == null) {
+            LOGGER.warn("Invalid HPO term {}! Skipping...", primaryTermId);
+        } else {
+            if (!t.equals(primaryTermId) && LOGGED_REPLACEMENTS.add(t)) {
+                LOGGER.info("Replacing {} with primary term {}", t, primaryTermId);
+            }
         }
         return primaryTermId;
     }
@@ -141,5 +140,17 @@ public class OntologyTraverser {
         }
         parents.removeAll(activeNodes);
         return parents.isEmpty();
+    }
+
+    /**
+     * @todo this is a stub, could not find a way of getting it to work in DefaultDiseaseData withouth refactoring everything
+     * @param observedTerms
+     * @return
+     */
+    public Set<TermId> filterPhenotypicAbnormalities(Set<TermId> observedTerms) {
+        Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(hpoGraph.root()));
+        return observedTerms.stream()
+                .filter(phenotypicAbnormalities::contains)
+                .collect(Collectors.toSet());
     }
 }
