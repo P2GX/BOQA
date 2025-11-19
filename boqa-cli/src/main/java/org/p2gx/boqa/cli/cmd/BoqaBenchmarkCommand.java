@@ -73,6 +73,16 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             required = false)
     private Integer resultsLimit;
 
+    @CommandLine.Option(
+            names={"-a","--alpha"},
+            description = "Float value such that 0<alpha<1.")
+    private Float alpha;
+
+    @CommandLine.Option(
+            names={"-b","--beta"},
+            description = "Float value such that 0<beta<1.")
+    private Float beta;
+
     @Override
     public Integer call() throws Exception {
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
@@ -83,6 +93,9 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
         DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
+
+        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
+        LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
         // Initialize Counter
         Counter counter = new BoqaSetCounter(diseaseData, hpo);
@@ -123,7 +136,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                 Paths.get(ontologyFile),
                 phenotypeAnnotationFile,
                 cliArgs,
-                Map.of("alpha", AlgorithmParameters.ALPHA, "beta", AlgorithmParameters.BETA),
+                Map.of("alpha", params.getAlpha(), "beta", params.getBeta()),
                 outPath
         );
         LOGGER.info("BOQA analysis completed successfully.");
