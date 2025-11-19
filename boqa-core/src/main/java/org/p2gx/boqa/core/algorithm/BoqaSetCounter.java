@@ -97,10 +97,10 @@ public class BoqaSetCounter implements Counter {
         Set<TermId> queryLayer = graphTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
 
-        boolean fpFullAnnotPropRule = false;
-        boolean tpFullAnnotPropRule = false;
-        boolean fnFullAnnotPropRule = false;
-        //boolean tnFullAnnotPropRule = true;
+        boolean fpFullAnnotPropRule = true;
+        boolean tpFullAnnotPropRule = true;
+        boolean fnFullAnnotPropRule = true;
+        boolean tnDiscard = true;
 
 
         // TP
@@ -136,7 +136,7 @@ public class BoqaSetCounter implements Counter {
         falseNegatives.removeAll(queryLayer); // equivalent with removeAll(intersection)
         // Now iterate over these and count only those with all parents ON
         int betaCounts = 0; // exponent of beta
-        if(fpFullAnnotPropRule) {
+        if(fnFullAnnotPropRule) {
             for (TermId node : falseNegatives) {
                 if (graphTraverser.allParentsActive(node, queryLayer)) {
                     betaCounts += 1;
@@ -145,23 +145,25 @@ public class BoqaSetCounter implements Counter {
         }
         else betaCounts = falseNegatives.size();
 
-        int offNodesCount = 0; // exponent of 1-alpha
-        Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
-        // TODO  actually I think we always need a third condition for TNs...
-        for (TermId qobs : queryLayer) {
-            Set<TermId> children = new HashSet<>(graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
-            // Go through all children of ON terms
-            for (TermId child : children) { // TODO consider a set with children of all of the terms
-                // Find those that are off
-                if (!queryLayer.contains(child)) {
-                    // Check if they are also off in the disease Layer
-                    if (!diseaseLayer.contains(child)) {
-                        // Make sure the node has not already been counted
-                        if (!checkedNodes.contains(child)) {
-                            // increase counter iff all parents are ON
-                            if (graphTraverser.allParentsActive(child, queryLayer)) {
-                                offNodesCount += 1;
-                                checkedNodes.add(child);
+        int offNodesCount=0;
+        if(!tnDiscard) {
+            Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
+            // TODO  actually I think we always need a third condition for TNs...
+            for (TermId qobs : queryLayer) {
+                Set<TermId> children = new HashSet<>(graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
+                // Go through all children of ON terms
+                for (TermId child : children) { // TODO consider a set with children of all of the terms
+                    // Find those that are off
+                    if (!queryLayer.contains(child)) {
+                        // Check if they are also off in the disease Layer
+                        if (!diseaseLayer.contains(child)) {
+                            // Make sure the node has not already been counted
+                            if (!checkedNodes.contains(child)) {
+                                // increase counter iff all parents are ON
+                                if (graphTraverser.allParentsActive(child, queryLayer)) {
+                                    offNodesCount += 1;
+                                    checkedNodes.add(child);
+                                }
                             }
                         }
                     }
