@@ -23,6 +23,13 @@ public final class AlgorithmParameters {
     }
 
     /**
+     * Create parameters using the default values.
+     */
+    public static AlgorithmParameters create() {
+        return create(DEFAULT_ALPHA, DEFAULT_BETA);
+    }
+
+    /**
      * Create parameters with custom alpha and beta values.
      * If a value is null, the default will be used.
      *
@@ -31,32 +38,22 @@ public final class AlgorithmParameters {
      * @return AlgorithmParameters instance
      * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1)
      */
-    public static AlgorithmParameters create(Float alpha, Float beta) {
-        double a = (alpha != null) ? alpha : DEFAULT_ALPHA;
-        double b = (beta != null) ? beta : DEFAULT_BETA;
-
+    public static AlgorithmParameters create(double alpha, double beta) {
         // Validate alpha
-        if (a <= 0.0 || a >= 1.0) {
+        if (alpha <= 0.0 || alpha >= 1.0) {
             throw new IllegalArgumentException(
-                    String.format("Alpha must be in the range (0, 1), exclusive. Got: %f", a)
+                    String.format("Alpha must be in the range (0, 1), exclusive. Got: %f", alpha)
             );
         }
 
         // Validate beta
-        if (b <= 0.0 || b >= 1.0) {
+        if (beta <= 0.0 || beta >= 1.0) {
             throw new IllegalArgumentException(
-                    String.format("Beta must be in the range (0, 1), exclusive. Got: %f", b)
+                    String.format("Beta must be in the range (0, 1), exclusive. Got: %f", beta)
             );
         }
 
-        return new AlgorithmParameters(a, b);
-    }
-
-    /**
-     * Create parameters using the default values.
-     */
-    public static AlgorithmParameters createDefault() {
-        return new AlgorithmParameters(DEFAULT_ALPHA, DEFAULT_BETA);
+        return new AlgorithmParameters(alpha, beta);
     }
 
     public double getAlpha() {

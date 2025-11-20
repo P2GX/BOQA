@@ -115,7 +115,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     .parallel()
                     .map(singleFile -> {
                         PatientData ppkt = new PhenopacketData(singleFile);
-                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(ppkt, counter, limit);
+                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
+                                ppkt, counter, limit, params);
                         int count = fileCount.incrementAndGet();
                         if (count % 50 == 0) {
                             System.out.println("Processed: " + count);
