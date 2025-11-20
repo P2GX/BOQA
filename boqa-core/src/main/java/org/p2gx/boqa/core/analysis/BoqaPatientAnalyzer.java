@@ -79,16 +79,18 @@ public final class BoqaPatientAnalyzer {
      *  </pre>
      * @param alpha  False positive rate parameter.
      * @param beta   False negative rate parameter.
+     * @param temperature   Use to make distributions more robust.
      * @param counts The {@link BoqaCounts} for a disease.
      * @return The un-normalized probability score.
      */
     static double computeUnnormalizedProbability(double alpha, double beta, double temperature, BoqaCounts counts){
-        return Math.pow(
-                    Math.pow(alpha, counts.fpBoqaCount())*
-                    Math.pow(beta, counts.fnBoqaCount())*
-                    Math.pow(1-alpha, counts.tnBoqaCount())*
-                    Math.pow(1-beta, counts.tpBoqaCount()),
-                    1/temperature
+        return Math.exp(
+                (
+                    counts.fpBoqaCount()*Math.log(alpha) +
+                    counts.fnBoqaCount()*Math.log(beta) +
+                    counts.tnBoqaCount()*Math.log(1-alpha) +
+                    counts.tpBoqaCount()*Math.log(1-beta)
+                ) / temperature
         );
     }
 }
