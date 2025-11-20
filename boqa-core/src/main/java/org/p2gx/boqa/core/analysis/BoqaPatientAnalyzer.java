@@ -56,7 +56,9 @@ public final class BoqaPatientAnalyzer {
         Map<String, Double> rawScores = countsList.stream()
                 .collect(Collectors.toMap(
                         BoqaCounts::diseaseId,
-                        bc -> computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), bc)
+                        bc -> computeUnnormalizedProbability(
+                                params.getAlpha(), params.getBeta(), params.getTemperature(), bc
+                        )
                 ));
         double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
         List<BoqaResult> allResults = new ArrayList<>();
@@ -80,12 +82,13 @@ public final class BoqaPatientAnalyzer {
      * @param counts The {@link BoqaCounts} for a disease.
      * @return The un-normalized probability score.
      */
-    static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
-        return Math.pow(alpha, counts.fpBoqaCount())*
-                Math.pow(beta, counts.fnBoqaCount())*
-                Math.pow(1-alpha, counts.tnBoqaCount())*
-                Math.pow(1-beta, counts.tpBoqaCount());
+    static double computeUnnormalizedProbability(double alpha, double beta, double temperature, BoqaCounts counts){
+        return Math.pow(
+                    Math.pow(alpha, counts.fpBoqaCount())*
+                    Math.pow(beta, counts.fnBoqaCount())*
+                    Math.pow(1-alpha, counts.tnBoqaCount())*
+                    Math.pow(1-beta, counts.tpBoqaCount()),
+                    1/temperature
+        );
     }
-
-
 }

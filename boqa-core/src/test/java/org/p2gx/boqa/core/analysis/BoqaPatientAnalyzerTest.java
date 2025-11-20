@@ -45,7 +45,7 @@ class BoqaPatientAnalyzerTest {
     ){
         // Initialize BoqaCounts
         BoqaCounts counts = new BoqaCounts("idIsUnimportant", "labelIsUnimportant", count1mb, countA, count1ma, countB);
-        double actualScore = computeUnnormalizedProbability(alpha, beta, counts);
+        double actualScore = computeUnnormalizedProbability(alpha, beta, 1.0, counts);
 
         // Assert with small delta for floating-point comparison
         assertEquals(expectedScore, actualScore, 1e-9);

@@ -76,12 +76,18 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
     @CommandLine.Option(
             names={"-a","--alpha"},
             description = "Float value such that 0<alpha<1.")
-    private Float alpha;
+    private float alpha;
 
     @CommandLine.Option(
             names={"-b","--beta"},
             description = "Float value such that 0<beta<1.")
-    private Float beta;
+    private float beta;
+
+    @CommandLine.Option(
+            names={"-T","--temperature"},
+            description = "Float value such that temperature>1 (this is not an inverse temperature) to stabilize distribution.")
+    private float temperature;
+
 
     @Override
     public Integer call() throws Exception {
@@ -94,8 +100,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
-        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
-        LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
+        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta, temperature);
+        LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta(), params.getTemperature());
 
         // Initialize Counter
         Counter counter = new BoqaSetCounter(diseaseData, hpo);

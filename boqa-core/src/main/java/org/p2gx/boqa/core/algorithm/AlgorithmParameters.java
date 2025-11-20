@@ -9,6 +9,7 @@ package org.p2gx.boqa.core.algorithm;
 public final class AlgorithmParameters {
     private static final double DEFAULT_ALPHA = 1.0 / 19077/32;
     private static final double DEFAULT_BETA = 0.9;
+    private static final double DEFAULT_TEMPERATURE = 50;
 
     // Keep these for backward compatibility with existing code
     public static final double ALPHA = DEFAULT_ALPHA;
@@ -16,17 +17,19 @@ public final class AlgorithmParameters {
 
     private final double alpha;
     private final double beta;
+    private final double temperature;
 
-    private AlgorithmParameters(double alpha, double beta) {
+    private AlgorithmParameters(double alpha, double beta, double temperature) {
         this.alpha = alpha;
         this.beta = beta;
+        this.temperature = temperature;
     }
 
     /**
      * Create parameters using the default values.
      */
     public static AlgorithmParameters create() {
-        return create(DEFAULT_ALPHA, DEFAULT_BETA);
+        return create(DEFAULT_ALPHA, DEFAULT_BETA, DEFAULT_TEMPERATURE);
     }
 
     /**
@@ -38,22 +41,26 @@ public final class AlgorithmParameters {
      * @return AlgorithmParameters instance
      * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1)
      */
-    public static AlgorithmParameters create(double alpha, double beta) {
+    public static AlgorithmParameters create(double alpha, double beta, double temperature) {
         // Validate alpha
         if (alpha <= 0.0 || alpha >= 1.0) {
             throw new IllegalArgumentException(
                     String.format("Alpha must be in the range (0, 1), exclusive. Got: %f", alpha)
             );
         }
-
         // Validate beta
         if (beta <= 0.0 || beta >= 1.0) {
             throw new IllegalArgumentException(
                     String.format("Beta must be in the range (0, 1), exclusive. Got: %f", beta)
             );
         }
-
-        return new AlgorithmParameters(alpha, beta);
+        // Validate temperature
+        if (temperature < 1.0) {
+            throw new IllegalArgumentException(
+                    String.format("Temperature must be in the range [1, infinity). Got: %f", temperature)
+            );
+        }
+        return new AlgorithmParameters(alpha, beta, temperature);
     }
 
     public double getAlpha() {
@@ -62,5 +69,9 @@ public final class AlgorithmParameters {
 
     public double getBeta() {
         return beta;
+    }
+
+    public double getTemperature() {
+        return temperature;
     }
 }
