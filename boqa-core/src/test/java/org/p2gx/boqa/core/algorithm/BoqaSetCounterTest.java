@@ -5,6 +5,7 @@ import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
+import org.p2gx.boqa.core.internal.OntologyTraverserTest;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -36,7 +37,7 @@ class BoqaSetCounterTest {
         }
         Ontology hpo;
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
                     .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
             hpo = OntologyLoader.loadOntology(ontologyStream);
