@@ -3,28 +3,43 @@ package org.p2gx.boqa.core.patient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.monarchinitiative.phenol.io.OntologyLoader;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.p2gx.boqa.core.internal.OntologyTraverser;
+import org.p2gx.boqa.core.internal.OntologyTraverserTest;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PhenopacketDataTest {
 
     private static List<PhenopacketData> examplePpkts = new ArrayList<>();
+    OntologyTraverser ontologyTraverser;
 
     @BeforeAll
-    static void setUp() throws IOException {
+    void setUp() throws IOException {
+        try (
+                InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
+                        .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
+        ) {
+            Ontology hpo = OntologyLoader.loadOntology(ontologyStream);
+            this.ontologyTraverser = new OntologyTraverser(hpo);
+        }
+
+
         String[] filenames = {
                 "PMID_30569521_proband.json",
                 "PMID_10580070_A_III-5.json", // no observed terms, only excluded
