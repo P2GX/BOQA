@@ -60,10 +60,11 @@ public final class BoqaPatientAnalyzer {
                                 params.getAlpha(), params.getBeta(), params.getTemperature(), bc
                         )
                 ));
-        double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
+        //double normalizationFactor = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
+        double normalizationFactor = rawScores.values().stream().mapToDouble(Double::doubleValue).max().orElse(1.0);
         List<BoqaResult> allResults = new ArrayList<>();
         countsList.forEach(bc-> {
-            double normalizedScore = rawScores.get(bc.diseaseId()) / sum;
+            double normalizedScore = rawScores.get(bc.diseaseId()) / normalizationFactor;
             allResults.add(new BoqaResult(bc, normalizedScore));
         });
 
