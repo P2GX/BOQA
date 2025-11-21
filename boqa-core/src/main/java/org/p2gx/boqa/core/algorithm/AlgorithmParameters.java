@@ -7,12 +7,8 @@ package org.p2gx.boqa.core.algorithm;
  * {@code ALPHA} represents the probability of a false positive, {@code BETA} that of a false negative.
  */
 public final class AlgorithmParameters {
-    private static final double DEFAULT_ALPHA = 1.0 / 19077/32;
+    private static final double DEFAULT_ALPHA = 1.0 / (19077.0*8.0);
     private static final double DEFAULT_BETA = 0.9;
-
-    // Keep these for backward compatibility with existing code
-    public static final double ALPHA = DEFAULT_ALPHA;
-    public static final double BETA = DEFAULT_BETA;
 
     private final double alpha;
     private final double beta;
@@ -20,13 +16,6 @@ public final class AlgorithmParameters {
     private AlgorithmParameters(double alpha, double beta) {
         this.alpha = alpha;
         this.beta = beta;
-    }
-
-    /**
-     * Create parameters using the default values.
-     */
-    public static AlgorithmParameters create() {
-        return create(DEFAULT_ALPHA, DEFAULT_BETA);
     }
 
     /**
@@ -38,22 +27,24 @@ public final class AlgorithmParameters {
      * @return AlgorithmParameters instance
      * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1)
      */
-    public static AlgorithmParameters create(double alpha, double beta) {
+    public static AlgorithmParameters create(Double alpha, Double beta) {
+        double a = (alpha != null) ? alpha : DEFAULT_ALPHA;
+        double b = (beta != null) ? beta : DEFAULT_BETA;
         // Validate alpha
-        if (alpha <= 0.0 || alpha >= 1.0) {
+        if (a <= 0.0 || a >= 1.0) {
             throw new IllegalArgumentException(
                     String.format("Alpha must be in the range (0, 1), exclusive. Got: %f", alpha)
             );
         }
 
         // Validate beta
-        if (beta <= 0.0 || beta >= 1.0) {
+        if (b <= 0.0 || b >= 1.0) {
             throw new IllegalArgumentException(
                     String.format("Beta must be in the range (0, 1), exclusive. Got: %f", beta)
             );
         }
 
-        return new AlgorithmParameters(alpha, beta);
+        return new AlgorithmParameters(a, b);
     }
 
     public double getAlpha() {

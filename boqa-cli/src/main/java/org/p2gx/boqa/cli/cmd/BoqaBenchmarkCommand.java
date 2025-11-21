@@ -76,12 +76,12 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
     @CommandLine.Option(
             names={"-a","--alpha"},
             description = "Float value such that 0<alpha<1.")
-    private Float alpha;
+    private Double alpha;
 
     @CommandLine.Option(
             names={"-b","--beta"},
             description = "Float value such that 0<beta<1.")
-    private Float beta;
+    private Double beta;
 
     @Override
     public Integer call() throws Exception {
