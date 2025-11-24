@@ -83,6 +83,8 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
          */
         HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
 
+        // TODO: Filter for phenotypic abnormality terms
+
         for (HpoDisease disease : this.diseases) {
 
             // Observed
