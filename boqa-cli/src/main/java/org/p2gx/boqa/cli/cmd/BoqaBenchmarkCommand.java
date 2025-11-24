@@ -76,7 +76,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
     @CommandLine.Option(
             names={"-a","--alpha"},
             description = "Float value such that 0<alpha<1 (default: ${DEFAULT-VALUE}).",
-            defaultValue = "1.638098233474865E-6")
+            defaultValue = "5.241914347119568E-05")
     private Double alpha;
 
     @CommandLine.Option(
