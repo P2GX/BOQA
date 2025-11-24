@@ -42,7 +42,8 @@ public final class BoqaPatientAnalyzer {
      * <p>
      * TODO consider using again pyboqa scores results, but this is trivial at this point
      */
-    public static BoqaAnalysisResult computeBoqaResults(PatientData patientData, Counter counter, int resultsLimit) {
+    public static BoqaAnalysisResult computeBoqaResults(
+            PatientData patientData, Counter counter, int resultsLimit, AlgorithmParameters params) {
         List<BoqaCounts> countsList = counter.getDiseaseIds()
                 .parallelStream() // much faster!
                 .map(dId ->  counter.computeBoqaCounts(
@@ -55,7 +56,7 @@ public final class BoqaPatientAnalyzer {
         Map<String, Double> rawScores = countsList.stream()
                 .collect(Collectors.toMap(
                         BoqaCounts::diseaseId,
-                        bc -> computeUnnormalizedProbability(AlgorithmParameters.ALPHA, AlgorithmParameters.BETA, bc)
+                        bc -> computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), bc)
                 ));
         double sum = rawScores.values().stream().mapToDouble(Double::doubleValue).sum();
         List<BoqaResult> allResults = new ArrayList<>();

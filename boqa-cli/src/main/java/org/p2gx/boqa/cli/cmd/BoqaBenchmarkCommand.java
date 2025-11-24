@@ -73,6 +73,18 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             required = false)
     private Integer resultsLimit;
 
+    @CommandLine.Option(
+            names={"-a","--alpha"},
+            description = "Float value such that 0<alpha<1 (default: ${DEFAULT-VALUE}).",
+            defaultValue = "5.241914347119568E-05")
+    private Double alpha;
+
+    @CommandLine.Option(
+            names={"-b","--beta"},
+            description = "Float value such that 0<beta<1 (default: ${DEFAULT-VALUE}).",
+            defaultValue = "0.9")
+    private Double beta;
+
     @Override
     public Integer call() throws Exception {
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
@@ -83,6 +95,9 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
         DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
+
+        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
+        LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
         // Initialize Counter
         Counter counter = new BoqaSetCounter(diseaseData, hpo);
@@ -102,7 +117,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     .parallel()
                     .map(singleFile -> {
                         PatientData ppkt = new PhenopacketData(singleFile);
-                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(ppkt, counter, limit);
+                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
+                                ppkt, counter, limit, params);
                         int count = fileCount.incrementAndGet();
                         if (count % 50 == 0) {
                             System.out.println("Processed: " + count);
@@ -123,7 +139,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                 Paths.get(ontologyFile),
                 phenotypeAnnotationFile,
                 cliArgs,
-                Map.of("alpha", AlgorithmParameters.ALPHA, "beta", AlgorithmParameters.BETA),
+                Map.of("alpha", params.getAlpha(), "beta", params.getBeta()),
                 outPath
         );
         LOGGER.info("BOQA analysis completed successfully.");
