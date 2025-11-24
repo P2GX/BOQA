@@ -45,6 +45,7 @@ class DiseaseDataPhenolIngestTest {
     void testInclusionAndExclusionOfTerms_1() {
         /*
         Tests inclusion and exclusion of terms based on annotation frequency.
+        Only terms below phenotypic abnormalities (HP:0000118) should be included.
 
         Relevant rows and columns from phenotype.hpoa:
 
@@ -52,7 +53,7 @@ class DiseaseDataPhenolIngestTest {
         OMIM:604091	HDL deficiency, familial, 1		HP:0002155	PMID:30503498	PCS		0/7			P -> excluded
         OMIM:604091	HDL deficiency, familial, 1		HP:0001658	PMID:10431236	PCS					P -> included
         OMIM:604091	HDL deficiency, familial, 1		HP:0005181	PMID:7627690	PCS		2/4			P -> included
-        OMIM:604091	HDL deficiency, familial, 1		HP:0000006	PMID:9888879	PCS					I -> included
+        OMIM:604091	HDL deficiency, familial, 1		HP:0000006	PMID:9888879	PCS					I -> excluded
 
          */
         String diseaseId = "OMIM:604091";
@@ -63,7 +64,6 @@ class DiseaseDataPhenolIngestTest {
         //System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
         expectedIncluded.add("HP:0003233");
-        expectedIncluded.add("HP:0000006");
         expectedIncluded.add("HP:0001658");
         expectedIncluded.add("HP:0005181");
         assertEquals(expectedIncluded, actualIncluded);
@@ -80,17 +80,18 @@ class DiseaseDataPhenolIngestTest {
     void testInclusionAndExclusionOfTerms_2() {
         /*
         Tests inclusion and exclusion of terms based on annotation frequency.
+        Only terms below phenotypic abnormalities (HP:0000118) should be included.
 
         Relevant rows and columns from phenotype.hpoa:
 
-        OMIM:165500	Optic atrophy 1		HP:0003587	OMIM:165500	IEA					C -> included
+        OMIM:165500	Optic atrophy 1		HP:0003587	OMIM:165500	IEA					C -> not included
         OMIM:165500	Optic atrophy 1		HP:0000552	OMIM:165500	IEA					P -> included
         OMIM:165500	Optic atrophy 1		HP:0000486	OMIM:165500	PCS		10%			P -> included
         OMIM:165500	Optic atrophy 1		HP:0000650	OMIM:165500	IEA					P -> included
         OMIM:165500	Optic atrophy 1		HP:0000980	OMIM:165500	IEA					P -> included
         OMIM:165500	Optic atrophy 1		HP:0000590	PMID:20157015	PCS		48/104			P -> included
         OMIM:165500	Optic atrophy 1		HP:0001251	PMID:20157015	PCS		31/104			P -> included
-        OMIM:165500	Optic atrophy 1		HP:0003829	OMIM:165500	IEA					I -> included
+        OMIM:165500	Optic atrophy 1		HP:0003829	OMIM:165500	IEA					I -> not included
         OMIM:165500	Optic atrophy 1		HP:0007663	OMIM:165500	TAS					P -> included
         OMIM:165500	Optic atrophy 1		HP:0000505	OMIM:165500	IEA					P -> included
         OMIM:165500	Optic atrophy 1		HP:0000648	OMIM:165500	IEA					P -> included
@@ -98,7 +99,7 @@ class DiseaseDataPhenolIngestTest {
         OMIM:165500	Optic atrophy 1		HP:0000576	OMIM:165500	IEA					P -> included
         OMIM:165500	Optic atrophy 1		HP:0000642	OMIM:165500	IEA					P -> included
         OMIM:165500	Optic atrophy 1		HP:0003701	PMID:20157015	PCS		37/104			P -> included
-        OMIM:165500	Optic atrophy 1		HP:0000006	OMIM:165500	IEA					I -> included
+        OMIM:165500	Optic atrophy 1		HP:0000006	OMIM:165500	IEA					I -> not included
         OMIM:165500	Optic atrophy 1		HP:0000666	OMIM:165500	PCS		5%			P -> included
 
          */
@@ -109,16 +110,13 @@ class DiseaseDataPhenolIngestTest {
         Set<String> actualIncluded = testDiseaseDict.getObservedDiseaseFeatures(diseaseId);
         System.out.println("Included: " + actualIncluded);
         Set<String> expectedIncluded = new HashSet<>();
-        //expectedIncluded.add("HP:0003587"); // Clinical modifier: Gradual, very slow onset of disease manifestations.
         expectedIncluded.add("HP:0000650");
         expectedIncluded.add("HP:0000980");
         expectedIncluded.add("HP:0001251");
         expectedIncluded.add("HP:0000590");
-        expectedIncluded.add("HP:0003829");
         expectedIncluded.add("HP:0000505");
         expectedIncluded.add("HP:0000648");
-        expectedIncluded.add("HP:0000006");
-        expectedIncluded.add("HP:0000666"); // Bug in Phenol: Aspect is 'P' and frequency 5% - should be included!
+        expectedIncluded.add("HP:0000666");
         expectedIncluded.add("HP:0007663");
         expectedIncluded.add("HP:0000603");
         expectedIncluded.add("HP:0000552");

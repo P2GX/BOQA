@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -31,6 +32,8 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     private static final int cohortSize = 100; // Imaginary cohort size using phenol to convert HPO frequency terms to ratios
     HpoDiseases diseases; // Temporarily needed to explore Phenols HpoDiseases, as there is no documentation
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
+    private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
+    private Ontology hpo = null;
 
     public static DiseaseDataPhenolIngest fromPaths(Path phenotypeAnnotationFile, Path ontologyFile) throws IOException {
         try (
@@ -56,18 +59,20 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' using Phenol ...");
 
         // Temporarily needed to explore HpoDiseases in test class because there is no adequate phenol documentation
-        this.diseases = getPhenolHpoDiseases(ontologyStream, annotationsStream, validDatabaseList);
+        this.hpo = OntologyLoader.loadOntology(ontologyStream);
+        this.diseases = getPhenolHpoDiseases(hpo, annotationsStream, validDatabaseList);
+
 
         // Create dictionary using Phenol
         this.diseaseFeaturesDict = phenolIngest();
     }
 
-    private HpoDiseases getPhenolHpoDiseases(InputStream ontologyStream, InputStream phenotypeAnnotations, List<String> validDatabaseList) throws IOException {
+    private HpoDiseases getPhenolHpoDiseases(Ontology hpo, InputStream phenotypeAnnotations, List<String> validDatabaseList) throws IOException {
         /*
         Code required to get a kind of list of HpoDisease objects in Phenol from the HPOA file phenotype.hpoa
         and the HP ontology in JSON format.
          */
-        Ontology ontology = OntologyLoader.loadOntology(ontologyStream);
+        Ontology ontology = hpo;
         Set<DiseaseDatabase> DiseaseDatabaseSet = validDatabaseList.stream()
                 .map(DiseaseDatabase::fromString)
                 .collect(Collectors.toSet());
@@ -83,25 +88,24 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
          */
         HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
 
-        // TODO: Filter for phenotypic abnormality terms
+        // Filter for phenotypic abnormality terms
+        Set<TermId> phenotypicAbnormalities = Set.copyOf(hpo.graph().getDescendantSet(PHENOTYPIC_ABNORMALITY));
 
         for (HpoDisease disease : this.diseases) {
 
             // Observed
             Set<String> observedTerms = disease.annotationTermIdList().stream()
+                    .filter(phenotypicAbnormalities::contains)
                     .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() != 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
-            Set<String> moi_terms = disease.modesOfInheritance().stream() // Include mode of inheritance
-                    .map(TermId::toString)
-                    .collect(Collectors.toSet());
-            observedTerms.addAll(moi_terms);
             HashMap<String, Set<String>> iTerms = new HashMap<>();
             iTerms.put("I", observedTerms);
             diseaseFeaturesDict.putIfAbsent(disease.id().toString(), iTerms);
 
             // Excluded
             Set<String> excludedTerms = disease.annotationTermIdList().stream()
+                    .filter(phenotypicAbnormalities::contains)
                     .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() == 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());

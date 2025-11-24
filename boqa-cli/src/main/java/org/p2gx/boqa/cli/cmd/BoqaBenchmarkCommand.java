@@ -94,7 +94,6 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
-        // TODO: Use phenolIngest instead
         DiseaseData diseaseData = DiseaseDataPhenolIngest.fromPaths(phenotypeAnnotationFile, Paths.get(ontologyFile));
         //DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
