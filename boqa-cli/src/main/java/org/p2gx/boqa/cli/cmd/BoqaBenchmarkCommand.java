@@ -6,6 +6,7 @@ import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
+import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -94,7 +95,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
         // TODO: Use phenolIngest instead
-        DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.fromPaths(Paths.get(ontologyFile), phenotypeAnnotationFile);
+        //DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
