@@ -5,7 +5,6 @@ import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
-import org.p2gx.boqa.core.diseases.DiseaseDataParser;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
@@ -70,8 +69,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
     @CommandLine.Option(
             names = {"-L", "--limit"},
-            description = "Limit number of diseases reported in output.",
-            required = false)
+            description = "Limit number of diseases reported in output.")
     private Integer resultsLimit;
 
     @CommandLine.Option(
