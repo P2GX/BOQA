@@ -70,6 +70,47 @@ public final class BoqaPatientAnalyzer {
     }
 
     /**
+     * Computes unnormalized BOQA log scores (log(probabilities))
+     * for all diseases given a patient's data.
+     * This function is intended to be used in the BoqaPrioritiser of Exomiser.
+     *
+     * <p>This method performs the following steps:
+     * <ol>
+     *   <li>Computes {@link BoqaCounts} for each disease using the provided
+     *   {@link org.p2gx.boqa.core.algorithm.BoqaSetCounter}</li>
+     *   <li>Calculates un-normalized log probabilities using
+     *   {@link #computeUnnormalizedLogProbability(double, double, BoqaCounts)}</li>
+     * </ol>
+     *
+     * @param patientData  Query data (symptoms/features observed in a patient)
+     * @param counter      The counter object that computes BoqaCounts for each annotated disease
+     * @return An {@link BoqaAnalysisResult} containing the patient data and disease counts and scores
+     */
+    public static BoqaAnalysisResult computeBoqaExomiserResults(
+            PatientData patientData, Counter counter, AlgorithmParameters params) {
+        List<BoqaCounts> countsList = counter.getDiseaseIds()
+                .parallelStream() // much faster!
+                .map(dId ->  counter.computeBoqaCounts(
+                        dId,
+                        patientData
+                ))
+                .toList();
+
+        // Compute raw log probabilities and populate results with BoqaResults
+        Map<String, Double> rawScores = countsList.stream()
+                .collect(Collectors.toMap(
+                        BoqaCounts::diseaseId,
+                        bc -> computeUnnormalizedLogProbability(params.getAlpha(), params.getBeta(), bc)
+                ));
+        List<BoqaResult> allResults = new ArrayList<>();
+        countsList.forEach(bc-> {
+            allResults.add(new BoqaResult(bc, rawScores.get(bc.diseaseId())));
+        });
+
+        return new BoqaAnalysisResult(patientData, allResults.stream().toList());
+    }
+
+    /**
      * Computes the un-normalized BOQA probability P for a given set of BoqaCounts and parameters
      * <p>
      * P = α<sup>fpBoqaCount</sup> × β<sup>fpBoqaCount</sup> ×
@@ -85,6 +126,23 @@ public final class BoqaPatientAnalyzer {
                 Math.pow(beta, counts.fnBoqaCount())*
                 Math.pow(1-alpha, counts.tnBoqaCount())*
                 Math.pow(1-beta, counts.tpBoqaCount());
+    }
+
+    /**
+     * Computes the un-normalized BOQA log probability for given BoqaCounts and parameters:
+     * <p>
+     * log(P) = fp × log(α) + fn × log(β) + tn × log(1-α)  + tp × log(1-β)
+     * </p>
+     * @param alpha  False positive rate parameter.
+     * @param beta   False negative rate parameter.
+     * @param counts The {@link BoqaCounts} for a query and a disease.
+     * @return The un-normalized log probability score.
+     */
+    static double computeUnnormalizedLogProbability(double alpha, double beta, BoqaCounts counts){
+        return counts.fpBoqaCount() * Math.log(alpha) +
+                counts.fnBoqaCount() * Math.log(beta) +
+                counts.tnBoqaCount() * Math.log(1-alpha) +
+                counts.tpBoqaCount() * Math.log(1-beta);
     }
 
 
