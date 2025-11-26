@@ -92,9 +92,11 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
     @CommandLine.Option(
             names={"--db"},
-            description = "Disease database (default: ${DEFAULT-VALUE}).",
-            defaultValue = "OMIM")
-    private String diseaseDatabase;
+            description = "Valid databases are OMIM, ORPHA, and DECIPHER (default: ${DEFAULT-VALUE})." +
+                    "The databases OMIM and ORPHA must not be used at the same time!",
+            defaultValue = "OMIM",
+            split = ",")
+    private Set<String> diseaseDatabases;
 
     @Override
     public Integer call() throws Exception {
@@ -104,13 +106,21 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
-        HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.defaultOmim();
+        if (diseaseDatabases.contains("OMIM") && diseaseDatabases.contains("ORPHA")) {
+            throw new CommandLine.ParameterException(
+                    new CommandLine(this),
+                    "OMIM and ORPHA cannot be used together."
+            );
+        }
+        Set<DiseaseDatabase> DiseaseDatabaseSet = diseaseDatabases.stream()
+                .map(DiseaseDatabase::fromString)
+                .collect(Collectors.toSet());
+        int defaultCohortSize = 100;
+        HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(DiseaseDatabaseSet,false, defaultCohortSize);
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
         HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
         DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
 
-       // DiseaseData diseaseData = DiseaseDataPhenolIngest.fromPaths(phenotypeAnnotationFile, Paths.get(ontologyFile));
-        //DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
