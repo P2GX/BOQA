@@ -13,9 +13,20 @@ public final class AlgorithmParameters {
     private final double alpha;
     private final double beta;
 
+    private final double logAlpha;
+    private final double logBeta;
+    private final double logOneMinusAlpha;
+    private final double logOneMinusBeta;
+
     private AlgorithmParameters(double alpha, double beta) {
         this.alpha = alpha;
         this.beta = beta;
+
+        this.logAlpha = Math.log(alpha);
+        this.logBeta = Math.log(beta);
+        this.logOneMinusAlpha = Math.log(1-alpha);
+        this.logOneMinusBeta = Math.log(1-beta);
+
     }
 
     /**
@@ -53,5 +64,18 @@ public final class AlgorithmParameters {
 
     public double getBeta() {
         return beta;
+    }
+
+    public double getLogAlpha() {
+        return logAlpha;
+    }
+    public double getLogBeta() {
+        return logBeta;
+    }
+    public double getLogOneMinusAlpha() {
+        return logOneMinusAlpha;
+    }
+    public double getLogOneMinusBeta() {
+        return logOneMinusBeta;
     }
 }

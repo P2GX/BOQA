@@ -79,7 +79,7 @@ public final class BoqaPatientAnalyzer {
      *   <li>Computes {@link BoqaCounts} for each disease using the provided
      *   {@link org.p2gx.boqa.core.algorithm.BoqaSetCounter}</li>
      *   <li>Calculates un-normalized log probabilities using
-     *   {@link #computeUnnormalizedLogProbability(double, double, BoqaCounts)}</li>
+     *   {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCounts)}</li>
      * </ol>
      *
      * @param patientData  Query data (symptoms/features observed in a patient)
@@ -100,7 +100,7 @@ public final class BoqaPatientAnalyzer {
         Map<String, Double> rawScores = countsList.stream()
                 .collect(Collectors.toMap(
                         BoqaCounts::diseaseId,
-                        bc -> computeUnnormalizedLogProbability(params.getAlpha(), params.getBeta(), bc)
+                        bc -> computeUnnormalizedLogProbability(params, bc)
                 ));
         List<BoqaResult> allResults = new ArrayList<>();
         countsList.forEach(bc-> {
@@ -133,17 +133,14 @@ public final class BoqaPatientAnalyzer {
      * <p>
      * log(P) = fp × log(α) + fn × log(β) + tn × log(1-α)  + tp × log(1-β)
      * </p>
-     * @param alpha  False positive rate parameter.
-     * @param beta   False negative rate parameter.
+     * @param params  alpha, beta, log(alpha), log(beta) etc.
      * @param counts The {@link BoqaCounts} for a query and a disease.
      * @return The un-normalized log probability score.
      */
-    static double computeUnnormalizedLogProbability(double alpha, double beta, BoqaCounts counts){
-        return counts.fpBoqaCount() * Math.log(alpha) +
-                counts.fnBoqaCount() * Math.log(beta) +
-                counts.tnBoqaCount() * Math.log(1-alpha) +
-                counts.tpBoqaCount() * Math.log(1-beta);
+    static double computeUnnormalizedLogProbability(AlgorithmParameters params, BoqaCounts counts){
+        return counts.fpBoqaCount() * params.getLogAlpha() +
+                counts.fnBoqaCount() * params.getLogBeta() +
+                counts.tnBoqaCount() * params.getLogOneMinusAlpha() +
+                counts.tpBoqaCount() * params.getLogOneMinusBeta();
     }
-
-
 }
