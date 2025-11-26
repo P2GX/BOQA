@@ -6,7 +6,11 @@ import org.junit.jupiter.api.Test;
 
 import org.monarchinitiative.phenol.annotations.base.Ratio;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.TestBase;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,20 +29,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-class DiseaseDataPhenolIngestTest {
+class DiseaseDataPhenolIngestTest extends TestBase {
 
-    private static DiseaseDataPhenolIngest testDiseaseDict;
+    private static DiseaseData testDiseaseDict;
 
     @BeforeAll
     static void setup() throws IOException {
-        try (
-            InputStream ontologyStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
-                    .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz"));
-            InputStream annotationStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
-                    .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"));
-        ) {
-            testDiseaseDict = new DiseaseDataPhenolIngest(ontologyStream, annotationStream);
-        }
+        testDiseaseDict = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases());
     }
 
     @Test

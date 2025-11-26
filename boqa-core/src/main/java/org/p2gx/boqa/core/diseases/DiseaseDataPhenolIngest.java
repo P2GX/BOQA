@@ -49,6 +49,18 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         }
     }
 
+    public static DiseaseData of(Ontology hpo, HpoDiseases diseases) {
+        return new DiseaseDataPhenolIngest(hpo, diseases);
+    }
+
+    private DiseaseDataPhenolIngest(Ontology hpo, HpoDiseases diseases){
+        this.hpo = hpo;
+        this.diseases = diseases;
+        // Create dictionary using Phenol
+        this.diseaseFeaturesDict = phenolIngest();
+    }
+
+
     /*
     Constructor call with defaults
     */

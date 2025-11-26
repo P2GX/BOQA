@@ -1,5 +1,10 @@
 package org.p2gx.boqa.cli.cmd;
 
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.p2gx.boqa.core.*;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
@@ -23,6 +28,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -84,6 +90,12 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             defaultValue = "0.9")
     private Double beta;
 
+    @CommandLine.Option(
+            names={"--db"},
+            description = "Disease database (default: ${DEFAULT-VALUE}).",
+            defaultValue = "OMIM")
+    private String diseaseDatabase;
+
     @Override
     public Integer call() throws Exception {
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
@@ -92,7 +104,12 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
-        DiseaseData diseaseData = DiseaseDataPhenolIngest.fromPaths(phenotypeAnnotationFile, Paths.get(ontologyFile));
+        HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.defaultOmim();
+        HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
+        HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
+
+       // DiseaseData diseaseData = DiseaseDataPhenolIngest.fromPaths(phenotypeAnnotationFile, Paths.get(ontologyFile));
         //DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
