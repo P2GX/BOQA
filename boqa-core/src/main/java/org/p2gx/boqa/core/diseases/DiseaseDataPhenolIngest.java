@@ -92,8 +92,6 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
          */
         HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
 
-        System.out.println("*****************");
-
         // Filter for phenotypic abnormality terms
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpo.graph().getDescendantSet(PHENOTYPIC_ABNORMALITY));
 
