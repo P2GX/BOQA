@@ -5,19 +5,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Class that implements the DiseaseData interface by parsing annotations directly from the HPOA files
- * phenotype.hpoa and genes_to_diseases.txt.
- * <p>
+ * Class that implements the {@code DiseaseData} interface by parsing annotations directly
+ * from the HPOA files: {@code phenotype.hpoa} and {@code genes_to_diseases.txt}
+ *
+ * <p>Phenol is poorly documented. This class has proven useful in understanding phenol ingestion
+ * (see {@code DiseaseDataCmpParsePhenolIngestTest.java}).</p>
+ *
  * @deprecated use the {@link DiseaseDataPhenolIngest} class instead.
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-@Deprecated(forRemoval = true)
+//@Deprecated(forRemoval = true)
 public class DiseaseDataParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataParser.class);
@@ -53,14 +56,14 @@ public class DiseaseDataParser {
         return new DefaultDiseaseData(diseaseAnnotations);
     }
 
-    /**
-     * Read disease data from an uncompressed file <code>path</code>.
-     */
-    public static DiseaseData parseDiseaseDataFromHpoa(Path phenotypeAnnotationFile) throws IOException {
-        try (InputStream annotationStream = Files.newInputStream(phenotypeAnnotationFile)) {
-            return DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
-        }
-    }
+//    /**
+//     * Read disease data from an uncompressed file <code>path</code>.
+//     */
+//    public static DiseaseData parseDiseaseDataFromHpoa(Path phenotypeAnnotationFile) throws IOException {
+//        try (InputStream annotationStream = Files.newInputStream(phenotypeAnnotationFile)) {
+//            return DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
+//        }
+//    }
 
     private Map<String, DiseaseFeatures> parseDiseaseAnnotations(InputStream annotationStream, Map<String, Set<GeneIdSymbol>> diseaseGeneAssociations) {
 
