@@ -58,7 +58,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
             required = true,
-            description = "Input a text file with list of absolute paths to patient files.")
+            description = "Input a text file with list of absolute paths to phenopackets.")
     private Path phenopacketFile;
 
     @CommandLine.Option(
@@ -91,8 +91,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
     private Double beta;
 
     @CommandLine.Option(
-            names={"--db"},
-            description = "Valid databases are OMIM, ORPHA, and DECIPHER (default: ${DEFAULT-VALUE})." +
+            names={"-db", "--database"},
+            description = "Comma-separated list of databases. Valid databases are OMIM, ORPHA, and DECIPHER (default: ${DEFAULT-VALUE})." +
                     "The databases OMIM and ORPHA must not be used at the same time!",
             defaultValue = "OMIM",
             split = ",")
@@ -105,11 +105,17 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
 
         // Parse disease-HPO associations into DiseaseData object
-        LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
+        LOGGER.info("Importing disease phenotype associations {} from file: {} ...", diseaseDatabases.toString(), phenotypeAnnotationFile);
         if (diseaseDatabases.contains("OMIM") && diseaseDatabases.contains("ORPHA")) {
             throw new CommandLine.ParameterException(
                     new CommandLine(this),
-                    "OMIM and ORPHA cannot be used together."
+                    "Error: OMIM and ORPHA cannot be used together!"
+            );
+        }
+        if (!Set.of("OMIM", "ORPHA", "DECIPHER").containsAll(diseaseDatabases)) {
+            throw new CommandLine.ParameterException(
+                    new CommandLine(this),
+                    "Error: Invalid database!"
             );
         }
         Set<DiseaseDatabase> DiseaseDatabaseSet = diseaseDatabases.stream()
@@ -135,7 +141,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
         AtomicInteger fileCount = new AtomicInteger(0);
 
-        LOGGER.info("Beginning BOQA analysis for patient phenopackets...");
+        LOGGER.info("Beginning BOQA analysis for phenopackets...");
         LOGGER.info("Results limit set to {}", limit);
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
@@ -154,9 +160,9 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     })
                     .toList();
         } catch (IOException e) {
-            LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
+            LOGGER.warn("Could not read phenopacket list from {}", phenopacketFile, e);
         }
-        LOGGER.info("Finished processing {} patient files.", fileCount.get());
+        LOGGER.info("Finished processing {} phenopackets.", fileCount.get());
 
         LOGGER.info("Writing results to {}", outPath);
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
