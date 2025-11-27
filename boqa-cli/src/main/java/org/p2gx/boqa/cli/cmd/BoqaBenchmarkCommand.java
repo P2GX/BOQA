@@ -1,11 +1,16 @@
 package org.p2gx.boqa.cli.cmd;
 
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
+import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.p2gx.boqa.core.*;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
-import org.p2gx.boqa.core.diseases.DiseaseDataParser;
+import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -23,6 +28,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -52,7 +58,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
             required = true,
-            description = "Input a text file with list of absolute paths to patient files.")
+            description = "Input a text file with list of absolute paths to phenopackets.")
     private Path phenopacketFile;
 
     @CommandLine.Option(
@@ -69,8 +75,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
     @CommandLine.Option(
             names = {"-L", "--limit"},
-            description = "Limit number of diseases reported in output.",
-            required = false)
+            description = "Limit number of diseases reported in output.")
     private Integer resultsLimit;
 
     @CommandLine.Option(
@@ -85,6 +90,14 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             defaultValue = "0.9")
     private Double beta;
 
+    @CommandLine.Option(
+            names={"-db", "--database"},
+            description = "Comma-separated list of databases. Valid databases are OMIM, ORPHA, and DECIPHER (default: ${DEFAULT-VALUE})." +
+                    "The databases OMIM and ORPHA must not be used at the same time!",
+            defaultValue = "OMIM",
+            split = ",")
+    private Set<String> diseaseDatabases;
+
     @Override
     public Integer call() throws Exception {
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
@@ -92,8 +105,28 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
 
         // Parse disease-HPO associations into DiseaseData object
-        LOGGER.info("Importing disease phenotype associations from file: {} ...", phenotypeAnnotationFile);
-        DiseaseData diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(phenotypeAnnotationFile);
+        LOGGER.info("Importing disease phenotype associations {} from file: {} ...", diseaseDatabases.toString(), phenotypeAnnotationFile);
+        if (diseaseDatabases.contains("OMIM") && diseaseDatabases.contains("ORPHA")) {
+            throw new CommandLine.ParameterException(
+                    new CommandLine(this),
+                    "Error: OMIM and ORPHA cannot be used together!"
+            );
+        }
+        if (!Set.of("OMIM", "ORPHA", "DECIPHER").containsAll(diseaseDatabases)) {
+            throw new CommandLine.ParameterException(
+                    new CommandLine(this),
+                    "Error: Invalid database!"
+            );
+        }
+        Set<DiseaseDatabase> DiseaseDatabaseSet = diseaseDatabases.stream()
+                .map(DiseaseDatabase::fromString)
+                .collect(Collectors.toSet());
+        int defaultCohortSize = 100;
+        HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(DiseaseDatabaseSet,false, defaultCohortSize);
+        HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
+        HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
+
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
@@ -108,7 +141,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
         AtomicInteger fileCount = new AtomicInteger(0);
 
-        LOGGER.info("Beginning BOQA analysis for patient phenopackets...");
+        LOGGER.info("Beginning BOQA analysis for phenopackets...");
         LOGGER.info("Results limit set to {}", limit);
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
@@ -127,9 +160,9 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     })
                     .toList();
         } catch (IOException e) {
-            LOGGER.warn("Could not read patient file list from {}", phenopacketFile, e);
+            LOGGER.warn("Could not read phenopacket list from {}", phenopacketFile, e);
         }
-        LOGGER.info("Finished processing {} patient files.", fileCount.get());
+        LOGGER.info("Finished processing {} phenopackets.", fileCount.get());
 
         LOGGER.info("Writing results to {}", outPath);
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
