@@ -75,13 +75,10 @@ public final class BoqaPatientAnalyzer {
             PatientData patientData, Counter counter, int resultsLimit, AlgorithmParameters params) {
 
         // Get BoqaResults with raw log scores
-        List<BoqaResult> rawLogBoqaResults = new ArrayList<>(computeBoqaResultsRawLog(patientData, counter, params).boqaResults());;
+        List<BoqaResult> rawLogBoqaResults = new ArrayList<>(computeBoqaResultsRawLog(patientData, counter, params).boqaResults());
 
         // Sort by raw log score
-        Collections.sort(
-                rawLogBoqaResults,
-                Comparator.comparingDouble(BoqaResult::boqaScore).reversed()
-        );
+        rawLogBoqaResults.sort(Comparator.comparingDouble(BoqaResult::boqaScore).reversed());
 
         // Find max log-prob
         double maxLogP = rawLogBoqaResults.stream()
