@@ -128,7 +128,6 @@ public final class BoqaPatientAnalyzer {
      * @param counts The {@link BoqaCounts} for a disease.
      * @return The un-normalized probability score.
      */
-    @Deprecated
     static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
         return Math.pow(alpha, counts.fpBoqaCount())*
                 Math.pow(beta, counts.fnBoqaCount())*
