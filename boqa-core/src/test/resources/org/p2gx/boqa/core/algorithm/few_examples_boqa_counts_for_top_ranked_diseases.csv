@@ -1,4 +1,4 @@
-# java boqa results with version 3e94de84ce52b211107bfafcdc878b43a01a0786
+# java boqa results with code version hash 3e94de84ce52b211107bfafcdc878b43a01a0786, column names as per original boqa paper
 PHENOPACKET_ID,TOP_RANKED_DISEASE_ID,001,011,101,111
 PMID_38991538_Individual18-M92621.json,OMIM:620851,398,87,0,86
 PMID_33277917_Patient5.json,OMIM:616364,219,47,0,52
