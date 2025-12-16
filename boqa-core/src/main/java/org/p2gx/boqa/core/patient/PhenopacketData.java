@@ -3,6 +3,7 @@ package org.p2gx.boqa.core.patient;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.p2gx.boqa.core.PatientData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.OntologyClass;
 import org.phenopackets.schema.v2.core.PhenotypicFeature;
@@ -42,11 +43,12 @@ public class PhenopacketData implements PatientData {
     // Primary constructor
     public PhenopacketData(Phenopacket phenopacket) {
         this.ppktId = phenopacket.getId();
-        this.observedTerms = phenopacket.getPhenotypicFeaturesList().stream()
+        this.observedTerms =  phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(Predicate.not(PhenotypicFeature::getExcluded))
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
                 .map(TermId::of)
+                .map(OntologyTraverser::getPrimaryTermId)
                 .collect(Collectors.toSet());
         if (this.observedTerms.isEmpty()) {
             LOGGER.warn("Phenopacket {} has no observed phenotypic features!", phenopacket.getId());
@@ -55,6 +57,7 @@ public class PhenopacketData implements PatientData {
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
                 .map(TermId::of)
+                .map(OntologyTraverser::getPrimaryTermId)
                 .collect(Collectors.toSet());
         this.diseases = phenopacket.getDiseasesList().stream().map(d ->
                 new DiseaseDTO(d.getTerm().getId(), d.getTerm().getLabel())).toList();

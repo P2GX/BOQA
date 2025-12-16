@@ -6,6 +6,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
+import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +34,7 @@ public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
-    private final GraphTraverser graphTraverser;
+    private final OntologyTraverser ontologyTraverser;
     private final Map<TermId, Set<TermId>> diseaseLayers;
     private final Set<String> diseaseIds;
     private final Map<String, String> idToLabel;
@@ -51,10 +52,10 @@ public class BoqaSetCounter implements Counter {
      */
     public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo) {
         this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
-        this.graphTraverser = new GraphTraverser(hpo);
+        this.ontologyTraverser = new OntologyTraverser(hpo);
         this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds());
         LOGGER.info("Initializing disease layers for {} diseases", diseaseIds.size());
-        OntologyGraph<TermId> hpoGraph = graphTraverser.getHpoGraph();
+        OntologyGraph<TermId> hpoGraph = ontologyTraverser.getHpoGraph();
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
         this.diseaseLayers = diseaseIds.parallelStream()
                 .collect(Collectors.toUnmodifiableMap(TermId::of, diseaseId -> {
@@ -62,7 +63,7 @@ public class BoqaSetCounter implements Counter {
                             .map(TermId::of)
                             .filter(phenotypicAbnormalities::contains)
                             .collect(Collectors.toSet());
-                    return graphTraverser.initLayer(diseasePhenotypes);
+                    return ontologyTraverser.initLayer(diseasePhenotypes);
                 }));
         LOGGER.info("Finished initializing disease layers");
     }
@@ -80,7 +81,7 @@ public class BoqaSetCounter implements Counter {
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
         Set<TermId> observedHpos = patientData.getObservedTerms();
-        Set<TermId> queryLayer = graphTraverser.initLayer(observedHpos);
+        Set<TermId> queryLayer = ontologyTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
 
         // TP
@@ -97,14 +98,14 @@ public class BoqaSetCounter implements Counter {
         // Now iterate over these and count only those with all parents ON
         int betaCounts = 0; // exponent of beta
         for (TermId node : falseNegatives) {
-            if (graphTraverser.allParentsActive(node, queryLayer)) {
+            if (ontologyTraverser.allParentsActive(node, queryLayer)) {
                 betaCounts += 1;
             }
         }
         int offNodesCount = 0; // exponent of 1-alpha
         Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
         for (TermId qobs : queryLayer) {
-            Set<TermId> children = new HashSet<>(graphTraverser.getHpoGraph().extendWithChildren(qobs, false));
+            Set<TermId> children = new HashSet<>(ontologyTraverser.getHpoGraph().extendWithChildren(qobs, false));
             // Go through all children of ON terms
             for (TermId child : children) { // TODO consider a set with children of all of the terms
                 // Find those that are off
@@ -114,7 +115,7 @@ public class BoqaSetCounter implements Counter {
                         // Make sure the node has not already been counted
                         if (!checkedNodes.contains(child)) {
                             // increase counter iff all parents are ON
-                            if (graphTraverser.allParentsActive(child, queryLayer)) {
+                            if (ontologyTraverser.allParentsActive(child, queryLayer)) {
                                 offNodesCount += 1;
                                 checkedNodes.add(child);
                             }

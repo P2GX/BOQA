@@ -1,5 +1,7 @@
 package org.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -34,5 +36,9 @@ public interface DiseaseData {
     default Map<String, String> getIdToLabel() {
         return Map.of();
     }
+
+    default HpoDiseases getDiseases() {
+        return null;
+    };
 
 }

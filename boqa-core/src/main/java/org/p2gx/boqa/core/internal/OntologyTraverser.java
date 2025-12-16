@@ -1,4 +1,4 @@
-package org.p2gx.boqa.core.algorithm;
+package org.p2gx.boqa.core.internal;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -13,9 +13,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.stream.Collectors;
 
 /**
+ * INTERNAL USE ONLY.
+ * Not part of the public API. May change or be removed at any time.
+ * <p>
  * Utility class for traversing and querying an HPO {@link OntologyGraph}.
  * <p>
  * This class centralizes operations needed in the BOQA algorithm to:
@@ -52,17 +55,24 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author <a href="mailto:leonardo.chimirri@bih-charite.de">Leonardo Chimirri</a>
  */
-class GraphTraverser {
-    private static final Logger LOGGER = LoggerFactory.getLogger(GraphTraverser.class);
+public class OntologyTraverser {
+    private static final Logger LOGGER = LoggerFactory.getLogger(OntologyTraverser.class);
     private static final Set<TermId> LOGGED_REPLACEMENTS = ConcurrentHashMap.newKeySet();
+    private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
-    private final Ontology hpo;
+    private static Ontology hpo = null;
     private final OntologyGraph<TermId> hpoGraph;
     private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine.newBuilder().maximumSize(500).build();
 
-    public GraphTraverser(Ontology hpo) {
-        this.hpo = hpo;
-        hpoGraph = hpo.graph();
+    /**
+     *
+     * @param hpo
+     *
+     * @todo .extractSubgraph(PHENOTYPIC_ABNORMALITY) or .subOntology(PHENOTYPIC_ABNORMALITY) in phenol don't seem to work.
+     */
+    public OntologyTraverser(Ontology hpo) {
+        OntologyTraverser.hpo = hpo;
+        hpoGraph = OntologyTraverser.hpo.graph();
     }
 
     public OntologyGraph<TermId> getHpoGraph() {
@@ -82,24 +92,43 @@ class GraphTraverser {
      *
      * @param hpoTerms the set of observed HPO terms to initialize from
      * @return the initialized layer of terms including ancestors
+     *
      */
-    Set<TermId> initLayer(Set<TermId> hpoTerms) {
+    public Set<TermId> initLayer(Set<TermId> hpoTerms) {
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> {
-            TermId primaryTid = hpo.getPrimaryTermId(t);
-            if (primaryTid == null) {
-                LOGGER.warn("Invalid HPO term {}! Skipping...", t);
-            } else {
-                if (!t.equals(primaryTid) && LOGGED_REPLACEMENTS.add(t)) {
-                    LOGGER.warn("Replacing {} with primary term {}", t, primaryTid);
-                }
-                // this can be expensive, so use a light cache
-                Collection<TermId> ancestorTermIds = hpoAncestorsCache.get(t, termId -> hpoGraph.extendWithAncestors(primaryTid, true));
-                initializedLayer.addAll(ancestorTermIds);
-            }
+            // this can be expensive, so use a light cache
+            Collection<TermId> ancestorTermIds = hpoAncestorsCache.get(t,
+                    termId -> hpoGraph.extendWithAncestors(t, true));
+            initializedLayer.addAll(ancestorTermIds);
         });
         initializedLayer.remove(hpoGraph.root());
         return initializedLayer;
+    }
+
+    /**
+     * Resolves the given HPO term to its primary term.
+     * <p>
+     * If the input term is not primary, the replacement is logged once.
+     *
+     * <p><b>Usage example:</b>
+     * <pre>{@code
+     * TermId primary = getPrimaryTermId(term);
+     * }</pre>
+     *
+     * @param t the HPO term to resolve
+     * @return the primary TermId corresponding to the input term
+     */
+    public static TermId getPrimaryTermId(TermId t){
+        TermId primaryTermId = hpo.getPrimaryTermId(t);
+        if (primaryTermId == null) {
+            LOGGER.warn("Invalid HPO term {}! Skipping...", primaryTermId);
+        } else {
+            if (!t.equals(primaryTermId) && LOGGED_REPLACEMENTS.add(t)) {
+                LOGGER.info("Replacing {} with primary term {}", t, primaryTermId);
+            }
+        }
+        return primaryTermId;
     }
 
     /**
@@ -117,5 +146,18 @@ class GraphTraverser {
         }
         parents.removeAll(activeNodes);
         return parents.isEmpty();
+    }
+
+    /**
+     * @todo this is a stub, could not find a way of getting it to work in DefaultDiseaseData withouth refactoring everything
+     * Keeping the filter in BoqaSetCounter's constructor, for now.
+     * @param observedTerms
+     * @return
+     */
+    public Set<TermId> filterPhenotypicAbnormalities(Set<TermId> observedTerms) {
+        Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
+        return observedTerms.stream()
+                .filter(phenotypicAbnormalities::contains)
+                .collect(Collectors.toSet());
     }
 }

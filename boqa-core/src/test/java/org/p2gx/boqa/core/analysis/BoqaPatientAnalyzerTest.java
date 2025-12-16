@@ -1,13 +1,33 @@
 package org.p2gx.boqa.core.analysis;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.p2gx.boqa.core.Counter;
+import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.PatientData;
+import org.p2gx.boqa.core.TestBase;
+import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
+import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.patient.QueryDataFromString;
+import java.io.IOException;
+import java.util.List;
 
-import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeUnnormalizedProbability;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.*;
 
-class BoqaPatientAnalyzerTest {
+class BoqaPatientAnalyzerTest extends TestBase {
+
+    private static Counter counter;
+
+    @BeforeAll
+    static void setup() throws IOException {
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases());
+        counter = new BoqaSetCounter(diseaseData, hpo());
+    }
 
     /**
      * Parameterized test for {@link  BoqaPatientAnalyzer#computeUnnormalizedProbability(double, double, BoqaCounts)}.
@@ -51,4 +71,51 @@ class BoqaPatientAnalyzerTest {
         assertEquals(expectedScore, actualScore, 1e-9);
     }
 
+    /**
+     * Test for {@link  BoqaPatientAnalyzer#computeBoqaResults(PatientData, Counter, int, AlgorithmParameters)}.
+     * <p>
+     * This test validates that the calculation of the normalized BOQA probabilities works as expected.
+     * </p>
+     *
+     * <p>
+     * <ol>
+     *   <li>First, the BoqaResults for all annotated diseases are calculated for
+     *   some valid input query HPO terms and parameters using {@link  BoqaPatientAnalyzer#computeBoqaResults(PatientData, Counter, int, AlgorithmParameters)}.
+     *   </li>
+     *   <li>Each BoqaResult contains both the normalized score and the underlying BOQA counts.
+     *   The counts are used to calculate the normalized probabilities in the conventional way,i.e.,
+     *   without the shift-log-exp trick used in computeBoqaResults.</li>
+     *   <li>These probabilities are then compared with those from BoqaResults.</li>
+     * </ol>
+     * </p>
+     */
+    @Test
+    void testComputeBoqaResults(){
+
+        // Prepare arguments for 'computeBoqaResults'
+        PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
+        int limit = counter.getDiseaseIds().size();
+        double alpha = 0.01;
+        double beta = 0.9;
+        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta, 1.0);
+
+        // Run 'computeBoqaResults'
+        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResults(
+                patientData, counter, limit, params);
+
+        // Recompute un-normalized probabilities in the conventional way
+        List<Double> rawProbs = boqaAnalysisResult.boqaResults().stream()
+                .map(result -> computeUnnormalizedProbability(params.getAlpha(), params.getBeta(),  params.getTemperature(), result.counts()))
+                .toList();
+
+        // Get the sum for normalization
+        double rawProbsSum = rawProbs.stream().mapToDouble(Double::doubleValue).sum();
+
+        // Compare normalized probabilities from BoqaResults with those recalculated from counts
+        boqaAnalysisResult.boqaResults().forEach(br-> {
+            double expectedNormProb = computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), params.getTemperature(), br.counts()) / rawProbsSum;
+            double actualNormProb = br.boqaScore();
+            assertEquals(expectedNormProb, actualNormProb, 1e-9);
+        });
+    }
 }

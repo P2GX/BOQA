@@ -1,6 +1,7 @@
 package org.p2gx.boqa.core.diseases;
 
 import org.p2gx.boqa.core.Gene;
+import org.p2gx.boqa.core.internal.OntologyTraverser;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package org.p2gx.boqa.core.algorithm;
+package org.p2gx.boqa.core.internal;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -20,19 +20,19 @@ import java.util.zip.GZIPInputStream;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class GraphTraversingTest {
+public class OntologyTraverserTest {
 
-    GraphTraverser graphTraverser;
+    OntologyTraverser ontologyTraverser;
 
     // TODO: Daniel suggests using Extensions API rather then TestBase and extensions thereof, more modern.
     @BeforeAll
     void setUp() throws IOException {
         try (
-            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(GraphTraversingTest.class
+            InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
                     .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
             Ontology hpo = OntologyLoader.loadOntology(ontologyStream);
-            this.graphTraverser = new GraphTraverser(hpo);
+            this.ontologyTraverser = new OntologyTraverser(hpo);
         }
     }
 
@@ -42,7 +42,7 @@ class GraphTraversingTest {
         Set<TermId> expectedNodesTermIds = expectedNodes.stream()
                 .map(TermId::of)
                 .collect(Collectors.toSet());
-        assertEquals(expectedNodesTermIds, graphTraverser.initLayer(observedNodes));
+        assertEquals(expectedNodesTermIds, ontologyTraverser.initLayer(observedNodes));
     }
     // TODO: Daniel suggests using @CsvSource
     private static Stream<Arguments> activeLayers(){
@@ -60,26 +60,43 @@ class GraphTraversingTest {
                         Set.of(TermId.of("HP:0001166"))),
                 Arguments.of("Two observed HPOs",
                         queryTermsFromTwo,
-                        Set.of(TermId.of("HP:0010787"),TermId.of("HP:0001635"))),
-                // HP:0001505 is an alt id of HP:0001166-Arachnodactyly
+                        Set.of(TermId.of("HP:0010787"),TermId.of("HP:0001635")))
+                );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("oldTerms")
+    void testgetPrimaryTermId(String testName, Set<String> expectedNodes, Set<TermId> observedNodes ) {
+        Set<TermId> expectedNodesTermIds = expectedNodes.stream()
+                .map(TermId::of)
+                .map(OntologyTraverser::getPrimaryTermId)
+                .collect(Collectors.toSet());
+        Set<TermId> observedNodesTermIds = observedNodes.stream()
+                .map(OntologyTraverser::getPrimaryTermId)
+                .collect(Collectors.toSet());
+        assertEquals(expectedNodesTermIds, ontologyTraverser.initLayer(observedNodesTermIds));
+    }
+    private static Stream<Arguments> oldTerms(){
+        // Manually curated example: start from Arachnodactyly, HP:0001166, and go up
+        Set<String> queryTerms = Set.of("HP:0001166","HP:0001238","HP:0100807","HP:0001167","HP:0001155","HP:0002817",
+                "HP:0040064","HP:0000118","HP:0011297","HP:0002813","HP:0040068","HP:0000924","HP:0011844",
+                "HP:0011842","HP:0033127");
+        return Stream.of(// HP:0001505 is an alt id of HP:0001166-Arachnodactyly
                 Arguments.of("Alternate HPO IDs",
-                        queryTermsFromOne,
+                        queryTerms,
                         Set.of(TermId.of("HP:0001505"))),
                 // repeat - should only see one warning about replacing alternate ID with a primary one
                 Arguments.of("Alternate HPO IDs",
-                        queryTermsFromOne,
-                        Set.of(TermId.of("HP:0001505"))),
-                Arguments.of("Unrecognized HPO IDs",
-                        Set.of(),
-                        Set.of(TermId.of("HP:000000000")))
-                )
-        ;
+                        queryTerms,
+                        Set.of(TermId.of("HP:0001505")))
+                );
     }
+
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("parentsActiveCases")
     void testAllParentsActive(String testName, TermId node, Set<TermId> activeParents, boolean expectation) {
-        assertEquals(expectation, graphTraverser.allParentsActive(node, activeParents));
+        assertEquals(expectation, ontologyTraverser.allParentsActive(node, activeParents));
     }
 
     private static Stream<Arguments> parentsActiveCases(){
