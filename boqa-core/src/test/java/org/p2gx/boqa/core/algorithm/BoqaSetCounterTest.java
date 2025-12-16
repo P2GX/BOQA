@@ -48,7 +48,7 @@ class BoqaSetCounterTest {
     @Tag("expensive_test")
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvFileSource(
-            resources = "pyboqa_counts_for_top_ranked_diseases.csv",
+            resources = "boqa_counts_for_top_ranked_diseases.csv",
             delimiter = ',',
             numLinesToSkip = 2
             // useHeadersInDisplayName = true // does not work, don't use it
@@ -66,7 +66,7 @@ class BoqaSetCounterTest {
 
     // As a first idea, test against pyboqa results
     @ParameterizedTest(name = "[{index}] {arguments}")
-    @CsvFileSource(resources = "few_examples_pyboqa_counts_for_top_ranked_diseases.csv", numLinesToSkip = 2)
+    @CsvFileSource(resources = "few_examples_boqa_counts_for_top_ranked_diseases.csv", numLinesToSkip = 2)
     void testPyboqaSubset(
             String jsonFile,
             String diagnosedDiseaseId,
