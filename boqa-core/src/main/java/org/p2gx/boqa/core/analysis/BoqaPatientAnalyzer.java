@@ -99,6 +99,7 @@ public final class BoqaPatientAnalyzer {
                     .mapToDouble(r -> Math.exp(r.boqaScore() - maxLogP))
                     .sum();
         } else {
+            // Alternative to Standard BOQA
             // Non-unit temperature normalizes trivially by largest score, which is already present below
             normalizationFactor = 1.0;
         }
@@ -118,11 +119,7 @@ public final class BoqaPatientAnalyzer {
      * <p>
      * log(P) = [fp × log(α) + fn × log(β) + tn × log(1-α)  + tp × log(1-β)] / T
      * </p>
-     * <p>
-     * P = α<sup>fpBoqaCount</sup> × β<sup>fpBoqaCount</sup> ×
-     * (1-α)<sup>fnBoqaCount</sup> × (1-β)<sup>tpBoqaCount</sup>
-     *  </pre>
-     * @param params  alpha, beta, log(alpha), log(beta) etc.
+     * @param params  alpha, beta, log(alpha), log(beta), termperature T etc.
      * @param counts The {@link BoqaCounts} for a query and a disease.
      * @return The un-normalized BOQA log probability score.
      */

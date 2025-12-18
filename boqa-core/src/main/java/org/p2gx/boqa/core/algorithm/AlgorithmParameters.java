@@ -5,6 +5,8 @@ package org.p2gx.boqa.core.algorithm;
  * Alpha and beta are fixed (across all diseases and patients) for a single run.
  *
  * {@code ALPHA} represents the probability of a false positive, {@code BETA} that of a false negative.
+ * {@code TEMPERATURE} (or T) can be used to temper the posterior distribution. The posterior is effectively raised
+ * to the 1/T-th power, or, equivalently, this can be seen as taking the T-th root.
  */
 public final class AlgorithmParameters {
     private static final double DEFAULT_ALPHA = 1.0 / 19077;
@@ -43,8 +45,9 @@ public final class AlgorithmParameters {
      *
      * @param alpha the alpha parameter (false positive probability), or null for default
      * @param beta the beta parameter (false negative probability), or null for default
+     * @param temperature the inverse of the exponent for the posterior, or null for default
      * @return AlgorithmParameters instance
-     * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1)
+     * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1) and temperature is less than 1
      */
     public static AlgorithmParameters create(Double alpha, Double beta, Double temperature) {
         double a = (alpha != null) ? alpha : DEFAULT_ALPHA;
