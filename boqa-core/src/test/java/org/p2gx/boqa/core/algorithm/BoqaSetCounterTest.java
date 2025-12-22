@@ -103,7 +103,7 @@ class BoqaSetCounterTest {
         }
         Path ppkt = Path.of(resourceUrl.toURI());
         int limit =  Integer.MAX_VALUE;
-        AlgorithmParameters params = AlgorithmParameters.create(0.2,0.3); // numbers don't matter
+        AlgorithmParameters params = AlgorithmParameters.create(0.2,0.3, 1.0); // numbers don't matter
         BoqaAnalysisResult boqaAnalysisResult = computeBoqaResults(
                 new PhenopacketData(ppkt), counter, limit, params);
 

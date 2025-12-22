@@ -65,7 +65,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
     ){
         // Initialize BoqaCounts
         BoqaCounts counts = new BoqaCounts("idIsUnimportant", "labelIsUnimportant", count1mb, countA, count1ma, countB);
-        double actualScore = computeUnnormalizedProbability(alpha, beta, counts);
+        double actualScore = computeUnnormalizedProbability(alpha, beta, 1.0, counts);
 
         // Assert with small delta for floating-point comparison
         assertEquals(expectedScore, actualScore, 1e-9);
@@ -97,7 +97,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
         int limit = counter.getDiseaseIds().size();
         double alpha = 0.01;
         double beta = 0.9;
-        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
+        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta, 1.0);
 
         // Run 'computeBoqaResults'
         BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResults(
@@ -105,7 +105,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Recompute un-normalized probabilities in the conventional way
         List<Double> rawProbs = boqaAnalysisResult.boqaResults().stream()
-                .map(result -> computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), result.counts()))
+                .map(result -> computeUnnormalizedProbability(params.getAlpha(), params.getBeta(),  params.getTemperature(), result.counts()))
                 .toList();
 
         // Get the sum for normalization
@@ -113,7 +113,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Compare normalized probabilities from BoqaResults with those recalculated from counts
         boqaAnalysisResult.boqaResults().forEach(br-> {
-            double expectedNormProb = computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), br.counts()) / rawProbsSum;
+            double expectedNormProb = computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), params.getTemperature(), br.counts()) / rawProbsSum;
             double actualNormProb = br.boqaScore();
             assertEquals(expectedNormProb, actualNormProb, 1e-9);
         });
