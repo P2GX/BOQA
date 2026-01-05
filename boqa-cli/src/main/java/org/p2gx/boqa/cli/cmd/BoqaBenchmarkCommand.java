@@ -98,11 +98,6 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             split = ",")
     private Set<String> diseaseDatabases;
 
-    @CommandLine.Option(
-            names={"-T","--temperature"},
-            description = "Float value such that temperature>1 (this is not an inverse temperature) to stabilize distribution.")
-    private Double temperature;
-
     @Override
     public Integer call() throws Exception {
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
@@ -134,8 +129,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
-        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta, temperature);
-        LOGGER.info("Using alpha={}, beta={}, temperature={}", params.getAlpha(), params.getBeta(), params.getTemperature());
+        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
+        LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
         // Initialize Counter
         Counter counter = new BoqaSetCounter(diseaseData, hpo);
@@ -177,7 +172,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                 Paths.get(ontologyFile),
                 phenotypeAnnotationFile,
                 cliArgs,
-                Map.of("alpha", params.getAlpha(), "beta", params.getBeta(), "temperature", params.getTemperature()),
+                Map.of("alpha", params.getAlpha(), "beta", params.getBeta()),
                 outPath
         );
         LOGGER.info("BOQA analysis completed successfully.");
