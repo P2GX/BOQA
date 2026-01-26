@@ -8,8 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 
-import static org.junit.Assert.assertThat;
-
 /**
  * Performs BOQA analysis for a given query set of HPO terms (patient's data).
  * <p>
@@ -76,7 +74,6 @@ public final class BoqaPatientAnalyzer {
     public static BoqaAnalysisResult computeBoqaResults(
             PatientData patientData, Counter counter, int resultsLimit, AlgorithmParameters params) {
 
-
         // Get BoqaResults with raw log scores
         List<BoqaResult> rawLogBoqaResults = new ArrayList<>(computeBoqaResultsRawLog(patientData, counter, params).boqaResults());
 
@@ -89,25 +86,15 @@ public final class BoqaPatientAnalyzer {
                 .max()
                 .orElse(Double.NEGATIVE_INFINITY);
 
-        double normalizationFactor;
-        double epsilon = 0.000001d;
-
-        // Standard BOQA
-        if((Math.abs(1.0 - params.getTemperature()) < epsilon)){
-            // Compute sum of exp(logP - maxLogP)
-            normalizationFactor = rawLogBoqaResults.stream()
-                    .mapToDouble(r -> Math.exp(r.boqaScore() - maxLogP))
-                    .sum();
-        } else {
-            // Alternative to Standard BOQA
-            // Non-unit temperature normalizes trivially by largest score, which is already present below
-            normalizationFactor = 1.0;
-        }
+        // Compute sum of exp(logP - maxLogP)
+        double sum = rawLogBoqaResults.stream()
+                .mapToDouble(r -> Math.exp(r.boqaScore() - maxLogP))
+                .sum();
 
         // Normalize
         List<BoqaResult> allResults = new ArrayList<>();
         rawLogBoqaResults.forEach(r -> {
-            double normProb = Math.exp(r.boqaScore() - maxLogP) / normalizationFactor;
+            double normProb = Math.exp(r.boqaScore() - maxLogP) / sum;
             allResults.add(new BoqaResult(r.counts(), normProb));
         });
 
@@ -117,18 +104,17 @@ public final class BoqaPatientAnalyzer {
     /**
      * Computes the un-normalized BOQA log probability for given BoqaCounts and parameters:
      * <p>
-     * log(P) = [fp × log(α) + fn × log(β) + tn × log(1-α)  + tp × log(1-β)] / T
+     * log(P) = fp × log(α) + fn × log(β) + tn × log(1-α)  + tp × log(1-β)
      * </p>
-     * @param params  alpha, beta, log(alpha), log(beta), termperature T etc.
+     * @param params  alpha, beta, log(alpha), log(beta) etc.
      * @param counts The {@link BoqaCounts} for a query and a disease.
      * @return The un-normalized BOQA log probability score.
      */
     static double computeUnnormalizedLogProbability(AlgorithmParameters params, BoqaCounts counts){
-        return (counts.fpBoqaCount() * params.getLogAlpha() +
+        return counts.fpBoqaCount() * params.getLogAlpha() +
                 counts.fnBoqaCount() * params.getLogBeta() +
                 counts.tnBoqaCount() * params.getLogOneMinusAlpha() +
-                counts.tpBoqaCount() * params.getLogOneMinusBeta()
-        )/params.getTemperature();
+                counts.tpBoqaCount() * params.getLogOneMinusBeta();
     }
 
     /**
@@ -139,18 +125,13 @@ public final class BoqaPatientAnalyzer {
      *  </pre>
      * @param alpha  False positive rate parameter.
      * @param beta   False negative rate parameter.
-     * @param temperature   Use to make distributions more robust.
      * @param counts The {@link BoqaCounts} for a disease.
      * @return The un-normalized probability score.
      */
-    static double computeUnnormalizedProbability(double alpha, double beta, double temperature, BoqaCounts counts){
-        return Math.exp(
-                (
-                        counts.fpBoqaCount()*Math.log(alpha) +
-                                counts.fnBoqaCount()*Math.log(beta) +
-                                counts.tnBoqaCount()*Math.log(1-alpha) +
-                                counts.tpBoqaCount()*Math.log(1-beta)
-                ) / temperature
-        );
+    static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
+        return Math.pow(alpha, counts.fpBoqaCount())*
+                Math.pow(beta, counts.fnBoqaCount())*
+                Math.pow(1-alpha, counts.tnBoqaCount())*
+                Math.pow(1-beta, counts.tpBoqaCount());
     }
 }
