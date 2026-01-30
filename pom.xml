@@ -13,29 +13,42 @@
     </modules>
 
     <name>BOQA</name>
-    <!-- TODO: description -->
-<!--    <description>Bayesian Ontology Query Algorithm</description>-->
+    <description>Implementation of Bayesian Ontology Query Algorithm for rare genetic disease diagnostics.</description>
     <url>https://github.com/P2GX/BOQA</url>
 
     <licenses>
-        <!-- TODO: license -->
-<!--        <license>-->
-<!--            <name>BSD 3-clause Clear License</name>-->
-<!--            <url>https://spdx.org/licenses/BSD-3-Clause-Clear.html</url>-->
-<!--            <distribution>repo</distribution>-->
-<!--        </license>-->
+        <license>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
+            <url>http://opensource.org/licenses/AGPL-3.0</url>
+            <distribution>repo</distribution>
+        </license>
     </licenses>
 
     <developers>
-        <!-- TODO: developers -->
-<!--        <developer>-->
-<!--            <name>John Doe</name>-->
-<!--            <email>john.doe@example.net</email>-->
-<!--        </developer>-->
-<!--        <developer>-->
-<!--            <name>Jane Doe</name>-->
-<!--            <email>jane.doe@example.net</email>-->
-<!--        </developer>-->
+        <developer>
+            <name>Peter Hansen</name>
+            <email>peter.hansen@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Leonardo Chimirri</name>
+            <email>leonardo.chimirri@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Daniel Danis</name>
+            <email>daniel.danis@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Peter Robinson</name>
+            <email>peter.robinson@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
     </developers>
 
     <scm>
