@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.p2gx.boqa</groupId>
+    <groupId>io.github.p2gx.boqa</groupId>
     <artifactId>BOQA</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
@@ -13,7 +13,49 @@
     </modules>
 
     <name>BOQA</name>
+    <description>Implementation of Bayesian Ontology Query Algorithm for rare genetic disease diagnostics.</description>
     <url>https://github.com/P2GX/BOQA</url>
+
+    <licenses>
+        <license>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
+            <url>http://opensource.org/licenses/AGPL-3.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Peter Hansen</name>
+            <email>peter.hansen@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Leonardo Chimirri</name>
+            <email>leonardo.chimirri@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Daniel Danis</name>
+            <email>daniel.danis@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Peter Robinson</name>
+            <email>peter.robinson@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:P2GX/BOQA.git</connection>
+        <developerConnection>scm:git:git@github.com:P2GX/BOQA.git</developerConnection>
+        <url>scm:git:git@github.com:P2GX/BOQA.git</url>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -217,9 +259,24 @@
                                 </execution>
                             </executions>
                         </plugin>
+                        <plugin>
+                            <groupId>org.sonatype.central</groupId>
+                            <artifactId>central-publishing-maven-plugin</artifactId>
+                            <version>0.9.0</version>
+                            <extensions>true</extensions>
+                            <configuration>
+                                <publishingServerId>central</publishingServerId>
+                                <autoPublish>true</autoPublish>
+                                <waitUntil>published</waitUntil>
+                            </configuration>
+                        </plugin>
                     </plugins>
                 </pluginManagement>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
@@ -227,6 +284,10 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
