@@ -18,12 +18,19 @@ import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.ZipFile;
 
 /**
- * Download a number of files needed for the analysis. We download by default to a subdirectory called
- * {@code data}, which is created if necessary. We download the files {@code hp.json}, {@code phenotype.hpoa},
- * and {@code mim2gene_medgen}.
+ * Command for downloading required data files for BOQA analysis.
+ * <p>
+ * Downloads data from two sources:
+ * <ul>
+ *   <li><strong>Human Phenotype Ontology (HPO):</strong> {@code hp.json}, {@code phenotype.hpoa}, and {@code genes_to_disease.txt}</li>
+ *   <li><strong>Phenopacket Store:</strong> {@code all_phenopackets.zip} (automatically extracted)</li>
+ * </ul>
+ * By default, files are downloaded to a {@code data} subdirectory, organized by release tag.
+ * Supports configurable HPO and phenopacket-store release tags, with "latest" as the default.
+ * </p>
+ *
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-
 @CommandLine.Command(name = "download",
         mixinStandardHelpOptions = true,
         description = "Downloads required data.",

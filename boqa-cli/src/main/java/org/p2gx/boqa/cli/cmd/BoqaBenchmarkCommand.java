@@ -31,7 +31,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
+/**
+ * Command for running BOQA benchmark analysis.
+ * <p>
+ * This command implements the BOQA algorithm as described in PMID:22843981 to match patient
+ * phenotypes against disease-phenotype associations. It loads the HPO ontology, disease annotations (HPOA),
+ * and phenopacket data, then computes Bayesian scores for each patient against all annotaed diseases.
+ * Input data must be downloaded beforehand using the DownloadCommand.
+ * </p>
+ * <p>
+ * Key features:
+ * <ul>
+ *   <li>Supports multiple disease databases: OMIM, ORPHA, and DECIPHER (note: OMIM and ORPHA cannot be used together)</li>
+ *   <li>Algorithm parameters: alpha (false positive rate) and beta (false negative rate)</li>
+ *   <li>Parallel processing of phenopackets for improved performance</li>
+ *   <li>JSON output with analysis metadata and algorithm parameters</li>
+ * </ul>
+ * </p>
+ *
+ * @see BlendedBenchmarkCommand for blended-phenotype variant (work in progress)
+ * @see DownloadCommand for data preparation
+ */
 @CommandLine.Command(
         name = "plain",
         mixinStandardHelpOptions = true,

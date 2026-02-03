@@ -60,14 +60,25 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         this.diseaseFeaturesDict = phenolIngest();
     }
 
-
-    /*
-    Constructor call with defaults
-    */
+    /**
+     * Loads OMIM disease data from HPOA files using Phenol.
+     *
+     * @param ontologyStream input stream for the HP ontology (JSON format)
+     * @param annotationsStream input stream for the phenotype.hpoa file
+     * @throws IOException if reading the streams fails
+     */
     public DiseaseDataPhenolIngest(InputStream ontologyStream, InputStream annotationsStream) throws IOException {
         this(annotationsStream, ontologyStream, List.of("OMIM"));
     }
 
+    /**
+     * Loads disease data from HPOA files using Phenol, filtered by database sources ("OMIM", "ORPHA", "DECIPHER").
+     *
+     * @param annotationsStream input stream for the phenotype.hpoa file
+     * @param ontologyStream input stream for the HP ontology (JSON format)
+     * @param validDatabaseList list of database sources to include (valid sources: "OMIM", "ORPHA", "DECIPHER")
+     * @throws IOException if reading the streams fails
+     */
     public DiseaseDataPhenolIngest(InputStream annotationsStream,
                                    InputStream ontologyStream,
                                    List<String> validDatabaseList) // Valid databases are "OMIM", "ORPHA", and "DECIPHER"

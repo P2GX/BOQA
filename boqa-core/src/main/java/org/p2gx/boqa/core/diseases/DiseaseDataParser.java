@@ -3,10 +3,7 @@ package org.p2gx.boqa.core.diseases;
 import org.p2gx.boqa.core.DiseaseData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.*;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -20,7 +17,6 @@ import java.util.regex.Pattern;
  * @deprecated use the {@link DiseaseDataPhenolIngest} class instead.
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-//@Deprecated(forRemoval = true)
 public class DiseaseDataParser {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataParser.class);
@@ -43,27 +39,31 @@ public class DiseaseDataParser {
         this.validDatabases = Set.of("OMIM"); // Valid databases are "OMIM", "ORPHA", and "DECIPHER"
     }
 
+    /**
+     * Parses disease annotations from an HPOA phenotype.hpoa file.
+     *
+     * @param hpoAnnotationsStream input stream for phenotype.hpoa file
+     * @return DiseaseData containing disease phenotype associations
+     */
     public static DiseaseData parseDiseaseDataFromHpoa(InputStream hpoAnnotationsStream) {
         DiseaseDataParser diseaseDataParser = new DiseaseDataParser();
         Map<String, DiseaseFeatures> diseaseFeaturesById = diseaseDataParser.parseDiseaseAnnotations(hpoAnnotationsStream, Map.of());
         return new DefaultDiseaseData(diseaseFeaturesById);
     }
 
+    /**
+     * Parses disease annotations with associated gene information.
+     *
+     * @param hpoAnnotationsStream input stream for phenotype.hpoa file
+     * @param diseaseGeneSteam input stream for genes_to_diseases.txt file
+     * @return DiseaseData containing parsed disease features and gene associations
+     */
     public static DiseaseData parseDiseaseDataFromHpoaWithGeneAssociations(InputStream hpoAnnotationsStream, InputStream diseaseGeneSteam) {
         DiseaseDataParser diseaseDataParser = new DiseaseDataParser();
         Map<String, Set<GeneIdSymbol>> diseaseGeneAssociations = diseaseDataParser.addDiseaseGeneAssociations(diseaseGeneSteam);
         Map<String, DiseaseFeatures> diseaseAnnotations = diseaseDataParser.parseDiseaseAnnotations(hpoAnnotationsStream, diseaseGeneAssociations);
         return new DefaultDiseaseData(diseaseAnnotations);
     }
-
-//    /**
-//     * Read disease data from an uncompressed file <code>path</code>.
-//     */
-//    public static DiseaseData parseDiseaseDataFromHpoa(Path phenotypeAnnotationFile) throws IOException {
-//        try (InputStream annotationStream = Files.newInputStream(phenotypeAnnotationFile)) {
-//            return DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
-//        }
-//    }
 
     private Map<String, DiseaseFeatures> parseDiseaseAnnotations(InputStream annotationStream, Map<String, Set<GeneIdSymbol>> diseaseGeneAssociations) {
 
@@ -184,6 +184,12 @@ public class DiseaseDataParser {
         }
     }
 
+    /**
+     * Container for gene identifier and symbol pairs.
+     *
+     * @param geneId NCBI gene ID
+     * @param geneSymbol human-readable gene symbol
+     */
     record GeneIdSymbol(String geneId, String geneSymbol) {}
 
     private Map<String, Set<GeneIdSymbol>> addDiseaseGeneAssociations(InputStream is) {

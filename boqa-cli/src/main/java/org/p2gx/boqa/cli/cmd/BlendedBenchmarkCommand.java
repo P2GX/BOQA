@@ -3,6 +3,15 @@ package org.p2gx.boqa.cli.cmd;
 import picocli.CommandLine;
 import java.util.concurrent.Callable;
 
+/**
+ * Command for running BOQA analysis with blended scoring.
+ * <p>
+ * <strong>Work in progress:</strong> This command is not yet implemented and serves as a placeholder
+ * for future functionality to handle patients affected by multiple genetic diseases simultaneously.
+ * </p>
+ *
+ * @see BoqaBenchmarkCommand for the plain scoring implementation
+ */
 @CommandLine.Command(
         name = "blended",
         mixinStandardHelpOptions = true,

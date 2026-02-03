@@ -7,6 +7,22 @@ import picocli.CommandLine;
 import java.util.concurrent.Callable;
 import static picocli.CommandLine.Help.Ansi.Style.*;
 
+/**
+ * Main entry point for the BOQA (Bayesian Ontology Query Analysis) command-line application.
+ * <p>
+ * This class configures and executes the CLI using PicoCLI framework. It sets up the main command
+ * with three subcommands:
+ * <ul>
+ *   <li>{@code download} - Downloads disease and phenotype data</li>
+ *   <li>{@code plain} - Runs BOQA benchmark analysis using plain scoring</li>
+ *   <li>{@code blended} - Runs BOQA benchmark analysis using blended scoring (work in progress)</li>
+ * </ul>
+ * The application matches phenotypic features observed in patients with annotated 
+ * disease-phenotype associations.
+ * </p>
+ *
+ * @version v0.1.0-SNAPSHOT
+ */
 @CommandLine.Command(name = "boqa",
         header = "Bayesian Ontology Query Analysis (BOQA)\n",
         mixinStandardHelpOptions = true,
