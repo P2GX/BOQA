@@ -13,12 +13,14 @@ hs_err_pid*
 target/
 *.iml
 *.log
-data/
+boqa_info.*.gz
+/data/
 dev/
 results/
 dependency-reduced-pom.xml
 .settings
 .project
 .classpath
+boqacore.*.gz
 
 docs/_build/

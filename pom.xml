@@ -3,18 +3,59 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.p2gx.boqa</groupId>
+    <groupId>io.github.p2gx.boqa</groupId>
     <artifactId>BOQA</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0</version>
     <modules>
         <module>boqa-core</module>
-        <module>boqa-exomiser-adapter</module>
         <module>boqa-cli</module>
     </modules>
 
     <name>BOQA</name>
+    <description>Implementation of Bayesian Ontology Query Algorithm for rare genetic disease diagnostics.</description>
     <url>https://github.com/P2GX/BOQA</url>
+
+    <licenses>
+        <license>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3 (AGPL-3.0)</name>
+            <url>http://opensource.org/licenses/AGPL-3.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Peter Hansen</name>
+            <email>peter.hansen@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Leonardo Chimirri</name>
+            <email>leonardo.chimirri@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Daniel Danis</name>
+            <email>daniel.danis@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+        <developer>
+            <name>Peter Robinson</name>
+            <email>peter.robinson@bih-charite.de</email>
+            <organization>Berlin Institute of Health at Charité</organization>
+            <organizationUrl>https://www.bihealth.org</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:P2GX/BOQA.git</connection>
+        <developerConnection>scm:git:git@github.com:P2GX/BOQA.git</developerConnection>
+        <url>scm:git:git@github.com:P2GX/BOQA.git</url>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -22,9 +63,8 @@
         <java.version>21</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <phenol.version>[2.0.5,3.0.0)</phenol.version>
+        <phenol.version>[2.1.2,3.0.0)</phenol.version>
 
-        <exomiser.version>14.1.0</exomiser.version>
         <phenopacket-schema.version>2.0.2</phenopacket-schema.version>
         <protobuf.version>3.21.7</protobuf.version>
 
@@ -48,12 +88,6 @@
                 <groupId>org.monarchinitiative.phenol</groupId>
                 <artifactId>phenol-io</artifactId>
                 <version>${phenol.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.monarchinitiative.exomiser</groupId>
-                <artifactId>exomiser-core</artifactId>
-                <version>${exomiser.version}</version>
             </dependency>
 
             <dependency>
@@ -91,6 +125,12 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-params</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>5.16.1</version>
@@ -102,6 +142,22 @@
                 <version>3.0</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java</artifactId>
+                <version>${protobuf.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.protobuf</groupId>
+                <artifactId>protobuf-java-util</artifactId>
+                <version>3.22.2</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.google.guava</groupId>
+                        <artifactId>guava</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -110,10 +166,14 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -199,9 +259,24 @@
                                 </execution>
                             </executions>
                         </plugin>
+                        <plugin>
+                            <groupId>org.sonatype.central</groupId>
+                            <artifactId>central-publishing-maven-plugin</artifactId>
+                            <version>0.9.0</version>
+                            <extensions>true</extensions>
+                            <configuration>
+                                <publishingServerId>central</publishingServerId>
+                                <autoPublish>true</autoPublish>
+                                <waitUntil>published</waitUntil>
+                            </configuration>
+                        </plugin>
                     </plugins>
                 </pluginManagement>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
@@ -209,6 +284,10 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>
@@ -233,6 +312,8 @@
                     <version>3.5.3</version>
                     <configuration>
                         <argLine>-Duser.language=en -Duser.region=US</argLine>
+                        <excludedGroups>expensive_test</excludedGroups>
+                        <!--`mvn test -Dgroups=expensive` will run a comparison to lots of pyboqa results -->
                     </configuration>
                 </plugin>
                 <plugin>
@@ -249,6 +330,13 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
                     <version>3.4.2</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
                 </plugin>
                 <!-- mvn versions:display-plugin-updates -->
                 <plugin>
