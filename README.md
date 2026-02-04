@@ -1,6 +1,6 @@
 # BOQA
 
-Bayesian Ontology Query Algorithm
+Bayesian Ontology Query Algorithm ([PMID:22843981](https://pubmed.ncbi.nlm.nih.gov/22843981/))
 
 ## Run tests
 
