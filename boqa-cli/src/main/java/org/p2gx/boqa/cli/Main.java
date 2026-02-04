@@ -21,7 +21,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
  * disease-phenotype associations.
  * </p>
  *
- * @version v0.1.0-SNAPSHOT
+ * @version v0.1.0
  */
 @CommandLine.Command(name = "boqa",
         header = "Bayesian Ontology Query Analysis (BOQA)\n",
@@ -31,7 +31,7 @@ import static picocli.CommandLine.Help.Ansi.Style.*;
         footer = Main.FOOTER)
 public class Main implements Callable<Integer> {
 
-    public static final String VERSION = "v0.1.0-SNAPSHOT";
+    public static final String VERSION = "v0.1.0";
     public static final int WIDTH = 120;
     public static final String FOOTER = "The BOQA algorithm matches phenotypic features observed in patients " +
             "with annotated disease-phenotype associations.";

@@ -31,13 +31,13 @@ We use the following [HPO resources](https://github.com/obophenotype/human-pheno
 
 Use the following command to download these files from the latest release:
 ```shell
-java -jar boqa-cli/target/boqa-cli-0.1.0-SNAPSHOT.jar download -d ./data 
+java -jar boqa-cli/target/boqa-cli-0.1.0.jar download -d ./data 
 ```
 The files are downloaded to a subdirectory `./data/latest_<time_stamp>`.
 
 To download a specific release, use the following command;
 ```shell
-java -jar boqa-cli/target/boqa-cli-0.1.0-SNAPSHOT.jar download -d ./data -r v2025-05-06 
+java -jar boqa-cli/target/boqa-cli-0.1.0.jar download -d ./data -r v2025-05-06 
 ```
 The files are downloaded into a subdirectory of `./data` named after the release.
 
@@ -55,5 +55,5 @@ Run the following to run the CLI:
 ```shell
 ./mvnw -Prelease package
 
-java -jar boqa-cli/target/boqa-cli-0.1.0-SNAPSHOT.jar --help
+java -jar boqa-cli/target/boqa-cli-0.1.0.jar --help
 ```
