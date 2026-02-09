@@ -53,4 +53,9 @@ jobs:
       - name: Deploy to Sonatype Central
         run: |
           ./mvnw clean deploy --batch-mode -X -Prelease \
-            -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }}
+            -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }} \
+            -Dgpg.useagent=true \
+            -Dgpg.defaultKeyring=false \
+            -Dgpg.homedir=$HOME/.gnupg
+        env:
+          GPG_AGENT_SOCKET: /tmp/gpg-agent.socket
