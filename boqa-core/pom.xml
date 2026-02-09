@@ -11,6 +11,8 @@
 
     <artifactId>boqa-core</artifactId>
 
+    <name>boqa-core</name>
+
     <dependencies>
         <dependency>
             <groupId>org.monarchinitiative.phenol</groupId>

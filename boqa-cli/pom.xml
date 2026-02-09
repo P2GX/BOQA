@@ -11,6 +11,8 @@
 
     <artifactId>boqa-cli</artifactId>
 
+    <name>boqa-cli</name>
+
     <dependencies>
         <dependency>
             <groupId>io.github.p2gx.boqa</groupId>
