@@ -29,7 +29,7 @@ jobs:
 
       - name: Import GPG key
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --import --armor --batch --no-tty
+          echo "${{ secrets.MVN_GPG_PRIVATE_KEY }}" | gpg --import --armor --batch --no-tty
 
       - name: Setup Maven settings
         run: |
@@ -52,4 +52,4 @@ jobs:
       - name: Deploy to Sonatype Central
         run: |
           ./mvnw clean deploy --batch-mode -Prelease \
-            -Dgpg.keyname=${{ secrets.GPG_KEY_ID }}
+            -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }}
