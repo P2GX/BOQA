@@ -29,7 +29,9 @@ jobs:
 
       - name: Import GPG key
         run: |
-          echo "${{ secrets.MVN_GPG_PRIVATE_KEY }}" | gpg --import --batch --no-tty
+          mkdir -p $HOME/.gnupg
+          echo "${{ secrets.MVN_GPG_PRIVATE_KEY }}" | gpg --batch --import --no-tty
+          echo "trust-model always" >> $HOME/.gnupg/gpg.conf
           gpg --list-secret-keys --keyid-format=long
 
       - name: Setup Maven settings
@@ -54,8 +56,7 @@ jobs:
         run: |
           ./mvnw clean deploy --batch-mode -X -Prelease \
             -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }} \
-            -Dgpg.useagent=true \
-            -Dgpg.defaultKeyring=false \
-            -Dgpg.homedir=$HOME/.gnupg
+            -Dgpg.passphrase="" \
+            -Dgpg.useagent=false
         env:
           GPG_AGENT_SOCKET: /tmp/gpg-agent.socket
