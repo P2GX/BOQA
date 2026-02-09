@@ -53,4 +53,5 @@ jobs:
         run: |
           ./mvnw clean deploy --batch-mode -X -Prelease \
             -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }} \
-            -Dgpg.passphrase=""
+            -Dgpg.passphrase="" \
+            -Dgpg.pinentry-mode=loopback
