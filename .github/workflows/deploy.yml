@@ -29,11 +29,12 @@ jobs:
 
       - name: Import GPG key
         run: |
-          echo "${{ secrets.MVN_GPG_PRIVATE_KEY }}" | gpg --import --armor --batch --no-tty
+          echo "${{ secrets.MVN_GPG_PRIVATE_KEY }}" | gpg --import --batch --no-tty
+          gpg --list-secret-keys --keyid-format=long
 
       - name: Setup Maven settings
         run: |
-          rm ${HOME}/.m2/settings.xml
+          mkdir -p ${HOME}/.m2
 
           cat << EOF > ${HOME}/.m2/settings.xml
           <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
@@ -51,5 +52,6 @@ jobs:
 
       - name: Deploy to Sonatype Central
         run: |
+          export GPG_TTY=$(tty)
           ./mvnw clean deploy --batch-mode -Prelease \
             -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }}
