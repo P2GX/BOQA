@@ -29,14 +29,11 @@ jobs:
 
       - name: Import GPG key
         run: |
-          mkdir -p $HOME/.gnupg
-          echo "${{ secrets.MVN_GPG_PRIVATE_KEY }}" | gpg --batch --import --no-tty
-          echo "trust-model always" >> $HOME/.gnupg/gpg.conf
-          gpg --list-secret-keys --keyid-format=long
+          echo "${{ secrets.MVN_GPG_PRIVATE_KEY }}" | gpg --import --armor --batch --no-tty
 
       - name: Setup Maven settings
         run: |
-          mkdir -p ${HOME}/.m2
+          rm ${HOME}/.m2/settings.xml
 
           cat << EOF > ${HOME}/.m2/settings.xml
           <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
@@ -55,8 +52,4 @@ jobs:
       - name: Deploy to Sonatype Central
         run: |
           ./mvnw clean deploy --batch-mode -X -Prelease \
-            -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }} \
-            -Dgpg.passphrase="" \
-            -Dgpg.useagent=false
-        env:
-          GPG_AGENT_SOCKET: /tmp/gpg-agent.socket
+            -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }}
