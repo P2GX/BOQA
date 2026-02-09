@@ -52,4 +52,5 @@ jobs:
       - name: Deploy to Sonatype Central
         run: |
           ./mvnw clean deploy --batch-mode -X -Prelease \
-            -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }}
+            -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }} \
+            -Dgpg.passphrase=""
