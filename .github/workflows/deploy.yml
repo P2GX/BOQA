@@ -53,5 +53,5 @@ jobs:
       - name: Deploy to Sonatype Central
         run: |
           export GPG_TTY=$(tty)
-          ./mvnw clean deploy --batch-mode -Prelease \
+          ./mvnw clean deploy --batch-mode -X -Prelease \
             -Dgpg.keyname=${{ secrets.MVN_GPG_KEY_ID }}
