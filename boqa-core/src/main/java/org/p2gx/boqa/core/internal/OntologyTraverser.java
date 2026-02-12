@@ -122,7 +122,10 @@ public class OntologyTraverser {
     public static TermId getPrimaryTermId(TermId t){
         TermId primaryTermId = hpo.getPrimaryTermId(t);
         if (primaryTermId == null) {
-            LOGGER.warn("Invalid HPO term {}! Skipping...", primaryTermId);
+            if (LOGGED_REPLACEMENTS.add(t)) { // only log once per term
+                LOGGER.warn("Invalid HPO term {}! Skipping it, this may negatively affect performance. " +
+                        "Are you using the latest HPO build? Consider running `download -w` to fetch the latest HPO release.", t);
+            }
         } else {
             if (!t.equals(primaryTermId) && LOGGED_REPLACEMENTS.add(t)) {
                 LOGGER.info("Replacing {} with primary term {}", t, primaryTermId);
