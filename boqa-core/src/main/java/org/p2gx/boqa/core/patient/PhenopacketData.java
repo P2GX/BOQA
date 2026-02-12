@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -49,6 +50,7 @@ public class PhenopacketData implements PatientData {
                 .map(OntologyClass::getId)
                 .map(TermId::of)
                 .map(OntologyTraverser::getPrimaryTermId)
+                .filter(Objects::nonNull) // If old HPO is used without a term, avoids the program crashing
                 .collect(Collectors.toSet());
         if (this.observedTerms.isEmpty()) {
             LOGGER.warn("Phenopacket {} has no observed phenotypic features!", phenopacket.getId());
@@ -58,6 +60,7 @@ public class PhenopacketData implements PatientData {
                 .map(OntologyClass::getId)
                 .map(TermId::of)
                 .map(OntologyTraverser::getPrimaryTermId)
+                .filter(Objects::nonNull) // If old HPO is used without a term, avoids the program crashing
                 .collect(Collectors.toSet());
         this.diseases = phenopacket.getDiseasesList().stream().map(d ->
                 new DiseaseDTO(d.getTerm().getId(), d.getTerm().getLabel())).toList();
