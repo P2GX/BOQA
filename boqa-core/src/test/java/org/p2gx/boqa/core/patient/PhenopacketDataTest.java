@@ -55,7 +55,7 @@ class PhenopacketDataTest {
                     throw new IOException("Resource not found: " + filename);
                 }
                 Path ppkt = Path.of(resourceUrl.toURI());
-                examplePpkts.add(new PhenopacketData(ppkt));
+                examplePpkts.add(new PhenopacketData(ppkt, ontologyTraverser.getHpoOntology()));
             } catch (URISyntaxException e) {
                 throw new IOException("Failed to resolve resource URI", e);
             }

@@ -169,7 +169,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     .map(Path::of)
                     .parallel()
                     .map(singleFile -> {
-                        PatientData ppkt = new PhenopacketData(singleFile);
+                        PatientData ppkt = new PhenopacketData(singleFile, hpo);
                         BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
                                 ppkt, counter, limit, params);
                         int count = fileCount.incrementAndGet();
