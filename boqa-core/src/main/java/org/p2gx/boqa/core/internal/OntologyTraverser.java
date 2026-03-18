@@ -60,7 +60,7 @@ public class OntologyTraverser {
     private static final Set<TermId> LOGGED_REPLACEMENTS = ConcurrentHashMap.newKeySet();
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
-    private static Ontology hpo = null;
+    private final Ontology hpo;
     private final OntologyGraph<TermId> hpoGraph;
     private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine.newBuilder().maximumSize(500).build();
 
@@ -71,12 +71,15 @@ public class OntologyTraverser {
      * @todo .extractSubgraph(PHENOTYPIC_ABNORMALITY) or .subOntology(PHENOTYPIC_ABNORMALITY) in phenol don't seem to work.
      */
     public OntologyTraverser(Ontology hpo) {
-        OntologyTraverser.hpo = hpo;
-        hpoGraph = OntologyTraverser.hpo.graph();
+        this.hpo = hpo;
+        this.hpoGraph = hpo.graph();
     }
 
     public OntologyGraph<TermId> getHpoGraph() {
         return hpoGraph;
+    }
+    public Ontology getHpoOntology() {
+        return hpo;
     }
 
     /**
@@ -119,10 +122,13 @@ public class OntologyTraverser {
      * @param t the HPO term to resolve
      * @return the primary TermId corresponding to the input term
      */
-    public static TermId getPrimaryTermId(TermId t){
+    public TermId getPrimaryTermId(TermId t){
         TermId primaryTermId = hpo.getPrimaryTermId(t);
         if (primaryTermId == null) {
-            LOGGER.warn("Invalid HPO term {}! Skipping...", primaryTermId);
+            if (LOGGED_REPLACEMENTS.add(t)) { // only log once per term
+                LOGGER.warn("Invalid HPO term {}! Skipping it, this may negatively affect performance. " +
+                        "Are you using the latest HPO build? Consider running `download -w` to fetch the latest HPO release.", t);
+            }
         } else {
             if (!t.equals(primaryTermId) && LOGGED_REPLACEMENTS.add(t)) {
                 LOGGER.info("Replacing {} with primary term {}", t, primaryTermId);

@@ -24,7 +24,6 @@ public class OntologyTraverserTest {
 
     OntologyTraverser ontologyTraverser;
 
-    // TODO: Daniel suggests using Extensions API rather then TestBase and extensions thereof, more modern.
     @BeforeAll
     void setUp() throws IOException {
         try (
@@ -67,12 +66,13 @@ public class OntologyTraverserTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("oldTerms")
     void testgetPrimaryTermId(String testName, Set<String> expectedNodes, Set<TermId> observedNodes ) {
+
         Set<TermId> expectedNodesTermIds = expectedNodes.stream()
                 .map(TermId::of)
-                .map(OntologyTraverser::getPrimaryTermId)
+                .map(ontologyTraverser::getPrimaryTermId)
                 .collect(Collectors.toSet());
         Set<TermId> observedNodesTermIds = observedNodes.stream()
-                .map(OntologyTraverser::getPrimaryTermId)
+                .map(ontologyTraverser::getPrimaryTermId)
                 .collect(Collectors.toSet());
         assertEquals(expectedNodesTermIds, ontologyTraverser.initLayer(observedNodesTermIds));
     }

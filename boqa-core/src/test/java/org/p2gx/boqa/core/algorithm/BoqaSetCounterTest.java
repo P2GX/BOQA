@@ -24,25 +24,26 @@ import java.util.zip.GZIPInputStream;
 import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeBoqaResults;
 import static org.junit.jupiter.api.Assertions.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BoqaSetCounterTest {
 
-    private static DiseaseData diseaseData;
-    private static Counter counter;
+    private DiseaseData diseaseData;
+    private Counter counter;
+    private Ontology hpo;
 
     @BeforeAll
-    static void setup() throws IOException {
+    void setup() throws IOException {
         try (InputStream annotationStream = new GZIPInputStream(BoqaSetCounterTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
-            diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
+            this.diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
         }
-        Ontology hpo;
         try (
             InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
                     .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
         ) {
-            hpo = OntologyLoader.loadOntology(ontologyStream);
+            this.hpo = OntologyLoader.loadOntology(ontologyStream);
         }
-        counter = new BoqaSetCounter(diseaseData, hpo);
+        this.counter = new BoqaSetCounter(diseaseData, hpo);
     }
 
     @Tag("expensive_test")
@@ -105,7 +106,7 @@ class BoqaSetCounterTest {
         int limit =  Integer.MAX_VALUE;
         AlgorithmParameters params = AlgorithmParameters.create(0.2,0.3); // numbers don't matter
         BoqaAnalysisResult boqaAnalysisResult = computeBoqaResults(
-                new PhenopacketData(ppkt), counter, limit, params);
+                new PhenopacketData(ppkt, hpo), counter, limit, params);
 
         BoqaCounts match = null;
         for (BoqaResult br : boqaAnalysisResult.boqaResults()){
