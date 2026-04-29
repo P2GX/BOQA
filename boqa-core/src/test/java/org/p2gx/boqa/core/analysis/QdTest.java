@@ -20,6 +20,8 @@ import org.phenopackets.schema.v2.core.Disease;
 import org.phenopackets.schema.v2.core.OntologyClass;
 
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.PublicKey;
@@ -35,9 +37,13 @@ public class QdTest extends TestBase  {
     private Double alpha = 5.241914347119568E-05;
     private Double beta =.9;
 
-    @Test
-    public void ingest() throws IOException {
-        var ppktPath = Path.of("/Users/robin/GIT/mgd-ppkt/phenopackets/PMID_37501760_proband.json");
+    /** Run the basic BOQA melded for one phenopacket. We will show the results for
+     * comparing disease A, disease B, and disease A+B. THis is a sanity check, and not
+     * a real test. However, we hope that usually the melded disease will get the
+     * best score.
+     * @param ppktPath
+     */
+    private void runMeldedBoqa(Path ppktPath) throws IOException {
         var ppkt = PhenopacketReader.readPhenopacket(ppktPath);
         var ppktData = new PhenopacketData(ppkt, hpo());
         Set<String> relevantIds = ppkt.getDiseasesList()
@@ -61,10 +67,23 @@ public class QdTest extends TestBase  {
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
                 ppktData, counter, 100, params);
-        System.out.println(result);
         for (var x : result.boqaResults()) {
             System.out.println(x);
         }
+    }
+
+    @Test
+    public void testSanityCheck() throws IOException {
+        Path meldedPpktDir = Path.of("/Users/robin/GIT/mgd-ppkt/phenopackets/");
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(meldedPpktDir, "*.json")) {
+            for (Path entry : stream) {
+                System.out.println("******* Testing " + entry.getFileName() + " *******");
+                runMeldedBoqa(entry);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
 }
