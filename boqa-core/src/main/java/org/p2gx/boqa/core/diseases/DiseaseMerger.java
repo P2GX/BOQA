@@ -5,9 +5,9 @@ import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.phenopackets.schema.v1.core.PhenotypicFeature;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DiseaseMerger {
@@ -20,15 +20,31 @@ public class DiseaseMerger {
                 .flatMap(a -> diseaseB.diseaseOnset().map(a::intersection))
                 .or(diseaseA::diseaseOnset)
                 .or(diseaseB::diseaseOnset);
-        List<HpoDiseaseAnnotation> annotations = Stream.concat(
-                diseaseA.presentAnnotationsStream(),
-                diseaseB.presentAnnotationsStream()
-        ).toList();
+        List<HpoDiseaseAnnotation> annotations = DiseaseMerger.ObservedAnnotations(diseaseA, diseaseB);
         List<TermId> moiList = Stream.concat(
                 diseaseA.modesOfInheritance().stream(),
                 diseaseB.modesOfInheritance().stream()
         ).distinct().toList();
         return HpoDisease.of(mergedId, mergedName, mergedOnset.get(), annotations, moiList);
+    }
+
+    /** Merge observed HPO terms for the disease but avoid duplicates.
+     * We are not using frequencies or onset in the Boqa merged aplication,
+     * and do not anticipate we ever will, since there is no real way of
+     * calculating this from the data for individual diseases. Therefore
+     * we just merge all observed HPO annotations*/
+    private static List<HpoDiseaseAnnotation> ObservedAnnotations(
+            HpoDisease diseaseA,
+            HpoDisease diseaseB) {
+        return Stream.concat(diseaseA.presentAnnotationsStream(), diseaseB.presentAnnotationsStream())
+                .collect(Collectors.toMap(
+                        HpoDiseaseAnnotation::id,
+                        a -> a,
+                        (existing, replacement) -> existing // Keep the first if IDs collide
+                ))
+                .values()
+                .stream()
+                .toList();
     }
 
 
