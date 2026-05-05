@@ -41,5 +41,9 @@ public class TestBase {
         return hpoDiseases;
     }
 
-
+    /** Returns a fresh stream over the {@code genes_to_disease.txt.gz} test resource. */
+    public static InputStream geneAssociations() throws IOException {
+        return new GZIPInputStream(Objects.requireNonNull(TestBase.class
+                .getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")));
+    }
 }
