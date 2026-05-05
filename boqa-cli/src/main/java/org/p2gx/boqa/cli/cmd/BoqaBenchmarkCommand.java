@@ -58,7 +58,7 @@ import java.util.stream.Stream;
         description = "Performs BOQA analysis as described in PMID:22843981, without taking annotation frequencies into account.",
         sortOptions = false)
 public class BoqaBenchmarkCommand implements Callable<Integer>  {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BoqaBenchmarkCommand.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(BoqaBenchmarkCommand.class);
 
     @Spec
     CommandSpec spec;
@@ -67,19 +67,19 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             names={"-dp","--disease-phenotype-associations"},
             required = true,
             description ="Big HPO annotation file (phenotype.hpoa).")
-    private Path phenotypeAnnotationFile;
+    Path phenotypeAnnotationFile;
 
     @CommandLine.Option(
             names={"-o","--ontology"},
             required = true,
             description ="HPO in JSON format.")
-    private String ontologyFile;
+    String ontologyFile;
 
     @CommandLine.Option(
             names = {"-p", "--phenopackets"},
             required = true,
             description = "Input a text file with list of absolute paths to phenopackets.")
-    private Path phenopacketFile;
+    Path phenopacketFile;
 
     @CommandLine.Option(
             names={"-n","--num-of-processes"},
@@ -91,24 +91,24 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             names = "--out",
             description = "Output JSON file",
             required = true)
-    private Path outPath;
+    Path outPath;
 
     @CommandLine.Option(
             names = {"-L", "--limit"},
             description = "Limit number of diseases reported in output.")
-    private Integer resultsLimit;
+    Integer resultsLimit;
 
     @CommandLine.Option(
             names={"-a","--alpha"},
             description = "Float value such that 0<alpha<1 (default: ${DEFAULT-VALUE}).",
             defaultValue = "5.241914347119568E-05")
-    private Double alpha;
+    Double alpha;
 
     @CommandLine.Option(
             names={"-b","--beta"},
             description = "Float value such that 0<beta<1 (default: ${DEFAULT-VALUE}).",
             defaultValue = "0.9")
-    private Double beta;
+    Double beta;
 
     @CommandLine.Option(
             names={"-db", "--database"},
@@ -116,7 +116,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     "The databases OMIM and ORPHA must not be used at the same time!",
             defaultValue = "OMIM",
             split = ",")
-    private Set<String> diseaseDatabases;
+    Set<String> diseaseDatabases;
 
     @Override
     public Integer call() throws Exception {
