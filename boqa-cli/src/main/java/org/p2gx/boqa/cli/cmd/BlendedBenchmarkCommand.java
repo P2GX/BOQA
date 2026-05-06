@@ -15,6 +15,7 @@ import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
+import org.p2gx.boqa.core.diseases.BlendedDiseaseDataAnchorGene;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
@@ -92,16 +93,24 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(DiseaseDatabaseSet,false, defaultCohortSize);
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
         HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
-        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases, Paths.get(diseaseGeneFile));
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
+
+        LOGGER.info("Number of annotated diseases: " + diseaseData.size());
+
+        BlendedDiseaseDataAnchorGene blendedDiseaseDataAnchorGene = new BlendedDiseaseDataAnchorGene(diseaseData, anchorGenes.get(0));
+
+        LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseDataAnchorGene.size());
+
+        LOGGER.info("Creating BlendedDiseaseData object ...");
 
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
         // Initialize Counter
-        Counter counter = new BoqaSetCounter(diseaseData, hpo);
-        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
+        Counter counter = new BoqaSetCounter(blendedDiseaseDataAnchorGene, hpo);
+        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseDataAnchorGene.size());
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();

@@ -12,7 +12,7 @@ import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BlendedDiseaseDataTest {
+class BlendedDiseaseDataAnchorGeneTest {
 
     //private static BlendedDiseaseData testBlendedDiseaseData;
     private static DiseaseData testDiseaseData;
@@ -22,24 +22,24 @@ class BlendedDiseaseDataTest {
         try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
                 getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")));
              InputStream geneAssociations = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
-                     getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.txt.gz")))) {
+                     getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
             testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoaWithGeneAssociations(hpoa, geneAssociations);
         }
     }
 
     @Test
     void testGeneIdAssociatedDiseases() {
-        BlendedDiseaseData testBlendedDiseaseData = new BlendedDiseaseData(testDiseaseData, "NCBIGene:392255");
+        BlendedDiseaseDataAnchorGene testBlendedDiseaseDataAnchorGene = new BlendedDiseaseDataAnchorGene(testDiseaseData, "NCBIGene:392255");
         Set<String> geneIdAssociatedDiseasesExpected = Set.of("OMIM:617898", "OMIM:615360", "OMIM:613094", "OMIM:118100", "OMIM:613703");
-        Set<String> geneIdAssociatedDiseasesActual = testBlendedDiseaseData.geneIdAssociatedDiseases("NCBIGene:392255");
+        Set<String> geneIdAssociatedDiseasesActual = testBlendedDiseaseDataAnchorGene.geneIdAssociatedDiseases("NCBIGene:392255");
         assertEquals(geneIdAssociatedDiseasesExpected, geneIdAssociatedDiseasesActual);
     }
 
     @Test
     void testSize() {
-        BlendedDiseaseData testBlendedDiseaseData = new BlendedDiseaseData(testDiseaseData, "NCBIGene:392255");
-        Integer SizeExpected = testBlendedDiseaseData.size();
-        Integer SizeActual = 41810;
+        BlendedDiseaseDataAnchorGene testBlendedDiseaseDataAnchorGene = new BlendedDiseaseDataAnchorGene(testDiseaseData, "NCBIGene:392255");
+        Integer SizeExpected = 41790;
+        Integer SizeActual = testBlendedDiseaseDataAnchorGene.size();
         assertEquals(SizeExpected, SizeActual);
     }
 }

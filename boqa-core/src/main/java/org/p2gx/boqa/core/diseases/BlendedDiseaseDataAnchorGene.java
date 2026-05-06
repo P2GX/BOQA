@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
  * 
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-public class BlendedDiseaseData implements DiseaseData {
+public class BlendedDiseaseDataAnchorGene implements DiseaseData {
 
     private final DiseaseData plainDiseaseData;
     HashMap<String, HashMap<String, Set<String>>> blendedDiseaseFeaturesDict;
@@ -34,7 +34,7 @@ public class BlendedDiseaseData implements DiseaseData {
      * @param plainDiseaseData the underlying disease data source
      * @param geneId the gene ID to use for filtering disease associations
      */
-    public BlendedDiseaseData(DiseaseData plainDiseaseData, String geneId) {
+    public BlendedDiseaseDataAnchorGene(DiseaseData plainDiseaseData, String geneId) {
         this.blendedDiseaseFeaturesDict = new HashMap<>();
         this.plainDiseaseData = plainDiseaseData;
         // Get a set of all diseases associated with the given geneId and a set of all diseases
@@ -57,8 +57,8 @@ public class BlendedDiseaseData implements DiseaseData {
         Set<String> allDiseases = this.plainDiseaseData.getDiseaseIds();
         for (String diseaseId1 : geneIdAssociatedDiseases) {
             for (String diseaseId2 : allDiseases) {
-                if (!diseaseId1.equals(diseaseId2)) {
-                    String blendedDiseaseId = diseaseId1 + ',' + diseaseId2;
+                if (!geneIdAssociatedDiseases.contains(diseaseId2)) {
+                    String blendedDiseaseId = diseaseId1 + '-' + diseaseId2;
                     this.blendedDiseaseFeaturesDict.putIfAbsent(blendedDiseaseId, new HashMap<>());
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("I", new HashSet<>());
                     this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(this.plainDiseaseData.getObservedDiseaseFeatures(diseaseId1));
