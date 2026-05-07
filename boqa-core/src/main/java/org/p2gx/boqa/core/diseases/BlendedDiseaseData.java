@@ -1,8 +1,11 @@
 package org.p2gx.boqa.core.diseases;
 
 import org.p2gx.boqa.core.DiseaseData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -22,27 +25,44 @@ import java.util.stream.Collectors;
  */
 public class BlendedDiseaseData implements DiseaseData {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlendedDiseaseData.class);
+
+    public enum PairingStrategy {
+        /** Pairs each anchor disease with every disease not in the anchor set. Requires exactly one anchor gene. */
+        ANCHOR_VS_ALL,
+        /** Pairs anchor diseases with each other, excluding pairs that share a gene (unordered, no duplicates). */
+        ANCHOR_VS_ANCHOR
+    }
+
     private final DiseaseData plainDiseaseData;
     HashMap<String, HashMap<String, Set<String>>> blendedDiseaseFeaturesDict;
 
+    public BlendedDiseaseData(DiseaseData plainDiseaseData, List<String> geneIds) {
+        this(plainDiseaseData, geneIds, PairingStrategy.ANCHOR_VS_ALL);
+    }
+
     /**
-     * Creates a BlendedDiseaseData object that combines diseases associated with a given gene
-     * with all other annotated HPOA diseases.
-     *
-     * <p>For each disease associated with the gene IDs, creates combined disease entities by
-     * pairing it with every other disease in the dataset. The phenotypes of paired diseases
-     * are merged (union) to create composite phenotypes.</p>
+     * Creates a BlendedDiseaseData object that combines diseases associated with given genes
+     * with other diseases according to the chosen pairing strategy.
      *
      * @param plainDiseaseData the underlying disease data source
      * @param geneIds the gene IDs to use for filtering disease associations
+     * @param strategy the strategy used to form disease pairs
      */
-    public BlendedDiseaseData(DiseaseData plainDiseaseData, List<String> geneIds) {
+    public BlendedDiseaseData(DiseaseData plainDiseaseData, List<String> geneIds, PairingStrategy strategy) {
         this.blendedDiseaseFeaturesDict = new HashMap<>();
         this.plainDiseaseData = plainDiseaseData;
-        // Get a set of all diseases associated with the given geneIds and a set of all diseases
+        LOGGER.info("Initializing BlendedDiseaseData...");
+        LOGGER.info("Number of anchor genes: {}", geneIds.size());
+        LOGGER.info("Strategy: {}", strategy);
+        if (strategy == PairingStrategy.ANCHOR_VS_ALL && geneIds.size() > 1) {
+            throw new IllegalArgumentException(
+                "ANCHOR_VS_ALL requires exactly one anchor gene, but " + geneIds.size() + " were provided.");
+        }
         Set<String> geneIdAssociatedDiseases = geneIdAssociatedDiseases(geneIds);
+        LOGGER.info("Number of diseases associated with input genes: {}", geneIdAssociatedDiseases.size());
 
-        // Add all of these diseases to BlendedDiseaseData
+        // Add all anchor diseases as singletons
         for (String diseaseId : geneIdAssociatedDiseases) {
             this.blendedDiseaseFeaturesDict.putIfAbsent(diseaseId, new HashMap<>());
             this.blendedDiseaseFeaturesDict.get(diseaseId).put("I", new HashSet<>());
@@ -55,16 +75,36 @@ public class BlendedDiseaseData implements DiseaseData {
             this.blendedDiseaseFeaturesDict.get(diseaseId).get("GS").addAll(this.plainDiseaseData.getDiseaseGeneSymbols(diseaseId));
         }
 
-        // Create a list of blended disease ID pairs to be added -> Single anchor gene approach
+        // Create a list of blended disease ID pairs to be added
         Set<String> allDiseases = this.plainDiseaseData.getDiseaseIds();
         List<String> blendedDiseaseIds = new ArrayList<>();
-        for (String diseaseId1 : geneIdAssociatedDiseases) {
-            for (String diseaseId2 : allDiseases) {
-                if (!geneIdAssociatedDiseases.contains(diseaseId2)) {
-                    blendedDiseaseIds.add(diseaseId1 + '-' + diseaseId2);
+        switch (strategy) {
+            case ANCHOR_VS_ALL -> {
+                for (String diseaseId1 : geneIdAssociatedDiseases) {
+                    for (String diseaseId2 : allDiseases) {
+                        if (!geneIdAssociatedDiseases.contains(diseaseId2)) {
+                            blendedDiseaseIds.add(diseaseId1 + '-' + diseaseId2);
+                        }
+                    }
+                }
+            }
+            case ANCHOR_VS_ANCHOR -> {
+                List<String> anchorList = new ArrayList<>(geneIdAssociatedDiseases);
+                for (int i = 0; i < anchorList.size(); i++) {
+                    for (int j = i + 1; j < anchorList.size(); j++) {
+                        if (Collections.disjoint(
+                                plainDiseaseData.getDiseaseGeneIds(anchorList.get(i)),
+                                plainDiseaseData.getDiseaseGeneIds(anchorList.get(j)))) {
+                            blendedDiseaseIds.add(anchorList.get(i) + '-' + anchorList.get(j));
+                        }
+                    }
+                }
+                if (blendedDiseaseIds.isEmpty()) {
+                    LOGGER.warn("ANCHOR_VS_ANCHOR produced no pairs for genes {} — all anchor diseases share a common gene. Analysis will run on singletons only.", geneIds);
                 }
             }
         }
+        LOGGER.info("Generated {} blended disease pairs.", blendedDiseaseIds.size());
 
         // Iterate over the list and merge phenotypic features for each pair
         for (String blendedDiseaseId : blendedDiseaseIds) {
@@ -85,6 +125,8 @@ public class BlendedDiseaseData implements DiseaseData {
             this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("GS").addAll(this.plainDiseaseData.getDiseaseGeneSymbols(diseaseId1));
             this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("GS").addAll(this.plainDiseaseData.getDiseaseGeneSymbols(diseaseId2));
         }
+        LOGGER.info("BlendedDiseaseData ready: {} total entries ({} singletons + {} pairs).",
+                blendedDiseaseFeaturesDict.size(), geneIdAssociatedDiseases.size(), blendedDiseaseIds.size());
     }
 
     Set<String> geneIdAssociatedDiseases(List<String> geneIds) {

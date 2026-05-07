@@ -26,6 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,7 +100,25 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
         LOGGER.info("Number of annotated diseases: " + diseaseData.size());
 
-        BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, anchorGenes);
+        List<String> finalAnchorGenes;
+        if (anchorGenes.size() > 1) {
+            // Add 10 randomly selected genes to the anchor gene list
+            Set<String> allGeneIds = diseaseData.getDiseaseIds().stream()
+                    .flatMap(d -> diseaseData.getDiseaseGeneIds(d).stream())
+                    .collect(Collectors.toSet());
+            allGeneIds.removeAll(anchorGenes);
+            List<String> randomGenes = new ArrayList<>(allGeneIds);
+            Collections.shuffle(randomGenes);
+            finalAnchorGenes = new ArrayList<>(anchorGenes);
+            finalAnchorGenes.addAll(randomGenes.subList(0, Math.min(10, randomGenes.size())));
+            LOGGER.info("Extended anchor gene list with 10 random genes: {}", finalAnchorGenes);
+        } else {
+            finalAnchorGenes = anchorGenes;
+        }
+
+        BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, finalAnchorGenes,
+                finalAnchorGenes.size() == 1 ? BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ALL
+                                             : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR);
 
         LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
 
