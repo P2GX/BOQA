@@ -15,7 +15,7 @@ import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
-import org.p2gx.boqa.core.diseases.BlendedDiseaseDataAnchorGene;
+import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
@@ -99,9 +99,9 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
         LOGGER.info("Number of annotated diseases: " + diseaseData.size());
 
-        BlendedDiseaseDataAnchorGene blendedDiseaseDataAnchorGene = new BlendedDiseaseDataAnchorGene(diseaseData, anchorGenes.get(0));
+        BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, anchorGenes);
 
-        LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseDataAnchorGene.size());
+        LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
 
         LOGGER.info("Creating BlendedDiseaseData object ...");
 
@@ -109,8 +109,8 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
         // Initialize Counter
-        Counter counter = new BoqaSetCounter(blendedDiseaseDataAnchorGene, hpo);
-        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseDataAnchorGene.size());
+        Counter counter = new BoqaSetCounter(blendedDiseaseData, hpo);
+        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();

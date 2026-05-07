@@ -6,13 +6,14 @@ import org.p2gx.boqa.core.DiseaseData;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BlendedDiseaseDataAnchorGeneTest {
+class BlendedDiseaseDataTest {
 
     //private static BlendedDiseaseData testBlendedDiseaseData;
     private static DiseaseData testDiseaseData;
@@ -29,17 +30,17 @@ class BlendedDiseaseDataAnchorGeneTest {
 
     @Test
     void testGeneIdAssociatedDiseases() {
-        BlendedDiseaseDataAnchorGene testBlendedDiseaseDataAnchorGene = new BlendedDiseaseDataAnchorGene(testDiseaseData, "NCBIGene:392255");
+        BlendedDiseaseData testBlendedDiseaseDataAnchorGene = new BlendedDiseaseData(testDiseaseData, List.of("NCBIGene:392255"));
         Set<String> geneIdAssociatedDiseasesExpected = Set.of("OMIM:617898", "OMIM:615360", "OMIM:613094", "OMIM:118100", "OMIM:613703");
-        Set<String> geneIdAssociatedDiseasesActual = testBlendedDiseaseDataAnchorGene.geneIdAssociatedDiseases("NCBIGene:392255");
+        Set<String> geneIdAssociatedDiseasesActual = testBlendedDiseaseDataAnchorGene.geneIdAssociatedDiseases(List.of("NCBIGene:392255"));
         assertEquals(geneIdAssociatedDiseasesExpected, geneIdAssociatedDiseasesActual);
     }
 
     @Test
     void testSize() {
-        BlendedDiseaseDataAnchorGene testBlendedDiseaseDataAnchorGene = new BlendedDiseaseDataAnchorGene(testDiseaseData, "NCBIGene:392255");
+        BlendedDiseaseData testBlendedDiseaseData = new BlendedDiseaseData(testDiseaseData, List.of("NCBIGene:392255"));
         Integer SizeExpected = 41790;
-        Integer SizeActual = testBlendedDiseaseDataAnchorGene.size();
+        Integer SizeActual = testBlendedDiseaseData.size();
         assertEquals(SizeExpected, SizeActual);
     }
 }
