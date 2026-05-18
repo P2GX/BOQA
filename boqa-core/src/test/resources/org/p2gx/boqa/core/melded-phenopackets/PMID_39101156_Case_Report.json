@@ -1,0 +1,306 @@
+{
+  "id": "PMID_39101156_Case_Report",
+  "subject": {
+    "id": "Case Report",
+    "timeAtLastEncounter": {
+      "age": {
+        "iso8601duration": "P11M"
+      }
+    },
+    "sex": "MALE"
+  },
+  "phenotypicFeatures": [
+    {
+      "type": {
+        "id": "HP:0003150",
+        "label": "Glutaric aciduria"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P8M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0001999",
+        "label": "Abnormal facial shape"
+      },
+      "excluded": true
+    },
+    {
+      "type": {
+        "id": "HP:0005484",
+        "label": "Secondary microcephaly"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P9M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0040081",
+        "label": "Abnormal circulating creatine kinase concentration"
+      },
+      "excluded": true
+    },
+    {
+      "type": {
+        "id": "HP:0011936",
+        "label": "Decreased plasma total carnitine"
+      },
+      "excluded": true
+    },
+    {
+      "type": {
+        "id": "HP:0002151",
+        "label": "Increased circulating lactate concentration"
+      },
+      "excluded": true
+    },
+    {
+      "type": {
+        "id": "HP:0000407",
+        "label": "Sensorineural hearing impairment"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P11M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0001263",
+        "label": "Global developmental delay"
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0032988",
+        "label": "Persistent head lag"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P4M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0032989",
+        "label": "Delayed ability to roll over"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P8M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0034295",
+        "label": "Reduced cerebral white matter volume"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P11M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0012510",
+        "label": "Extra-axial cerebrospinal fluid accumulation"
+      },
+      "onset": {
+        "age": {
+          "iso8601duration": "P11M"
+        }
+      }
+    },
+    {
+      "type": {
+        "id": "HP:0001508",
+        "label": "Failure to thrive"
+      }
+    }
+  ],
+  "interpretations": [
+    {
+      "id": "800y5aJ4eFTbcpEFQZ7JhwrT",
+      "progressStatus": "SOLVED",
+      "diagnosis": {
+        "disease": {
+          "id": "OMIM:300475",
+          "label": "Deafness, dystonia, and cerebral hypomyelination"
+        },
+        "genomicInterpretations": [
+          {
+            "subjectOrBiosampleId": "Case Report",
+            "interpretationStatus": "CAUSATIVE",
+            "variantInterpretation": {
+              "acmgPathogenicityClassification": "PATHOGENIC",
+              "therapeuticActionability": "UNKNOWN_ACTIONABILITY",
+              "variationDescriptor": {
+                "id": "c526AtoT_BCAP31_NM_001256447v2",
+                "geneContext": {
+                  "valueId": "HGNC:16695",
+                  "symbol": "BCAP31"
+                },
+                "expressions": [
+                  {
+                    "syntax": "hgvs.c",
+                    "value": "NM_001256447.2:c.526A>T"
+                  },
+                  {
+                    "syntax": "hgvs.g",
+                    "value": "NC_000023.11:g.153703010T>A"
+                  },
+                  {
+                    "syntax": "hgvs.p",
+                    "value": "NP_001243376.1:p.(Lys176Ter)"
+                  }
+                ],
+                "vcfRecord": {
+                  "genomeAssembly": "hg38",
+                  "chrom": "chrX",
+                  "pos": 153703010,
+                  "ref": "T",
+                  "alt": "A"
+                },
+                "moleculeContext": "genomic",
+                "allelicState": {
+                  "id": "GENO:0000134",
+                  "label": "hemizygous"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "p3JYFLo4duKZXW7oQRFYkixP",
+      "progressStatus": "SOLVED",
+      "diagnosis": {
+        "disease": {
+          "id": "OMIM:231690",
+          "label": "Glutaric aciduria III"
+        },
+        "genomicInterpretations": [
+          {
+            "subjectOrBiosampleId": "Case Report",
+            "interpretationStatus": "CAUSATIVE",
+            "variantInterpretation": {
+              "acmgPathogenicityClassification": "PATHOGENIC",
+              "therapeuticActionability": "UNKNOWN_ACTIONABILITY",
+              "variationDescriptor": {
+                "id": "c985CtoT_SUGCT_NM_001193313v2",
+                "geneContext": {
+                  "valueId": "HGNC:16001",
+                  "symbol": "SUGCT"
+                },
+                "expressions": [
+                  {
+                    "syntax": "hgvs.c",
+                    "value": "NM_001193313.2:c.985C>T"
+                  },
+                  {
+                    "syntax": "hgvs.g",
+                    "value": "NC_000007.14:g.40459197C>T"
+                  },
+                  {
+                    "syntax": "hgvs.p",
+                    "value": "NP_001180242.2:p.(Arg329Trp)"
+                  }
+                ],
+                "vcfRecord": {
+                  "genomeAssembly": "hg38",
+                  "chrom": "chr7",
+                  "pos": 40459197,
+                  "ref": "C",
+                  "alt": "T"
+                },
+                "moleculeContext": "genomic",
+                "allelicState": {
+                  "id": "GENO:0000136",
+                  "label": "homozygous"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "diseases": [
+    {
+      "term": {
+        "id": "OMIM:300475",
+        "label": "Deafness, dystonia, and cerebral hypomyelination"
+      }
+    },
+    {
+      "term": {
+        "id": "OMIM:231690",
+        "label": "Glutaric aciduria III"
+      }
+    }
+  ],
+  "metaData": {
+    "created": "2025-10-09T06:02:52.256377Z",
+    "createdBy": "0000-0002-0736-9199",
+    "resources": [
+      {
+        "id": "hp",
+        "name": "human phenotype ontology",
+        "url": "http://purl.obolibrary.org/obo/hp.owl",
+        "version": "2025-08-11",
+        "namespacePrefix": "HP",
+        "iriPrefix": "http://purl.obolibrary.org/obo/HP_"
+      },
+      {
+        "id": "geno",
+        "name": "Genotype Ontology",
+        "url": "http://purl.obolibrary.org/obo/geno.owl",
+        "version": "2025-07-25",
+        "namespacePrefix": "GENO",
+        "iriPrefix": "http://purl.obolibrary.org/obo/GENO_"
+      },
+      {
+        "id": "so",
+        "name": "Sequence types and features ontology",
+        "url": "http://purl.obolibrary.org/obo/so.owl",
+        "version": "2024-11-18",
+        "namespacePrefix": "SO",
+        "iriPrefix": "http://purl.obolibrary.org/obo/SO_"
+      },
+      {
+        "id": "omim",
+        "name": "An Online Catalog of Human Genes and Genetic Disorders",
+        "url": "https://www.omim.org",
+        "version": "06/01/25",
+        "namespacePrefix": "OMIM",
+        "iriPrefix": "https://www.omim.org/entry/"
+      },
+      {
+        "id": "hgnc",
+        "name": "HUGO Gene Nomenclature Committee",
+        "url": "https://www.genenames.org",
+        "version": "06/01/25",
+        "namespacePrefix": "HGNC",
+        "iriPrefix": "https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/"
+      }
+    ],
+    "phenopacketSchemaVersion": "2.0.2",
+    "externalReferences": [
+      {
+        "id": "PMID:39101156",
+        "description": "Whole exome sequencing reveals a dual diagnosis of BCAP31-related syndrome and glutaric aciduria III."
+      }
+    ]
+  }
+}

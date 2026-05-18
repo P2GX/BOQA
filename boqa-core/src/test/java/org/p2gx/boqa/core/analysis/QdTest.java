@@ -1,11 +1,8 @@
 package org.p2gx.boqa.core.analysis;
 
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.Test;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.TestBase;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
@@ -15,16 +12,15 @@ import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.DiseaseMerger;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.p2gx.boqa.core.patient.PhenopacketReader;
-import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.Disease;
 import org.phenopackets.schema.v2.core.OntologyClass;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -154,21 +150,16 @@ public class QdTest extends TestBase  {
         return s.length() <= maxLen ? s : s.substring(0, maxLen - 1) + "…";
     }
 
-    // Iterates over every *.json file in the local melded-phenopacket directory and runs
-    // runMeldedBoqa on each. This is a manual sanity check — it relies on a hardcoded local
-    // path and will be skipped (or fail with IOException) if that path does not exist.
     @Test
-    public void testSanityCheck() throws IOException {
-        Path meldedPpktDir = Path.of("/Users/hansenp/development/mgd-ppkt/phenopackets");
+    public void testSanityCheck() throws IOException, URISyntaxException {
+        Path meldedPpktDir = Paths.get(
+            getClass().getResource("/org/p2gx/boqa/core/melded-phenopackets").toURI());
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(meldedPpktDir, "*.json")) {
             for (Path entry : stream) {
                 System.out.println("******* Testing " + entry.getFileName() + " *******");
                 runMeldedBoqa(entry);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
     }
 
 }
