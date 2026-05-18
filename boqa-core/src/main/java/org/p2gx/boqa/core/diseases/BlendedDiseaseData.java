@@ -75,34 +75,10 @@ public class BlendedDiseaseData implements DiseaseData {
             this.blendedDiseaseFeaturesDict.get(diseaseId).get("GS").addAll(this.plainDiseaseData.getDiseaseGeneSymbols(diseaseId));
         }
 
-        // Create a list of blended disease ID pairs to be added
         Set<String> allDiseases = this.plainDiseaseData.getDiseaseIds();
-        List<String> blendedDiseaseIds = new ArrayList<>();
-        switch (strategy) {
-            case ANCHOR_VS_ALL -> {
-                for (String diseaseId1 : geneIdAssociatedDiseases) {
-                    for (String diseaseId2 : allDiseases) {
-                        if (!geneIdAssociatedDiseases.contains(diseaseId2)) {
-                            blendedDiseaseIds.add(diseaseId1 + '-' + diseaseId2);
-                        }
-                    }
-                }
-            }
-            case ANCHOR_VS_ANCHOR -> {
-                List<String> anchorList = new ArrayList<>(geneIdAssociatedDiseases);
-                for (int i = 0; i < anchorList.size(); i++) {
-                    for (int j = i + 1; j < anchorList.size(); j++) {
-                        if (Collections.disjoint(
-                                plainDiseaseData.getDiseaseGeneIds(anchorList.get(i)),
-                                plainDiseaseData.getDiseaseGeneIds(anchorList.get(j)))) {
-                            blendedDiseaseIds.add(anchorList.get(i) + '-' + anchorList.get(j));
-                        }
-                    }
-                }
-                if (blendedDiseaseIds.isEmpty()) {
-                    LOGGER.warn("ANCHOR_VS_ANCHOR produced no pairs for genes {} — all anchor diseases share a common gene. Analysis will run on singletons only.", geneIds);
-                }
-            }
+        List<String> blendedDiseaseIds = formDiseasePairs(strategy, geneIdAssociatedDiseases, allDiseases);
+        if (blendedDiseaseIds.isEmpty()) {
+            LOGGER.warn("ANCHOR_VS_ANCHOR produced no pairs for genes {} — all anchor diseases share a common gene. Analysis will run on singletons only.", geneIds);
         }
         LOGGER.info("Generated {} blended disease pairs.", blendedDiseaseIds.size());
 
@@ -127,6 +103,34 @@ public class BlendedDiseaseData implements DiseaseData {
         }
         LOGGER.info("BlendedDiseaseData ready: {} total entries ({} singletons + {} pairs).",
                 blendedDiseaseFeaturesDict.size(), geneIdAssociatedDiseases.size(), blendedDiseaseIds.size());
+    }
+
+    private List<String> formDiseasePairs(PairingStrategy strategy, Set<String> anchorDiseases, Set<String> allDiseases) {
+        List<String> pairs = new ArrayList<>();
+        switch (strategy) {
+            case ANCHOR_VS_ALL -> {
+                for (String diseaseId1 : anchorDiseases) {
+                    for (String diseaseId2 : allDiseases) {
+                        if (!anchorDiseases.contains(diseaseId2)) {
+                            pairs.add(diseaseId1 + '-' + diseaseId2);
+                        }
+                    }
+                }
+            }
+            case ANCHOR_VS_ANCHOR -> {
+                List<String> anchorList = new ArrayList<>(anchorDiseases);
+                for (int i = 0; i < anchorList.size(); i++) {
+                    for (int j = i + 1; j < anchorList.size(); j++) {
+                        if (Collections.disjoint(
+                                plainDiseaseData.getDiseaseGeneIds(anchorList.get(i)),
+                                plainDiseaseData.getDiseaseGeneIds(anchorList.get(j)))) {
+                            pairs.add(anchorList.get(i) + '-' + anchorList.get(j));
+                        }
+                    }
+                }
+            }
+        }
+        return pairs;
     }
 
     Set<String> geneIdAssociatedDiseases(List<String> geneIds) {
