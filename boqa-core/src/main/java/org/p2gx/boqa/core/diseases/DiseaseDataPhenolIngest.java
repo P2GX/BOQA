@@ -40,6 +40,9 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
     private final Ontology hpo;
 
+    private final Map<String, Set<String>> geneIdsByDisease = new HashMap<>();
+    private final Map<String, Set<String>> geneSymbolsByDisease = new HashMap<>();
+
     public static DiseaseDataPhenolIngest fromPaths(Path phenotypeAnnotationFile, Path ontologyFile) throws IOException {
         try (
                 BufferedInputStream annotationsStream = new BufferedInputStream(Files.newInputStream(phenotypeAnnotationFile));
@@ -51,6 +54,28 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
 
     public static DiseaseData of(Ontology hpo, HpoDiseases diseases) {
         return new DiseaseDataPhenolIngest(hpo, diseases);
+    }
+
+    /**
+     * Creates a {@code DiseaseDataPhenolIngest} loaded with both disease-feature and disease-gene associations.
+     * The gene associations file is the {@code genes_to_disease.txt} file (tab-separated, with header).
+     */
+    public static DiseaseData of(Ontology hpo, HpoDiseases diseases, Path geneAssociationsFile) throws IOException {
+        DiseaseDataPhenolIngest instance = new DiseaseDataPhenolIngest(hpo, diseases);
+        try (InputStream stream = new BufferedInputStream(Files.newInputStream(geneAssociationsFile))) {
+            instance.loadGeneAssociations(stream);
+        }
+        return instance;
+    }
+
+    /**
+     * Creates a {@code DiseaseDataPhenolIngest} loaded with both disease-feature and disease-gene associations.
+     * The stream must supply the contents of a {@code genes_to_disease.txt} file (tab-separated, with header).
+     */
+    public static DiseaseData of(Ontology hpo, HpoDiseases diseases, InputStream geneAssociationsStream) throws IOException {
+        DiseaseDataPhenolIngest instance = new DiseaseDataPhenolIngest(hpo, diseases);
+        instance.loadGeneAssociations(geneAssociationsStream);
+        return instance;
     }
 
     private DiseaseDataPhenolIngest(Ontology hpo, HpoDiseases diseases){
@@ -143,6 +168,23 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         return diseaseFeaturesDict;
     }
 
+    private void loadGeneAssociations(InputStream geneStream) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(geneStream))) {
+            reader.lines()
+                    .skip(1) // skip header line
+                    .map(line -> line.split("\t"))
+                    .filter(cols -> cols.length >= 4)
+                    .forEach(cols -> {
+                        String geneId = cols[0];
+                        String geneSymbol = cols[1];
+                        String diseaseId = cols[3];
+                        geneIdsByDisease.computeIfAbsent(diseaseId, k -> new HashSet<>()).add(geneId);
+                        geneSymbolsByDisease.computeIfAbsent(diseaseId, k -> new HashSet<>()).add(geneSymbol);
+                    });
+        }
+        LOGGER.info("Loaded gene associations for {} diseases.", geneIdsByDisease.size());
+    }
+
     /**
      * Temporarily needed to explore Phenols HpoDiseases, as there is no documentation.
      */
@@ -184,17 +226,11 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
 
     @Override
     public Set<String> getDiseaseGeneIds(String diseaseId) {
-        /*
-        Not yet implemented.
-         */
-        return new HashSet<>();
+        return geneIdsByDisease.getOrDefault(diseaseId, Set.of());
     }
 
     @Override
     public Set<String> getDiseaseGeneSymbols(String diseaseId) {
-        /*
-        Not yet implemented.
-         */
-        return new HashSet<>();
+        return geneSymbolsByDisease.getOrDefault(diseaseId, Set.of());
     }
 }
