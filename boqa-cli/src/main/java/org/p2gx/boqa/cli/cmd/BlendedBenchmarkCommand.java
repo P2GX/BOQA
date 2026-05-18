@@ -64,6 +64,12 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             description ="Comma-separated NCBI IDs of genes, e.g. -g NCBIGene:583,NCBIGene:3910.")
     private List<String> anchorGenes;
 
+    @CommandLine.Option(
+            names={"-r","--random-genes"},
+            defaultValue = "10",
+            description ="Number of randomly selected genes added to the anchor gene list when multiple anchors are provided (default: ${DEFAULT-VALUE}).")
+    private int randomGeneCount;
+
     @Override
     public Integer call() throws Exception {
 
@@ -102,16 +108,16 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
         List<String> finalAnchorGenes;
         if (anchorGenes.size() > 1) {
-            // Add 10 randomly selected genes to the anchor gene list
+            // Add randomly selected genes to the anchor gene list
             Set<String> allGeneIds = diseaseData.getDiseaseIds().stream()
                     .flatMap(d -> diseaseData.getDiseaseGeneIds(d).stream())
                     .collect(Collectors.toSet());
-            allGeneIds.removeAll(anchorGenes);
+            allGeneIds.removeAll(Set.copyOf(anchorGenes));
             List<String> randomGenes = new ArrayList<>(allGeneIds);
             Collections.shuffle(randomGenes);
             finalAnchorGenes = new ArrayList<>(anchorGenes);
-            finalAnchorGenes.addAll(randomGenes.subList(0, Math.min(10, randomGenes.size())));
-            LOGGER.info("Extended anchor gene list with 10 random genes: {}", finalAnchorGenes);
+            finalAnchorGenes.addAll(randomGenes.subList(0, Math.min(randomGeneCount, randomGenes.size())));
+            LOGGER.info("Extended anchor gene list with {} random genes: {}", randomGeneCount, finalAnchorGenes);
         } else {
             finalAnchorGenes = anchorGenes;
         }
