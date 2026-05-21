@@ -151,11 +151,16 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             Counter counter = new BoqaSetCounter(blendedDiseaseData, hpo);
             LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
 
-            String pathString = Files.readAllLines(phenopacketFile).getFirst();
+            Path jsonFilePath;
+            if (phenopacketFile.endsWith(".txt")) {
+                String pathString = Files.readAllLines(phenopacketFile).getFirst();
+                jsonFilePath = Path.of(pathString);
+            }
+            else {
+                jsonFilePath = phenopacketFile;
+            }
 
-            Path singleFile = Path.of(pathString);
-
-            PatientData ppkt = new PhenopacketData(singleFile, hpo);
+            PatientData ppkt = new PhenopacketData(jsonFilePath, hpo);
 
             boqaAnalysisResults.add(
                     BoqaPatientAnalyzer.computeBoqaResults(
