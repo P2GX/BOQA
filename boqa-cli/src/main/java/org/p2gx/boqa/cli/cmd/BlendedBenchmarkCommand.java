@@ -70,6 +70,12 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             description ="Number of randomly selected genes added to the anchor gene list when multiple anchors are provided (default: ${DEFAULT-VALUE}).")
     private int randomGeneCount;
 
+    @CommandLine.Option(
+            names={"-i","--iterations"},
+            defaultValue = "10",
+            description ="Number of repetitions of BOQA, each with different random genes (default: ${DEFAULT-VALUE}).")
+    private int numberOfIterations;
+
     @Override
     public Integer call() throws Exception {
 
@@ -106,64 +112,66 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
         LOGGER.info("Number of annotated diseases: " + diseaseData.size());
 
-        List<String> finalAnchorGenes;
-        if (anchorGenes.size() > 1) {
-            // Add randomly selected genes to the anchor gene list
-            Set<String> allGeneIds = diseaseData.getDiseaseIds().stream()
-                    .flatMap(d -> diseaseData.getDiseaseGeneIds(d).stream())
-                    .collect(Collectors.toSet());
-            allGeneIds.removeAll(Set.copyOf(anchorGenes));
-            List<String> randomGenes = new ArrayList<>(allGeneIds);
-            Collections.shuffle(randomGenes);
-            finalAnchorGenes = new ArrayList<>(anchorGenes);
-            finalAnchorGenes.addAll(randomGenes.subList(0, Math.min(randomGeneCount, randomGenes.size())));
-            LOGGER.info("Extended anchor gene list with {} random genes: {}", randomGeneCount, finalAnchorGenes);
-        } else {
-            finalAnchorGenes = anchorGenes;
-        }
-
-        BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, finalAnchorGenes,
-                finalAnchorGenes.size() == 1 ? BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ALL
-                                             : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR);
-
-        LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
-
-        LOGGER.info("Creating BlendedDiseaseData object ...");
-
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
-        // Initialize Counter
-        Counter counter = new BoqaSetCounter(blendedDiseaseData, hpo);
-        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
-
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
-        List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
-
-        AtomicInteger fileCount = new AtomicInteger(0);
 
         LOGGER.info("Beginning BOQA analysis for phenopackets...");
         LOGGER.info("Results limit set to {}", limit);
-        // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
-        try (Stream<String> stream = Files.lines(phenopacketFile)) {
-            boqaAnalysisResults = stream
-                    .map(Path::of)
-                    .parallel()
-                    .map(singleFile -> {
-                        PatientData ppkt = new PhenopacketData(singleFile, hpo);
-                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
-                                ppkt, counter, limit, params);
-                        int count = fileCount.incrementAndGet();
-                        if (count % 50 == 0) {
-                            System.out.println("Processed: " + count);
-                        }
-                        return result;
-                    })
-                    .toList();
-        } catch (IOException e) {
-            LOGGER.warn("Could not read phenopacket list from {}", phenopacketFile, e);
+
+        AtomicInteger fileCount = new AtomicInteger(0);
+        List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
+
+        for(int i=0; i<numberOfIterations; i++) {
+            List<String> finalAnchorGenes;
+            if (anchorGenes.size() > 1) {
+                // Add randomly selected genes to the anchor gene list
+                Set<String> allGeneIds = diseaseData.getDiseaseIds().stream()
+                        .flatMap(d -> diseaseData.getDiseaseGeneIds(d).stream())
+                        .collect(Collectors.toSet());
+                allGeneIds.removeAll(Set.copyOf(anchorGenes));
+                List<String> randomGenes = new ArrayList<>(allGeneIds);
+                Collections.shuffle(randomGenes);
+                finalAnchorGenes = new ArrayList<>(anchorGenes);
+                finalAnchorGenes.addAll(randomGenes.subList(0, Math.min(randomGeneCount, randomGenes.size())));
+                LOGGER.info("Extended anchor gene list with {} random genes: {}", randomGeneCount, finalAnchorGenes);
+            } else {
+                finalAnchorGenes = anchorGenes;
+            }
+
+            BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, finalAnchorGenes,
+                    finalAnchorGenes.size() == 1 ? BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ALL
+                            : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR);
+
+            LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
+            LOGGER.info("Creating BlendedDiseaseData object ...");
+
+            // Initialize Counter
+            Counter counter = new BoqaSetCounter(blendedDiseaseData, hpo);
+            LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
+
+            Path jsonFilePath;
+            if (phenopacketFile.endsWith(".txt")) {
+                String pathString = Files.readAllLines(phenopacketFile).getFirst();
+                jsonFilePath = Path.of(pathString);
+            }
+            else {
+                jsonFilePath = phenopacketFile;
+            }
+
+            PatientData ppkt = new PhenopacketData(jsonFilePath, hpo);
+
+            boqaAnalysisResults.add(
+                    BoqaPatientAnalyzer.computeBoqaResults(
+                            ppkt, counter, limit, params)
+            );
+            int count = fileCount.incrementAndGet();
+            if (count % 10 == 0) {
+                System.out.println("Iterations processed: " + count);
+            }
         }
-        LOGGER.info("Finished processing {} phenopackets.", fileCount.get());
+        LOGGER.info("Finished processing {} iterations.", fileCount.get());
 
         LOGGER.info("Writing results to {}", outPath);
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
