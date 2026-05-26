@@ -3,6 +3,8 @@ package org.p2gx.boqa.core.output;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.luben.zstd.ZstdOutputStream;
+
 import org.p2gx.boqa.core.Writer;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
@@ -46,7 +48,9 @@ public class JsonResultWriter implements Writer {
                              Path hpoaPath,
                              String cliArgs,
                              Map<String, Object> algorithmParams,
-                             Path outPath) throws IOException {
+                             Path outPath,
+                             boolean compress
+    ) throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root;
@@ -73,7 +77,8 @@ public class JsonResultWriter implements Writer {
                 Instant.now().toString(),
                 hpoVersion,
                 hpoaVersion,
-                Map.of("phenopacketStoreVersion", "v0.1.24"),
+                // TODO fix hardcoded version
+                //Map.of("phenopacketStoreVersion", "v0.1.24"),
                 algorithmParams,
                 cliArgs,
                 Map.of(
@@ -86,9 +91,19 @@ public class JsonResultWriter implements Writer {
 
         ResultBundle bundle = new ResultBundle(metadata, boqaAnalysisResults);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        try (OutputStream out = Files.newOutputStream(outPath)) {
-            mapper.writeValue(out, bundle);
-        }    }
+        if (compress) {
+            try (
+                    OutputStream fileOut = Files.newOutputStream(outPath);
+                    ZstdOutputStream zstdOut = new ZstdOutputStream(fileOut)
+            ) {
+                mapper.writeValue(zstdOut, bundle);
+            }
+        } else {
+            try (OutputStream out = Files.newOutputStream(outPath)) {
+                mapper.writeValue(out, bundle);
+            }
+        }
+    }
 
     public static String extractHpVersion(String versionUrl) {
         return Arrays.stream(versionUrl.split("/"))

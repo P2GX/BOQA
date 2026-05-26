@@ -15,5 +15,7 @@ public interface Writer {
                       Path hpoa,
                       String cliArgs,
                       Map<String, Object> algorithmParams,
-                      Path outPath) throws IOException;
+                      Path outPath,
+                      boolean compress
+    ) throws IOException;
 }
