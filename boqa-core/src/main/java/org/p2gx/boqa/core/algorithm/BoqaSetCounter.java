@@ -125,11 +125,15 @@ public class BoqaSetCounter implements Counter {
         }
         LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
         LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
-        //TODO check this also works fine with plain BOQA
         String[] diseaseIds = diseaseId.split("-");
         List<DiseaseDTO> diseaseDTOList = new ArrayList<>();
+        //TODO remove LOGGER statement
+        LOGGER.info("Full key {} exists: {}", diseaseId, idToLabel.containsKey(diseaseId));
         for (String d : diseaseIds) {
-            diseaseDTOList.add(new DiseaseDTO(d, idToLabel.get(d))); // TODO labels come back null both for plain and blended
+            //TODO remove LOGGER statement
+            LOGGER.info("Split key '{}' exists: {}", d, idToLabel.containsKey(d));
+            diseaseDTOList.add(new DiseaseDTO(d, idToLabel.get(d)));
+            // TODO labels come back null both for plain and blended. Melded branch introduced bug into plain!
         }
         return new BoqaCounts(diseaseDTOList, truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
