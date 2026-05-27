@@ -40,8 +40,6 @@ public class PhenopacketData implements PatientData {
     private final Set<TermId> excludedTerms;
     private final List<DiseaseDTO> diseases;
 
-    record DiseaseDTO(String id, String label) {}
-
     // Primary constructor
     public PhenopacketData(Phenopacket phenopacket, Ontology hpo) {
         this.ppktId = phenopacket.getId();

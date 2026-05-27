@@ -3,6 +3,7 @@ package org.p2gx.boqa.core.analysis;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +16,9 @@ class BoqaResultTest {
 
     @BeforeAll
     static void initAll() {
-        bc = new BoqaCounts("OMIM:123456", "disease", 1, 2, 3, 4);
+        List<DiseaseDTO> diseases = new ArrayList<>();
+        diseases.add(new DiseaseDTO( "OMIM:123456", "disease"));
+        bc = new BoqaCounts(diseases, 1, 2, 3, 4);
     }
     @Test
     void testNanHandling() {

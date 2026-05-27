@@ -122,7 +122,7 @@ public class QdTest extends TestBase  {
         for (String did : counter.getDiseaseIds()) {
             BoqaCounts c = counter.computeBoqaCounts(did, ppktData);
             System.out.printf("  %-50s  %4d  %4d  %4d  %4d%n",
-                    truncate(c.diseaseId() + " " + c.diseaseLabel(), 50),
+                    truncate(c.diseases().getFirst().id() + " " + c.diseases().getFirst().label(), 50),
                     c.tpBoqaCount(), c.fpBoqaCount(), c.tnBoqaCount(), c.fnBoqaCount());
         }
 
@@ -140,7 +140,7 @@ public class QdTest extends TestBase  {
         for (var r : result.boqaResults()) {
             System.out.printf("  %-10.6f  %-50s%n",
                     r.boqaScore(),
-                    truncate(r.counts().diseaseId() + " " + r.counts().diseaseLabel(), 50));
+                    truncate(r.counts().diseases().getFirst().id() + " " + r.counts().diseases().getFirst().label(), 50));
         }
         System.out.println();
     }

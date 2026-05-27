@@ -7,12 +7,11 @@ import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.internal.OntologyTraverser;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -126,8 +125,13 @@ public class BoqaSetCounter implements Counter {
         }
         LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
         LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
-
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        //TODO check this also works fine with plain BOQA
+        String[] diseaseIds = diseaseId.split("-");
+        List<DiseaseDTO> diseaseDTOList = new ArrayList<>();
+        for (String d : diseaseIds) {
+            diseaseDTOList.add(new DiseaseDTO(d, idToLabel.get(d))); // TODO labels come back null both for plain and blended
+        }
+        return new BoqaCounts(diseaseDTOList, truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override
