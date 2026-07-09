@@ -19,21 +19,21 @@ import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
+import org.p2gx.boqa.cli.genes.DiseaseGeneAssociations;
 import picocli.CommandLine;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Command for running BOQA analysis with blended scoring.
@@ -107,6 +107,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
         HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
         DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases, Paths.get(diseaseGeneFile));
+        DiseaseGeneAssociations geneAssociations = DiseaseGeneAssociations.fromFile(Paths.get(diseaseGeneFile));
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
@@ -127,9 +128,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             List<String> finalAnchorGenes;
             if (anchorGenes.size() > 1) {
                 // Add randomly selected genes to the anchor gene list
-                Set<String> allGeneIds = diseaseData.getDiseaseIds().stream()
-                        .flatMap(d -> diseaseData.getDiseaseGeneIds(d).stream())
-                        .collect(Collectors.toSet());
+                Set<String> allGeneIds = new HashSet<>(geneAssociations.allGeneIds());
                 allGeneIds.removeAll(Set.copyOf(anchorGenes));
                 List<String> randomGenes = new ArrayList<>(allGeneIds);
                 Collections.shuffle(randomGenes);
