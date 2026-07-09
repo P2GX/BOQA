@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
@@ -48,5 +49,14 @@ class DiseaseGeneAssociationsTest {
     void allGeneIds_containsGenesFromMultipleDiseases() {
         Set<String> allGeneIds = geneAssociations.allGeneIds();
         assertTrue(allGeneIds.containsAll(Set.of("NCBIGene:64170", "NCBIGene:583", "NCBIGene:4976")));
+    }
+
+    @Test
+    void diseaseIdsForGenes_returnsAssociatedDiseases() {
+        // NCBIGene:392255 (GDF6) is associated with both OMIM and ORPHA diseases in the gene file
+        Set<String> expectedDiseases = Set.of(
+                "OMIM:617898", "OMIM:615360", "OMIM:613094", "OMIM:118100", "OMIM:613703",
+                "ORPHA:65", "ORPHA:98938", "ORPHA:2345");
+        assertEquals(expectedDiseases, geneAssociations.diseaseIdsForGenes(List.of("NCBIGene:392255")));
     }
 }

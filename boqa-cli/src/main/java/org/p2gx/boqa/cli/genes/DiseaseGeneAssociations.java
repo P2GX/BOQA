@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -53,6 +55,14 @@ public class DiseaseGeneAssociations {
     // Return gene IDs associated with a disease
     public Set<String> geneIdsForDisease(String diseaseId) {
         return geneIdsByDisease.getOrDefault(diseaseId, Set.of());
+    }
+
+    // Return IDs of diseases associated with any of the given genes
+    public Set<String> diseaseIdsForGenes(Collection<String> geneIds) {
+        return geneIdsByDisease.entrySet().stream()
+                .filter(entry -> !Collections.disjoint(entry.getValue(), geneIds))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
     // Return all gene IDs associated with any disease

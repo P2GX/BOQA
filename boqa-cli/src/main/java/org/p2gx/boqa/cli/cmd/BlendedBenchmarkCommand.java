@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 /**
@@ -139,9 +140,15 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                 finalAnchorGenes = anchorGenes;
             }
 
-            BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, finalAnchorGenes,
+            Set<String> anchorDiseases = new HashSet<>(geneAssociations.diseaseIdsForGenes(finalAnchorGenes));
+            anchorDiseases.retainAll(diseaseData.getDiseaseIds());
+            BiPredicate<String, String> mayBlendAnchors = (diseaseId1, diseaseId2) -> Collections.disjoint(
+                    geneAssociations.geneIdsForDisease(diseaseId1), geneAssociations.geneIdsForDisease(diseaseId2));
+
+            BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, anchorDiseases,
                     finalAnchorGenes.size() == 1 ? BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ALL
-                            : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR);
+                            : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR,
+                    mayBlendAnchors);
 
             LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
             LOGGER.info("Creating BlendedDiseaseData object ...");
