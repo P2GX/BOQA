@@ -158,7 +158,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
 
             Path jsonFilePath;
-            if (phenopacketFile.endsWith(".txt")) {
+            if (phenopacketFile.toString().endsWith(".txt")) {
                 String pathString = Files.readAllLines(phenopacketFile).getFirst();
                 jsonFilePath = Path.of(pathString);
             }
