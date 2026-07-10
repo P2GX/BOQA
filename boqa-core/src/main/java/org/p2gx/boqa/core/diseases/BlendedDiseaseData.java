@@ -149,14 +149,4 @@ public class BlendedDiseaseData implements DiseaseData {
             throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
         }
     }
-
-    @Override
-    public Set<String> getDiseaseGeneIds(String diseaseId) {
-        return Set.of();
-    }
-
-    @Override
-    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
-        return Set.of();
-    }
 }

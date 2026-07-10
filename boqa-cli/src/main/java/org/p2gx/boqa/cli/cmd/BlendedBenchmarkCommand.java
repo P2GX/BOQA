@@ -107,7 +107,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(DiseaseDatabaseSet,false, defaultCohortSize);
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
         HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
-        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases, Paths.get(diseaseGeneFile));
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
         DiseaseGeneAssociations geneAssociations = DiseaseGeneAssociations.fromFile(Paths.get(diseaseGeneFile));
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);

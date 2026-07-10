@@ -4,11 +4,16 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.p2gx.boqa.core.DiseaseData;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
@@ -24,25 +29,49 @@ class BlendedDiseaseDataTest {
 
     private static DiseaseData testDiseaseData;
 
+    // Disease-gene associations for setting up test fixtures; genes are a CLI concern in production,
+    // so this test parses the fixture itself instead of relying on DiseaseData for gene lookups.
+    private static Map<String, Set<String>> geneIdsByDisease;
+
     @BeforeAll
     static void setup() throws IOException {
         try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
-                getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")));
-             InputStream geneAssociations = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
-                     getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
-            testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoaWithGeneAssociations(hpoa, geneAssociations);
+                getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")))) {
+            testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoa);
         }
+        try (InputStream geneAssociations = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
+                getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
+            geneIdsByDisease = parseGeneIdsByDisease(geneAssociations);
+        }
+    }
+
+    // Parses a genes_to_disease.txt fixture (tab-separated, with header) into a disease -> gene ID map.
+    private static Map<String, Set<String>> parseGeneIdsByDisease(InputStream geneAssociationsStream) throws IOException {
+        Map<String, Set<String>> geneIdsByDisease = new HashMap<>();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(geneAssociationsStream))) {
+            reader.lines()
+                    .skip(1) // Skip header line
+                    .map(line -> line.split("\t"))
+                    .filter(cols -> cols.length >= 4)
+                    .forEach(cols -> {
+                        String geneId = cols[0];
+                        String diseaseId = cols[3];
+                        geneIdsByDisease.computeIfAbsent(diseaseId, k -> new HashSet<>()).add(geneId);
+                    });
+        }
+        return geneIdsByDisease;
     }
 
     // Resolves the disease IDs associated with the given genes, for setting up test fixtures.
     private static Set<String> diseaseIdsForGenes(DiseaseData diseaseData, Collection<String> geneIds) {
         return diseaseData.getDiseaseIds().stream()
-                .filter(d -> geneIds.stream().anyMatch(geneId -> diseaseData.getDiseaseGeneIds(d).contains(geneId)))
+                .filter(d -> geneIds.stream().anyMatch(geneId -> geneIdsByDisease.getOrDefault(d, Set.of()).contains(geneId)))
                 .collect(Collectors.toSet());
     }
 
-    private static BiPredicate<String, String> disjointGenes(DiseaseData diseaseData) {
-        return (d1, d2) -> Collections.disjoint(diseaseData.getDiseaseGeneIds(d1), diseaseData.getDiseaseGeneIds(d2));
+    private static BiPredicate<String, String> disjointGenes() {
+        return (d1, d2) -> Collections.disjoint(
+                geneIdsByDisease.getOrDefault(d1, Set.of()), geneIdsByDisease.getOrDefault(d2, Set.of()));
     }
 
     @Test
@@ -54,7 +83,7 @@ class BlendedDiseaseDataTest {
     @Test
     void testAnchorVsAnchorSize() {
         BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(testDiseaseData, ANCHOR_DISEASES,
-                BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR, disjointGenes(testDiseaseData));
+                BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR, disjointGenes());
         // All 5 anchor diseases share NCBIGene:392255, so no cross-gene pairs form — only 5 singletons
         assertEquals(5, blendedDiseaseData.size());
     }
@@ -78,7 +107,7 @@ class BlendedDiseaseDataTest {
         // Use two genes with distinct disease sets to ensure cross-gene pairs are formed
         Set<String> anchorDiseases = diseaseIdsForGenes(testDiseaseData, List.of("NCBIGene:5781", "NCBIGene:9871"));
         BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(testDiseaseData, anchorDiseases,
-                BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR, disjointGenes(testDiseaseData));
+                BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR, disjointGenes());
         Set<String> diseaseIds = blendedDiseaseData.getDiseaseIds();
         // At least one cross-gene pair must be present
         assertTrue(diseaseIds.size() > anchorDiseases.size(), "Expected at least one blended pair to be formed");
@@ -91,8 +120,8 @@ class BlendedDiseaseDataTest {
                 assertTrue(anchorDiseases.contains(parts[1]),
                         "Second part of blended pair should be an anchor disease: " + parts[1]);
                 assertTrue(Collections.disjoint(
-                                testDiseaseData.getDiseaseGeneIds(parts[0]),
-                                testDiseaseData.getDiseaseGeneIds(parts[1])),
+                                geneIdsByDisease.getOrDefault(parts[0], Set.of()),
+                                geneIdsByDisease.getOrDefault(parts[1], Set.of())),
                         "Paired diseases should not share a gene: " + diseaseId);
             }
         }
