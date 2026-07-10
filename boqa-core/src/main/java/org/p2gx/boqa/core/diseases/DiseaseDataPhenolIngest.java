@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,15 +37,6 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
     private final Ontology hpo;
-
-    public static DiseaseDataPhenolIngest fromPaths(Path phenotypeAnnotationFile, Path ontologyFile) throws IOException {
-        try (
-                BufferedInputStream annotationsStream = new BufferedInputStream(Files.newInputStream(phenotypeAnnotationFile));
-                BufferedInputStream ontologyStream = new BufferedInputStream(Files.newInputStream(ontologyFile))
-        ) {
-            return new DiseaseDataPhenolIngest(ontologyStream, annotationsStream);
-        }
-    }
 
     public static DiseaseData of(Ontology hpo, HpoDiseases diseases) {
         return new DiseaseDataPhenolIngest(hpo, diseases);
@@ -123,7 +112,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
             // Observed
             Set<String> observedTerms = disease.annotationTermIdList().stream()
                     .filter(phenotypicAbnormalities::contains)
-                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() != 0)
+                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).orElseThrow().numerator() != 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
             HashMap<String, Set<String>> iTerms = new HashMap<>();
@@ -133,7 +122,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
             // Excluded
             Set<String> excludedTerms = disease.annotationTermIdList().stream()
                     .filter(phenotypicAbnormalities::contains)
-                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() == 0)
+                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).orElseThrow().numerator() == 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
             HashMap<String, Set<String>> eTerms = new HashMap<>();

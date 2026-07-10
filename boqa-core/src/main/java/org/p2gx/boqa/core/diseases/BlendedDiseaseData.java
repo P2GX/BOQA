@@ -33,7 +33,6 @@ public class BlendedDiseaseData implements DiseaseData {
         ANCHOR_VS_ANCHOR
     }
 
-    private final DiseaseData plainDiseaseData;
     HashMap<String, HashMap<String, Set<String>>> blendedDiseaseFeaturesDict;
 
     public BlendedDiseaseData(DiseaseData plainDiseaseData, Set<String> anchorDiseaseIds) {
@@ -53,7 +52,6 @@ public class BlendedDiseaseData implements DiseaseData {
     public BlendedDiseaseData(DiseaseData plainDiseaseData, Set<String> anchorDiseaseIds,
                               PairingStrategy strategy, BiPredicate<String, String> mayBlendAnchors) {
         this.blendedDiseaseFeaturesDict = new HashMap<>();
-        this.plainDiseaseData = plainDiseaseData;
         LOGGER.info("Initializing BlendedDiseaseData...");
         LOGGER.info("Number of anchor diseases: {}", anchorDiseaseIds.size());
         LOGGER.info("Strategy: {}", strategy);
@@ -62,12 +60,12 @@ public class BlendedDiseaseData implements DiseaseData {
         for (String diseaseId : anchorDiseaseIds) {
             this.blendedDiseaseFeaturesDict.putIfAbsent(diseaseId, new HashMap<>());
             this.blendedDiseaseFeaturesDict.get(diseaseId).put("I", new HashSet<>());
-            this.blendedDiseaseFeaturesDict.get(diseaseId).get("I").addAll(this.plainDiseaseData.getObservedDiseaseFeatures(diseaseId));
+            this.blendedDiseaseFeaturesDict.get(diseaseId).get("I").addAll(plainDiseaseData.getObservedDiseaseFeatures(diseaseId));
             this.blendedDiseaseFeaturesDict.get(diseaseId).put("E", new HashSet<>());
-            this.blendedDiseaseFeaturesDict.get(diseaseId).get("E").addAll(this.plainDiseaseData.getExcludedDiseaseFeatures(diseaseId));
+            this.blendedDiseaseFeaturesDict.get(diseaseId).get("E").addAll(plainDiseaseData.getExcludedDiseaseFeatures(diseaseId));
         }
 
-        Set<String> allDiseases = this.plainDiseaseData.getDiseaseIds();
+        Set<String> allDiseases = plainDiseaseData.getDiseaseIds();
         List<String> blendedDiseaseIds = formDiseasePairs(strategy, anchorDiseaseIds, allDiseases, mayBlendAnchors);
         if (blendedDiseaseIds.isEmpty()) {
             LOGGER.warn("ANCHOR_VS_ANCHOR produced no pairs for anchor diseases {} — no anchor pair passed the blending predicate. Analysis will run on singletons only.", anchorDiseaseIds);
@@ -81,11 +79,11 @@ public class BlendedDiseaseData implements DiseaseData {
             String diseaseId2 = parts[1];
             this.blendedDiseaseFeaturesDict.putIfAbsent(blendedDiseaseId, new HashMap<>());
             this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("I", new HashSet<>());
-            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(this.plainDiseaseData.getObservedDiseaseFeatures(diseaseId1));
-            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(this.plainDiseaseData.getObservedDiseaseFeatures(diseaseId2));
+            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(plainDiseaseData.getObservedDiseaseFeatures(diseaseId1));
+            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(plainDiseaseData.getObservedDiseaseFeatures(diseaseId2));
             this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("E", new HashSet<>());
-            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("E").addAll(this.plainDiseaseData.getExcludedDiseaseFeatures(diseaseId1));
-            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("E").addAll(this.plainDiseaseData.getExcludedDiseaseFeatures(diseaseId2));
+            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("E").addAll(plainDiseaseData.getExcludedDiseaseFeatures(diseaseId1));
+            this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("E").addAll(plainDiseaseData.getExcludedDiseaseFeatures(diseaseId2));
         }
         LOGGER.info("BlendedDiseaseData ready: {} total entries ({} singletons + {} pairs).",
                 blendedDiseaseFeaturesDict.size(), anchorDiseaseIds.size(), blendedDiseaseIds.size());

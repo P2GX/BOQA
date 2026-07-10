@@ -140,7 +140,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         for (TermId term : disease.annotationTermIdList()) {
             if (term.toString().equals("HP:0000486") | term.toString().equals("HP:0000666")) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }
@@ -159,7 +159,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         List<String> relevantTermIds = List.of("HP:0000077", "HP:0000992");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }
@@ -179,7 +179,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         List<String> relevantTermIds = List.of("HP:0009815", "HP:0001773", "HP:0002980", "HP:0002827");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }
@@ -200,7 +200,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         List<String> relevantTermIds = List.of("HP:0000718", "HP:0000752");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }
