@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,42 +38,8 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
     private final Ontology hpo;
 
-    private final Map<String, Set<String>> geneIdsByDisease = new HashMap<>();
-    private final Map<String, Set<String>> geneSymbolsByDisease = new HashMap<>();
-
-    public static DiseaseDataPhenolIngest fromPaths(Path phenotypeAnnotationFile, Path ontologyFile) throws IOException {
-        try (
-                BufferedInputStream annotationsStream = new BufferedInputStream(Files.newInputStream(phenotypeAnnotationFile));
-                BufferedInputStream ontologyStream = new BufferedInputStream(Files.newInputStream(ontologyFile))
-        ) {
-            return new DiseaseDataPhenolIngest(ontologyStream, annotationsStream);
-        }
-    }
-
     public static DiseaseData of(Ontology hpo, HpoDiseases diseases) {
         return new DiseaseDataPhenolIngest(hpo, diseases);
-    }
-
-    /**
-     * Creates a {@code DiseaseDataPhenolIngest} loaded with both disease-feature and disease-gene associations.
-     * The gene associations file is the {@code genes_to_disease.txt} file (tab-separated, with header).
-     */
-    public static DiseaseData of(Ontology hpo, HpoDiseases diseases, Path geneAssociationsFile) throws IOException {
-        DiseaseDataPhenolIngest instance = new DiseaseDataPhenolIngest(hpo, diseases);
-        try (InputStream stream = new BufferedInputStream(Files.newInputStream(geneAssociationsFile))) {
-            instance.loadGeneAssociations(stream);
-        }
-        return instance;
-    }
-
-    /**
-     * Creates a {@code DiseaseDataPhenolIngest} loaded with both disease-feature and disease-gene associations.
-     * The stream must supply the contents of a {@code genes_to_disease.txt} file (tab-separated, with header).
-     */
-    public static DiseaseData of(Ontology hpo, HpoDiseases diseases, InputStream geneAssociationsStream) throws IOException {
-        DiseaseDataPhenolIngest instance = new DiseaseDataPhenolIngest(hpo, diseases);
-        instance.loadGeneAssociations(geneAssociationsStream);
-        return instance;
     }
 
     private DiseaseDataPhenolIngest(Ontology hpo, HpoDiseases diseases){
@@ -148,7 +112,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
             // Observed
             Set<String> observedTerms = disease.annotationTermIdList().stream()
                     .filter(phenotypicAbnormalities::contains)
-                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() != 0)
+                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).orElseThrow().numerator() != 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
             HashMap<String, Set<String>> iTerms = new HashMap<>();
@@ -158,7 +122,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
             // Excluded
             Set<String> excludedTerms = disease.annotationTermIdList().stream()
                     .filter(phenotypicAbnormalities::contains)
-                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).get().numerator() == 0)
+                    .filter(termId -> disease.getFrequencyOfTermInDisease(termId).orElseThrow().numerator() == 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
             HashMap<String, Set<String>> eTerms = new HashMap<>();
@@ -166,23 +130,6 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
             diseaseFeaturesDict.putIfAbsent(disease.id().toString(), eTerms);
         }
         return diseaseFeaturesDict;
-    }
-
-    private void loadGeneAssociations(InputStream geneStream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(geneStream))) {
-            reader.lines()
-                    .skip(1) // skip header line
-                    .map(line -> line.split("\t"))
-                    .filter(cols -> cols.length >= 4)
-                    .forEach(cols -> {
-                        String geneId = cols[0];
-                        String geneSymbol = cols[1];
-                        String diseaseId = cols[3];
-                        geneIdsByDisease.computeIfAbsent(diseaseId, k -> new HashSet<>()).add(geneId);
-                        geneSymbolsByDisease.computeIfAbsent(diseaseId, k -> new HashSet<>()).add(geneSymbol);
-                    });
-        }
-        LOGGER.info("Loaded gene associations for {} diseases.", geneIdsByDisease.size());
     }
 
     /**
@@ -222,15 +169,5 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         } else {
             throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
         }
-    }
-
-    @Override
-    public Set<String> getDiseaseGeneIds(String diseaseId) {
-        return geneIdsByDisease.getOrDefault(diseaseId, Set.of());
-    }
-
-    @Override
-    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
-        return geneSymbolsByDisease.getOrDefault(diseaseId, Set.of());
     }
 }

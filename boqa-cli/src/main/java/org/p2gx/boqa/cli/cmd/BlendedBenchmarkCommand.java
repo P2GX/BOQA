@@ -19,21 +19,22 @@ import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
+import org.p2gx.boqa.cli.genes.DiseaseGeneAssociations;
 import picocli.CommandLine;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Command for running BOQA analysis with blended scoring.
@@ -106,7 +107,8 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(DiseaseDatabaseSet,false, defaultCohortSize);
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
         HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
-        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases, Paths.get(diseaseGeneFile));
+        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
+        DiseaseGeneAssociations geneAssociations = DiseaseGeneAssociations.fromFile(Paths.get(diseaseGeneFile));
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
@@ -127,9 +129,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             List<String> finalAnchorGenes;
             if (anchorGenes.size() > 1) {
                 // Add randomly selected genes to the anchor gene list
-                Set<String> allGeneIds = diseaseData.getDiseaseIds().stream()
-                        .flatMap(d -> diseaseData.getDiseaseGeneIds(d).stream())
-                        .collect(Collectors.toSet());
+                Set<String> allGeneIds = new HashSet<>(geneAssociations.allGeneIds());
                 allGeneIds.removeAll(Set.copyOf(anchorGenes));
                 List<String> randomGenes = new ArrayList<>(allGeneIds);
                 Collections.shuffle(randomGenes);
@@ -140,9 +140,15 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                 finalAnchorGenes = anchorGenes;
             }
 
-            BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, finalAnchorGenes,
+            Set<String> anchorDiseases = new HashSet<>(geneAssociations.diseaseIdsForGenes(finalAnchorGenes));
+            anchorDiseases.retainAll(diseaseData.getDiseaseIds());
+            BiPredicate<String, String> mayBlendAnchors = (diseaseId1, diseaseId2) -> Collections.disjoint(
+                    geneAssociations.geneIdsForDisease(diseaseId1), geneAssociations.geneIdsForDisease(diseaseId2));
+
+            BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, anchorDiseases,
                     finalAnchorGenes.size() == 1 ? BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ALL
-                            : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR);
+                            : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR,
+                    mayBlendAnchors);
 
             LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
             LOGGER.info("Creating BlendedDiseaseData object ...");
@@ -152,7 +158,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
 
             Path jsonFilePath;
-            if (phenopacketFile.endsWith(".txt")) {
+            if (phenopacketFile.toString().endsWith(".txt")) {
                 String pathString = Files.readAllLines(phenopacketFile).getFirst();
                 jsonFilePath = Path.of(pathString);
             }
