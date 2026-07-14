@@ -19,7 +19,7 @@ import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
-import org.p2gx.boqa.cli.genes.DiseaseGeneAssociations;
+import org.p2gx.boqa.core.genes.DiseaseGeneAssociations;
 import picocli.CommandLine;
 
 import java.nio.file.Files;

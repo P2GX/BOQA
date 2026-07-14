@@ -1,4 +1,4 @@
-package org.p2gx.boqa.cli.genes;
+package org.p2gx.boqa.core.genes;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;

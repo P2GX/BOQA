@@ -1,4 +1,4 @@
-package org.p2gx.boqa.cli.genes;
+package org.p2gx.boqa.core.genes;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +20,7 @@ class DiseaseGeneAssociationsTest {
     @BeforeAll
     static void setup() throws IOException {
         try (InputStream stream = new GZIPInputStream(Objects.requireNonNull(DiseaseGeneAssociationsTest.class
-                .getResourceAsStream("/org/p2gx/boqa/cli/genes/genes_to_disease.v2025-05-06.txt.gz")))) {
+                .getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
             geneAssociations = DiseaseGeneAssociations.fromStream(stream);
         }
     }
