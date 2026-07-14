@@ -5,9 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -87,6 +89,20 @@ public class BlendedDiseaseData implements DiseaseData {
         }
         LOGGER.info("BlendedDiseaseData ready: {} total entries ({} singletons + {} pairs).",
                 blendedDiseaseFeaturesDict.size(), anchorDiseaseIds.size(), blendedDiseaseIds.size());
+    }
+
+    /**
+     * Builds a blending predicate that allows two diseases to blend only when their gene sets
+     * are disjoint, i.e. no single gene explains both. Diseases absent from the map are treated
+     * as having no known genes, so they may blend with anything (an empty map blends everything).
+     *
+     * @param genesByDisease disease ID to its associated gene IDs
+     * @return a predicate suitable as the {@code mayBlendAnchors} argument
+     */
+    public static BiPredicate<String, String> geneDisjointBlend(Map<String, Set<String>> genesByDisease) {
+        return (diseaseId1, diseaseId2) -> Collections.disjoint(
+                genesByDisease.getOrDefault(diseaseId1, Set.of()),
+                genesByDisease.getOrDefault(diseaseId2, Set.of()));
     }
 
     private List<String> formDiseasePairs(PairingStrategy strategy, Set<String> anchorDiseases, Set<String> allDiseases,
