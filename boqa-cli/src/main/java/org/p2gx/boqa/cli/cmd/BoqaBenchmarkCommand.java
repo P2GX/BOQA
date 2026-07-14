@@ -124,7 +124,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             description = "Whether to compress results files with zstd (default: ${DEFAULT-VALUE}). This can reduce the results file " +
                     "size more than 30-fold. E.g. JSON output for roughly 9000 patients and 8000 diseases is of the order of 20GB."
             )
-    private boolean compress;
+    boolean compress;
 
     @Override
     public Integer call() throws Exception {

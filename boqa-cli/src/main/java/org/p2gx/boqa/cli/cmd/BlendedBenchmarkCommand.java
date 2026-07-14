@@ -188,7 +188,8 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                 phenotypeAnnotationFile,
                 cliArgs,
                 Map.of("alpha", params.getAlpha(), "beta", params.getBeta()),
-                outPath
+                outPath,
+                compress
         );
         LOGGER.info("BOQA analysis completed successfully.");
         return 0;
