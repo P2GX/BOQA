@@ -65,6 +65,11 @@ public class DiseaseGeneAssociations {
                 .collect(Collectors.toSet());
     }
 
+    // Return the associations as a disease ID to gene IDs map
+    public Map<String, Set<String>> geneIdsByDisease() {
+        return Collections.unmodifiableMap(geneIdsByDisease);
+    }
+
     // Return all gene IDs associated with any disease
     public Set<String> allGeneIds() {
         return geneIdsByDisease.values().stream()

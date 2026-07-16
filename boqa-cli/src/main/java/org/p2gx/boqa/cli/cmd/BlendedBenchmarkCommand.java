@@ -125,6 +125,11 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         AtomicInteger fileCount = new AtomicInteger(0);
         List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
 
+        // Two diseases may blend only if no single gene explains both. The anchors differ per
+        // iteration, but the rule does not, so it is built once here.
+        BiPredicate<String, String> mayBlendAnchors =
+                BlendedDiseaseData.geneDisjointBlend(geneAssociations.geneIdsByDisease());
+
         for(int i=0; i<numberOfIterations; i++) {
             List<String> finalAnchorGenes;
             if (anchorGenes.size() > 1) {
@@ -142,8 +147,6 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
             Set<String> anchorDiseases = new HashSet<>(geneAssociations.diseaseIdsForGenes(finalAnchorGenes));
             anchorDiseases.retainAll(diseaseData.getDiseaseIds());
-            BiPredicate<String, String> mayBlendAnchors = (diseaseId1, diseaseId2) -> Collections.disjoint(
-                    geneAssociations.geneIdsForDisease(diseaseId1), geneAssociations.geneIdsForDisease(diseaseId2));
 
             BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(diseaseData, anchorDiseases,
                     finalAnchorGenes.size() == 1 ? BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ALL
