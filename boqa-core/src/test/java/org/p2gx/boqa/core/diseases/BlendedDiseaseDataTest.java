@@ -93,11 +93,11 @@ class BlendedDiseaseDataTest {
         BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(testDiseaseData, ANCHOR_DISEASES);
         for (String diseaseId : blendedDiseaseData.getDiseaseIds()) {
             if (!ANCHOR_DISEASES.contains(diseaseId)) {
-                String[] parts = diseaseId.split("-", 2);
-                assertTrue(ANCHOR_DISEASES.contains(parts[0]),
-                        "First part of blended pair should be an anchor disease: " + parts[0]);
-                assertFalse(ANCHOR_DISEASES.contains(parts[1]),
-                        "Second part of blended pair should not be an anchor disease: " + parts[1]);
+                List<String> components = blendedDiseaseData.componentsOf(diseaseId);
+                assertTrue(ANCHOR_DISEASES.contains(components.get(0)),
+                        "First part of blended pair should be an anchor disease: " + components.get(0));
+                assertFalse(ANCHOR_DISEASES.contains(components.get(1)),
+                        "Second part of blended pair should not be an anchor disease: " + components.get(1));
             }
         }
     }
@@ -114,16 +114,43 @@ class BlendedDiseaseDataTest {
         // All blended pairs must have both parts in the anchor set and disjoint gene associations
         for (String diseaseId : diseaseIds) {
             if (!anchorDiseases.contains(diseaseId)) {
-                String[] parts = diseaseId.split("-", 2);
-                assertTrue(anchorDiseases.contains(parts[0]),
-                        "First part of blended pair should be an anchor disease: " + parts[0]);
-                assertTrue(anchorDiseases.contains(parts[1]),
-                        "Second part of blended pair should be an anchor disease: " + parts[1]);
+                List<String> components = blendedDiseaseData.componentsOf(diseaseId);
+                assertTrue(anchorDiseases.contains(components.get(0)),
+                        "First part of blended pair should be an anchor disease: " + components.get(0));
+                assertTrue(anchorDiseases.contains(components.get(1)),
+                        "Second part of blended pair should be an anchor disease: " + components.get(1));
                 assertTrue(Collections.disjoint(
-                                geneIdsByDisease.getOrDefault(parts[0], Set.of()),
-                                geneIdsByDisease.getOrDefault(parts[1], Set.of())),
+                                geneIdsByDisease.getOrDefault(components.get(0), Set.of()),
+                                geneIdsByDisease.getOrDefault(components.get(1), Set.of())),
                         "Paired diseases should not share a gene: " + diseaseId);
             }
         }
+    }
+
+    @Test
+    void testComponentsOfSingletonAndBlendedDisease() {
+        Set<String> anchorDiseases = diseaseIdsForGenes(testDiseaseData, List.of("NCBIGene:5781", "NCBIGene:9871"));
+        BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(testDiseaseData, anchorDiseases,
+                BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR, disjointGenes());
+
+        // A singleton anchor is composed of itself
+        String anchorDiseaseId = anchorDiseases.iterator().next();
+        assertEquals(List.of(anchorDiseaseId), blendedDiseaseData.componentsOf(anchorDiseaseId));
+
+        // A blended pair is composed of its two diseases, and reports them in pairing order
+        String blendedDiseaseId = blendedDiseaseData.getDiseaseIds().stream()
+                .filter(diseaseId -> !anchorDiseases.contains(diseaseId))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Expected at least one blended pair to be formed"));
+        List<String> components = blendedDiseaseData.componentsOf(blendedDiseaseId);
+        assertEquals(2, components.size());
+        assertEquals(blendedDiseaseId, components.get(0) + '-' + components.get(1));
+    }
+
+    @Test
+    void testComponentsOfUnknownDiseaseThrows() {
+        BlendedDiseaseData blendedDiseaseData = new BlendedDiseaseData(testDiseaseData, ANCHOR_DISEASES,
+                BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR, disjointGenes());
+        assertThrows(IllegalArgumentException.class, () -> blendedDiseaseData.componentsOf("OMIM:000000"));
     }
 }
