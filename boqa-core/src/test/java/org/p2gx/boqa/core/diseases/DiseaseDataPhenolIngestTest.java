@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Testing of DiseaseDataPhenolIngest, which implements DiseaseData.
@@ -29,12 +28,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DiseaseDataPhenolIngestTest extends TestBase {
 
     private static DiseaseData testDiseaseDict;
-    private static DiseaseData testDiseaseDictWithGenes;
 
     @BeforeAll
     static void setup() throws IOException {
         testDiseaseDict = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases());
-        testDiseaseDictWithGenes = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases(), geneAssociations());
     }
 
     @Test
@@ -130,63 +127,6 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         assertEquals(expectedExcluded, actualExcluded);
     }
 
-    // --- Gene association tests ---
-
-    @Test
-    void getDiseaseGeneIds_returnsEmptySet_whenNoGeneAssociationsLoaded() {
-        // testDiseaseDict was created without gene associations
-        assertTrue(testDiseaseDict.getDiseaseGeneIds("OMIM:212050").isEmpty());
-    }
-
-    @Test
-    void getDiseaseGeneSymbols_returnsEmptySet_whenNoGeneAssociationsLoaded() {
-        assertTrue(testDiseaseDict.getDiseaseGeneSymbols("OMIM:212050").isEmpty());
-    }
-
-    @Test
-    void getDiseaseGeneIds_returnsSingleGene() throws IOException {
-        // OMIM:212050 (Candidiasis, familial, 2) -> NCBIGene:64170 (CARD9)
-        assertEquals(Set.of("NCBIGene:64170"), testDiseaseDictWithGenes.getDiseaseGeneIds("OMIM:212050"));
-    }
-
-    @Test
-    void getDiseaseGeneSymbols_returnsSingleSymbol() {
-        assertEquals(Set.of("CARD9"), testDiseaseDictWithGenes.getDiseaseGeneSymbols("OMIM:212050"));
-    }
-
-    @Test
-    void getDiseaseGeneIds_returnsSingleGene_BBS2() {
-        // OMIM:616562 -> NCBIGene:583 (BBS2)
-        assertEquals(Set.of("NCBIGene:583"), testDiseaseDictWithGenes.getDiseaseGeneIds("OMIM:616562"));
-    }
-
-    @Test
-    void getDiseaseGeneSymbols_returnsSingleSymbol_BBS2() {
-        assertEquals(Set.of("BBS2"), testDiseaseDictWithGenes.getDiseaseGeneSymbols("OMIM:616562"));
-    }
-
-    @Test
-    void getDiseaseGeneIds_returnsGeneForOPA1() {
-        // OMIM:165500 (Optic atrophy 1) -> NCBIGene:4976 (OPA1)
-        assertEquals(Set.of("NCBIGene:4976"), testDiseaseDictWithGenes.getDiseaseGeneIds("OMIM:165500"));
-    }
-
-    @Test
-    void getDiseaseGeneSymbols_returnsSymbolForOPA1() {
-        assertEquals(Set.of("OPA1"), testDiseaseDictWithGenes.getDiseaseGeneSymbols("OMIM:165500"));
-    }
-
-    @Test
-    void getDiseaseGeneIds_returnsEmptySet_forDiseaseAbsentFromGeneFile() {
-        // OMIM:100070 is in the HPO disease data but has no entry in genes_to_disease.txt
-        assertTrue(testDiseaseDictWithGenes.getDiseaseGeneIds("OMIM:100070").isEmpty());
-    }
-
-    @Test
-    void getDiseaseGeneSymbols_returnsEmptySet_forDiseaseAbsentFromGeneFile() {
-        assertTrue(testDiseaseDictWithGenes.getDiseaseGeneSymbols("OMIM:100070").isEmpty());
-    }
-
     /*
     Exploration of the parsing the file phenotype.hpoa using Phenol
     */
@@ -200,7 +140,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         HpoDisease disease = testDiseaseDict.getDiseases().diseaseById().get(TermId.of(diseaseId));
         for (TermId term : disease.annotationTermIdList()) {
             if (term.toString().equals("HP:0000486") | term.toString().equals("HP:0000666")) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }
@@ -219,7 +159,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         List<String> relevantTermIds = List.of("HP:0000077", "HP:0000992");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }
@@ -239,7 +179,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         List<String> relevantTermIds = List.of("HP:0009815", "HP:0001773", "HP:0002980", "HP:0002827");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }
@@ -260,7 +200,7 @@ class DiseaseDataPhenolIngestTest extends TestBase {
         List<String> relevantTermIds = List.of("HP:0000718", "HP:0000752");
         for (TermId term : disease.annotationTermIdList()) {
             if (relevantTermIds.contains(term.toString())) {
-                Ratio ratio = disease.getFrequencyOfTermInDisease(term).get();
+                Ratio ratio = disease.getFrequencyOfTermInDisease(term).orElseThrow();
                 System.out.println(term + ": " + ratio);
             }
         }

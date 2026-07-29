@@ -22,6 +22,7 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -118,11 +119,24 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             split = ",")
     Set<String> diseaseDatabases;
 
+    @CommandLine.Option(
+            names={"-c","--compress"},
+            description = "Whether to compress results files with zstd (default: ${DEFAULT-VALUE}). This can reduce the results file " +
+                    "size more than 30-fold. E.g. JSON output for roughly 9000 patients and 8000 diseases is of the order of 20GB."
+            )
+    boolean compress;
+
     @Override
     public Integer call() throws Exception {
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
+
+        try {
+            Files.createDirectory(outPath.getParent());
+        } catch (FileAlreadyExistsException e) {
+            LOGGER.info("Directory {} already exists, continuing...", e.getMessage());
+        }
 
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations {} from file: {} ...", diseaseDatabases.toString(), phenotypeAnnotationFile);
@@ -193,7 +207,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                 phenotypeAnnotationFile,
                 cliArgs,
                 Map.of("alpha", params.getAlpha(), "beta", params.getBeta()),
-                outPath
+                outPath,
+                compress
         );
         LOGGER.info("BOQA analysis completed successfully.");
         return 0;

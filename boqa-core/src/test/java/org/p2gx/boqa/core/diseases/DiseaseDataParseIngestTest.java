@@ -26,31 +26,9 @@ class DiseaseDataParseIngestTest {
     @BeforeAll
     static void setup() throws IOException {
         try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
-                getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")));
-             InputStream geneAssociations = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
-                     getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
-            testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoaWithGeneAssociations(hpoa, geneAssociations);
+                getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")))) {
+            testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoa);
         }
-    }
-
-    @Test
-    void testGetDiseaseGeneIds() {
-        String diseaseId = "OMIM:608232";
-        Set<String> expectedIncluded = new HashSet<>();
-        expectedIncluded.add("NCBIGene:613");
-        expectedIncluded.add("NCBIGene:25");
-        Set<String> actualIncluded = testDiseaseData.getDiseaseGeneIds(diseaseId);
-        assertEquals(expectedIncluded, actualIncluded);
-    }
-
-    @Test
-    void testGetDiseaseGeneSymbols() {
-        String diseaseId = "OMIM:608232";
-        Set<String> expectedIncluded = new HashSet<>();
-        expectedIncluded.add("ABL1");
-        expectedIncluded.add("BCR");
-        Set<String> actualIncluded = testDiseaseData.getDiseaseGeneSymbols(diseaseId);
-        assertEquals(expectedIncluded, actualIncluded);
     }
 
     @Test
@@ -351,15 +329,5 @@ class DiseaseDataParseIngestTest {
                 IllegalArgumentException.class, () ->
                         testDiseaseData.getExcludedDiseaseFeatures("OMIM:EXCLUDED"));
         assertEquals("Disease ID \"OMIM:EXCLUDED\" not found!", exception.getMessage());
-
-        exception = assertThrows(
-                IllegalArgumentException.class, () ->
-                        testDiseaseData.getDiseaseGeneIds("getDiseaseGeneIds"));
-        assertEquals("Disease ID \"getDiseaseGeneIds\" not found!", exception.getMessage());
-
-        exception = assertThrows(
-                IllegalArgumentException.class, () ->
-                        testDiseaseData.getDiseaseGeneSymbols("getDiseaseGeneSymbols"));
-        assertEquals("Disease ID \"getDiseaseGeneSymbols\" not found!", exception.getMessage());
     }
 }

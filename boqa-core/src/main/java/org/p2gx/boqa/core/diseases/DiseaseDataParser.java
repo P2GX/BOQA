@@ -8,8 +8,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 /**
- * Class that implements the {@code DiseaseData} interface by parsing annotations directly
- * from the HPOA files: {@code phenotype.hpoa} and {@code genes_to_diseases.txt}
+ * Class that implements the {@code DiseaseData} interface by parsing disease-phenotype
+ * annotations directly from the HPOA file {@code phenotype.hpoa}.
  *
  * <p>Phenol is poorly documented. This class has proven useful in understanding phenol ingestion
  * (see {@code DiseaseDataCmpParsePhenolIngestTest.java}).</p>
@@ -47,25 +47,11 @@ public class DiseaseDataParser {
      */
     public static DiseaseData parseDiseaseDataFromHpoa(InputStream hpoAnnotationsStream) {
         DiseaseDataParser diseaseDataParser = new DiseaseDataParser();
-        Map<String, DiseaseFeatures> diseaseFeaturesById = diseaseDataParser.parseDiseaseAnnotations(hpoAnnotationsStream, Map.of());
+        Map<String, DiseaseFeatures> diseaseFeaturesById = diseaseDataParser.parseDiseaseAnnotations(hpoAnnotationsStream);
         return new DefaultDiseaseData(diseaseFeaturesById);
     }
 
-    /**
-     * Parses disease annotations with associated gene information.
-     *
-     * @param hpoAnnotationsStream input stream for phenotype.hpoa file
-     * @param diseaseGeneSteam input stream for genes_to_diseases.txt file
-     * @return DiseaseData containing parsed disease features and gene associations
-     */
-    public static DiseaseData parseDiseaseDataFromHpoaWithGeneAssociations(InputStream hpoAnnotationsStream, InputStream diseaseGeneSteam) {
-        DiseaseDataParser diseaseDataParser = new DiseaseDataParser();
-        Map<String, Set<GeneIdSymbol>> diseaseGeneAssociations = diseaseDataParser.addDiseaseGeneAssociations(diseaseGeneSteam);
-        Map<String, DiseaseFeatures> diseaseAnnotations = diseaseDataParser.parseDiseaseAnnotations(hpoAnnotationsStream, diseaseGeneAssociations);
-        return new DefaultDiseaseData(diseaseAnnotations);
-    }
-
-    private Map<String, DiseaseFeatures> parseDiseaseAnnotations(InputStream annotationStream, Map<String, Set<GeneIdSymbol>> diseaseGeneAssociations) {
+    private Map<String, DiseaseFeatures> parseDiseaseAnnotations(InputStream annotationStream) {
 
         Map<String, DiseaseFeatures> diseaseFeaturesMap = new LinkedHashMap<>(10000);
 
@@ -104,11 +90,6 @@ public class DiseaseDataParser {
                 // Term is observed
                 diseaseFeatures.observedPhenotypes().add(hpoId);
             }
-            Set<GeneIdSymbol> diseaseGeneSymbols = diseaseGeneAssociations.getOrDefault(diseaseId, Set.of());
-            diseaseGeneSymbols.forEach(geneIdSymbol -> {
-                diseaseFeatures.geneIds().add(geneIdSymbol.geneId());
-                diseaseFeatures.geneSymbols().add(geneIdSymbol.geneSymbol());
-            });
         }
         return diseaseFeaturesMap;
     }
@@ -184,45 +165,4 @@ public class DiseaseDataParser {
         }
     }
 
-    /**
-     * Container for gene identifier and symbol pairs.
-     *
-     * @param geneId NCBI gene ID
-     * @param geneSymbol human-readable gene symbol
-     */
-    record GeneIdSymbol(String geneId, String geneSymbol) {}
-
-    private Map<String, Set<GeneIdSymbol>> addDiseaseGeneAssociations(InputStream is) {
-
-        Map<String, Set<GeneIdSymbol>> diseaseGeneAssociations = new HashMap<>();
-        // Open HPOA file genes_to_disease.txt
-        Scanner myReader = new Scanner(is);
-        while (myReader.hasNextLine()) {
-            String line = myReader.nextLine();
-            // Skip header line
-            if (line.startsWith("ncbi_gene_id")) {
-                continue;
-            }
-            String[] fields = line.split("\t");
-            if (fields.length != 5) {
-                LOGGER.error("Row does not have 5 fields! {}", line);
-                break;
-            }
-            String ncbiGeneId = fields[0];
-            String geneSymbol = fields[1];
-            String diseaseId = fields[3];
-
-            Set<GeneIdSymbol> geneIdSymbols = diseaseGeneAssociations.computeIfAbsent(diseaseId, k -> new HashSet<>());
-            geneIdSymbols.add(new GeneIdSymbol(ncbiGeneId, geneSymbol));
-//            // Map gene IDs to gene symbols
-//            // Check if disease is in dictionary
-//            if (diseaseFeaturesById.containsKey(diseaseId)) {
-//                DiseaseFeatures diseaseFeatures = diseaseFeaturesById.get(diseaseId);
-//                diseaseFeatures.geneIds().add(ncbiGeneId);
-//                // Use NCBI Gene ID without colon instead of gene symbol?
-//                diseaseFeatures.geneSymbols().add(geneSymbol);
-//            }
-        }
-        return diseaseGeneAssociations;
-    }
 }

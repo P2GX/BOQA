@@ -43,16 +43,6 @@ public class DefaultDiseaseData implements DiseaseData {
         return getDiseaseFeatures(diseaseId).excludedPhenotypes();
     }
 
-    @Override
-    public Set<String> getDiseaseGeneIds(String diseaseId) {
-        return getDiseaseFeatures(diseaseId).geneIds();
-    }
-
-    @Override
-    public Set<String> getDiseaseGeneSymbols(String diseaseId) {
-        return getDiseaseFeatures(diseaseId).geneSymbols();
-    }
-
     private DiseaseFeatures getDiseaseFeatures(String diseaseId) {
         DiseaseFeatures diseaseFeatures = diseaseFeaturesById.get(diseaseId);
         if (diseaseFeatures == null) {

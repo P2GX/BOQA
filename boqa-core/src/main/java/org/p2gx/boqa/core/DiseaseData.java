@@ -27,18 +27,12 @@ public interface DiseaseData {
         return Set.of();
     }
 
-    // Return NCBI gene IDs associated with a disease
-    Set<String> getDiseaseGeneIds(String diseaseId);
-
-    // Return gene symbols associated with a disease
-    Set<String> getDiseaseGeneSymbols(String diseaseId);
-
     default Map<String, String> getIdToLabel() {
         return Map.of();
     }
 
     default HpoDiseases getDiseases() {
         return null;
-    };
+    }
 
 }
