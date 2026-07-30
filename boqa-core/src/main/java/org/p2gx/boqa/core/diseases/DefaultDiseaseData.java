@@ -18,10 +18,6 @@ public class DefaultDiseaseData implements DiseaseData {
                 .collect(Collectors.toUnmodifiableMap(DiseaseFeatures::id, DiseaseFeatures::label));
     }
 
-    @Override
-    public Map<String, String> getIdToLabel() {
-        return idToLabel;
-    }
 
     @Override
     public int size() {

@@ -10,6 +10,7 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 
 import java.util.HashMap;
 import java.util.List;
@@ -68,7 +69,10 @@ public final class BoqaBlendedExomiserAnalyzer {
         // Keep only anchor diseases we actually have phenotype annotations for.
         Map<String, TargetDisease> anchorsByDiseaseId = new HashMap<>();
         for (TargetDisease anchor : anchorDiseases) {
-            if (!diseaseData.getDiseaseIds().contains(anchor.diseaseId())) {
+            // target diseasaes are singletons!
+            // TODO placeholder, in future we only want one, DiseaseInfo or DiseaseDTO or TargetDisease...
+            Set<DiseaseDTO> fullId = Set.of(new DiseaseDTO(anchor.diseaseId(), anchor.diseaseLabel()));
+            if (!diseaseData.getDiagnosisIds().contains(fullId)) {
                 continue;
             }
             TargetDisease alreadyAnchored = anchorsByDiseaseId.put(anchor.diseaseId(), anchor);
@@ -114,8 +118,10 @@ public final class BoqaBlendedExomiserAnalyzer {
     private static BlendedResult assembleResult(BoqaResult scoredEntry, BlendedDiseaseData blendedDiseaseData,
                                                 Map<String, TargetDisease> anchorsByDiseaseId,
                                                 Map<String, BoqaCounts> countsByDiseaseId) {
+        // unnecessary splitter
         List<String> componentIds = blendedDiseaseData.componentsOf(scoredEntry.counts().diseaseId());
         List<TargetDisease> components = componentIds.stream().map(anchorsByDiseaseId::get).toList();
+        // if len DiseaseInfo > 1, for each DiseaseInfo in a BoqaResult also get the BoqaCounts of the subcomponents
         List<BoqaCounts> componentCounts = componentIds.stream().map(countsByDiseaseId::get).toList();
         return new BlendedResult(components, componentCounts, scoredEntry.counts(), scoredEntry.boqaScore());
     }

@@ -1,6 +1,9 @@
 package org.p2gx.boqa.core;
 
-/**
+import org.p2gx.boqa.core.patient.DiseaseDTO;
+
+import java.util.Set; /**
+ * TODO change the below
  * Diagnosis has a score, name, explanation,
  * one or more diseases, genes and the supporting variants.
  * <p>
@@ -11,6 +14,6 @@ package org.p2gx.boqa.core;
  * <p>
  * Here we summarize the information to present to the user.
  */
-public interface Diagnosis {
+public record CandidateDiagnosis(Set<DiseaseDTO> diseasesInfo, Set<String> observedPhenotypes, Set<String> excludedPhenotypes) {
 }
 
