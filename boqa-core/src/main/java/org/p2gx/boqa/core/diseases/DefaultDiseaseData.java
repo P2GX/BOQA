@@ -1,6 +1,8 @@
 package org.p2gx.boqa.core.diseases;
 
+import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 
 import java.util.Map;
 import java.util.Set;
@@ -24,21 +26,32 @@ public class DefaultDiseaseData implements DiseaseData {
         return diseaseFeaturesById.size();
     }
 
+    // TODO between here and the next todo we have a quick fix to simply make stuff compile
     @Override
-    public Set<String> getDiseaseIds() {
-        return diseaseFeaturesById.keySet();
+    public Set<Set<DiseaseDTO>> getDiagnosisIds() {
+        return Set.of();
     }
 
     @Override
-    public Set<String> getObservedDiseaseFeatures(String diseaseId) {
-        return getDiseaseFeatures(diseaseId).observedPhenotypes();
+    public Set<CandidateDiagnosis> getCandidateDiagnosisSet() {
+        return Set.of();
     }
 
-    @Override
-    public Set<String> getExcludedDiseaseFeatures(String diseaseId) {
-        return getDiseaseFeatures(diseaseId).excludedPhenotypes();
-    }
-
+//    @Override
+//    public Set<String> getDiseaseIds() {
+//        return diseaseFeaturesById.keySet();
+//    }
+//
+//    @Override
+//    public Set<String> getObservedDiseaseFeatures(String diseaseId) {
+//        return getDiseaseFeatures(diseaseId).observedPhenotypes();
+//    }
+//
+//    @Override
+//    public Set<String> getExcludedDiseaseFeatures(String diseaseId) {
+//        return getDiseaseFeatures(diseaseId).excludedPhenotypes();
+//    }
+    // TODO end of quick fix to simply make stuff compile
     private DiseaseFeatures getDiseaseFeatures(String diseaseId) {
         DiseaseFeatures diseaseFeatures = diseaseFeaturesById.get(diseaseId);
         if (diseaseFeatures == null) {

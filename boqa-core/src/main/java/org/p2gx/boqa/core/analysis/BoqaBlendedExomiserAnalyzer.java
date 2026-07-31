@@ -96,9 +96,10 @@ public final class BoqaBlendedExomiserAnalyzer {
         BoqaAnalysisResult scoredEntries = BoqaPatientAnalyzer.computeBoqaResults(
                 patient, counter, blendedDiseaseData.size(), params);
 
+        // TODO unnecessary in new framework, could be for item in setof DiseaseDTO...
         Map<String, BoqaCounts> countsByDiseaseId = new HashMap<>();
         for (BoqaResult scoredEntry : scoredEntries.boqaResults()) {
-            countsByDiseaseId.put(scoredEntry.counts().diseaseId(), scoredEntry.counts());
+            countsByDiseaseId.put(scoredEntry.counts().diseases(), scoredEntry.counts());
         }
 
         // The scored entries are already ranked by score, so assembling them in order keeps that ranking.
@@ -118,7 +119,7 @@ public final class BoqaBlendedExomiserAnalyzer {
     private static BlendedResult assembleResult(BoqaResult scoredEntry, BlendedDiseaseData blendedDiseaseData,
                                                 Map<String, TargetDisease> anchorsByDiseaseId,
                                                 Map<String, BoqaCounts> countsByDiseaseId) {
-        // unnecessary splitter
+        // TODO unnecessary splitter
         List<String> componentIds = blendedDiseaseData.componentsOf(scoredEntry.counts().diseaseId());
         List<TargetDisease> components = componentIds.stream().map(anchorsByDiseaseId::get).toList();
         // if len DiseaseInfo > 1, for each DiseaseInfo in a BoqaResult also get the BoqaCounts of the subcomponents

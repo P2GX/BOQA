@@ -20,13 +20,15 @@ public interface DiseaseData {
     Set<Set<DiseaseDTO>> getDiagnosisIds();
 
     // Return HPO terms associated with a disease
-    Set<String> getObservedDiseaseFeatures(DiseaseDTO diseaseId);
+    //Set<String> getObservedDiseaseFeatures(DiseaseDTO diseaseId);
 
     // Return HPO terms that are explicitly not associated with a disease
-    default Set<String> getExcludedDiseaseFeatures(DiseaseDTO diseaseId) {
+    //default Set<String> getExcludedDiseaseFeatures(DiseaseDTO diseaseId) {
         // If excluded terms are not used or not available
-        return Set.of();
-    }
+    //    return Set.of();
+    //}
+
+    Set<CandidateDiagnosis> getCandidateDiagnosisSet();
 
     default HpoDiseases getDiseases() {
         return null;

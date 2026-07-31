@@ -99,7 +99,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Prepare arguments for 'computeBoqaResults'
         PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
-        int limit = counter.getDiseaseIds().size();
+        int limit = counter.getDiagnosisIds().size();
         double alpha = 0.01;
         double beta = 0.9;
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);

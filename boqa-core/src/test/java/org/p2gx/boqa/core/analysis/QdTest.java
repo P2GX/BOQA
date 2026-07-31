@@ -119,7 +119,7 @@ public class QdTest extends TestBase  {
         System.out.println("  Raw counts (before scoring):");
         System.out.printf("  %-50s  %4s  %4s  %4s  %4s%n", "Disease", "tp", "fp", "tn", "fn");
         System.out.println("  " + "-".repeat(70));
-        for (String did : counter.getDiseaseIds()) {
+        for (String did : counter.getDiagnosisIds()) {
             BoqaCounts c = counter.computeBoqaCounts(did, ppktData);
             System.out.printf("  %-50s  %4d  %4d  %4d  %4d%n",
                     truncate(c.diseases().getFirst().id() + " " + c.diseases().getFirst().label(), 50),

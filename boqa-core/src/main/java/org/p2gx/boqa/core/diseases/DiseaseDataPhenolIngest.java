@@ -153,13 +153,15 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         return this.candidateDiagnosisSet.size();
     }
 
+    //TODO could it be that in the end DiseaseData is simply a data container? If so:
+    // TODO should it be a record? What should it expose?
     @Override
     public Set<CandidateDiagnosis> getCandidateDiagnosisSet() {
-        return candidateDiagnosisSet;
+        return this.candidateDiagnosisSet;
     }
     @Override
     public Set<Set<DiseaseDTO>> getDiagnosisIds() {
-        return candidateDiagnosisSet.stream()
+        return this.candidateDiagnosisSet.stream()
                 .map(CandidateDiagnosis::diseasesInfo)
                 .collect(Collectors.toSet());
     }

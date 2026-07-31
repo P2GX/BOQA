@@ -39,7 +39,9 @@ public final class BoqaPatientAnalyzer {
     public static BoqaAnalysisResult computeBoqaResultsRawLog(
             PatientData patientData, Counter counter, AlgorithmParameters params) {
 
-        List<BoqaResult> allResults = counter.getDiseaseIds()
+        // TODO change this to more natural Set<CandidateDiagnosis> way of doing things, I suspect we don't need
+        // TODO counter.getDiagnosisIds() in Counters
+        List<BoqaResult> allResults = counter.getDiagnosisIds()
                 .parallelStream() // fast: computes counts + scores in parallel
                 .map(dId -> {
                     BoqaCounts bc = counter.computeBoqaCounts(dId, patientData);
