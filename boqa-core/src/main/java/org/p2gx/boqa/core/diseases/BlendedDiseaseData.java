@@ -5,9 +5,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.BiPredicate;
 
@@ -35,6 +37,16 @@ public class BlendedDiseaseData implements DiseaseData {
 
     HashMap<String, HashMap<String, Set<String>>> blendedDiseaseFeaturesDict;
 
+    /** The diseases each entry is made of: one for a singleton, two for a blended pair. */
+    private final Map<String, List<String>> componentsByDiseaseId = new HashMap<>();
+
+    /** Two diseases to be blended into a single entry. */
+    private record DiseasePair(String diseaseId1, String diseaseId2) {
+        String blendedDiseaseId() {
+            return diseaseId1 + '-' + diseaseId2;
+        }
+    }
+
     public BlendedDiseaseData(DiseaseData plainDiseaseData, Set<String> anchorDiseaseIds) {
         this(plainDiseaseData, anchorDiseaseIds, PairingStrategy.ANCHOR_VS_ALL, (d1, d2) -> true);
     }
@@ -58,6 +70,7 @@ public class BlendedDiseaseData implements DiseaseData {
 
         // Add all anchor diseases as singletons
         for (String diseaseId : anchorDiseaseIds) {
+            this.componentsByDiseaseId.put(diseaseId, List.of(diseaseId));
             this.blendedDiseaseFeaturesDict.putIfAbsent(diseaseId, new HashMap<>());
             this.blendedDiseaseFeaturesDict.get(diseaseId).put("I", new HashSet<>());
             this.blendedDiseaseFeaturesDict.get(diseaseId).get("I").addAll(plainDiseaseData.getObservedDiseaseFeatures(diseaseId));
@@ -66,17 +79,18 @@ public class BlendedDiseaseData implements DiseaseData {
         }
 
         Set<String> allDiseases = plainDiseaseData.getDiseaseIds();
-        List<String> blendedDiseaseIds = formDiseasePairs(strategy, anchorDiseaseIds, allDiseases, mayBlendAnchors);
-        if (blendedDiseaseIds.isEmpty()) {
+        List<DiseasePair> diseasePairs = formDiseasePairs(strategy, anchorDiseaseIds, allDiseases, mayBlendAnchors);
+        if (diseasePairs.isEmpty()) {
             LOGGER.warn("ANCHOR_VS_ANCHOR produced no pairs for anchor diseases {} — no anchor pair passed the blending predicate. Analysis will run on singletons only.", anchorDiseaseIds);
         }
-        LOGGER.info("Generated {} blended disease pairs.", blendedDiseaseIds.size());
+        LOGGER.info("Generated {} blended disease pairs.", diseasePairs.size());
 
-        // Iterate over the list and merge phenotypic features for each pair
-        for (String blendedDiseaseId : blendedDiseaseIds) {
-            String[] parts = blendedDiseaseId.split("-", 2);
-            String diseaseId1 = parts[0];
-            String diseaseId2 = parts[1];
+        // Iterate over the pairs and merge phenotypic features for each one
+        for (DiseasePair diseasePair : diseasePairs) {
+            String blendedDiseaseId = diseasePair.blendedDiseaseId();
+            String diseaseId1 = diseasePair.diseaseId1();
+            String diseaseId2 = diseasePair.diseaseId2();
+            this.componentsByDiseaseId.put(blendedDiseaseId, List.of(diseaseId1, diseaseId2));
             this.blendedDiseaseFeaturesDict.putIfAbsent(blendedDiseaseId, new HashMap<>());
             this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).put("I", new HashSet<>());
             this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("I").addAll(plainDiseaseData.getObservedDiseaseFeatures(diseaseId1));
@@ -86,18 +100,32 @@ public class BlendedDiseaseData implements DiseaseData {
             this.blendedDiseaseFeaturesDict.get(blendedDiseaseId).get("E").addAll(plainDiseaseData.getExcludedDiseaseFeatures(diseaseId2));
         }
         LOGGER.info("BlendedDiseaseData ready: {} total entries ({} singletons + {} pairs).",
-                blendedDiseaseFeaturesDict.size(), anchorDiseaseIds.size(), blendedDiseaseIds.size());
+                blendedDiseaseFeaturesDict.size(), anchorDiseaseIds.size(), diseasePairs.size());
     }
 
-    private List<String> formDiseasePairs(PairingStrategy strategy, Set<String> anchorDiseases, Set<String> allDiseases,
-                                          BiPredicate<String, String> mayBlendAnchors) {
-        List<String> pairs = new ArrayList<>();
+    /**
+     * Builds a blending predicate that allows two diseases to blend only when their gene sets
+     * are disjoint, i.e. no single gene explains both. Diseases absent from the map are treated
+     * as having no known genes, so they may blend with anything (an empty map blends everything).
+     *
+     * @param genesByDisease disease ID to its associated gene IDs
+     * @return a predicate suitable as the {@code mayBlendAnchors} argument
+     */
+    public static BiPredicate<String, String> geneDisjointBlend(Map<String, Set<String>> genesByDisease) {
+        return (diseaseId1, diseaseId2) -> Collections.disjoint(
+                genesByDisease.getOrDefault(diseaseId1, Set.of()),
+                genesByDisease.getOrDefault(diseaseId2, Set.of()));
+    }
+
+    private List<DiseasePair> formDiseasePairs(PairingStrategy strategy, Set<String> anchorDiseases, Set<String> allDiseases,
+                                               BiPredicate<String, String> mayBlendAnchors) {
+        List<DiseasePair> pairs = new ArrayList<>();
         switch (strategy) {
             case ANCHOR_VS_ALL -> {
                 for (String diseaseId1 : anchorDiseases) {
                     for (String diseaseId2 : allDiseases) {
                         if (!anchorDiseases.contains(diseaseId2)) {
-                            pairs.add(diseaseId1 + '-' + diseaseId2);
+                            pairs.add(new DiseasePair(diseaseId1, diseaseId2));
                         }
                     }
                 }
@@ -107,13 +135,29 @@ public class BlendedDiseaseData implements DiseaseData {
                 for (int i = 0; i < anchorList.size(); i++) {
                     for (int j = i + 1; j < anchorList.size(); j++) {
                         if (mayBlendAnchors.test(anchorList.get(i), anchorList.get(j))) {
-                            pairs.add(anchorList.get(i) + '-' + anchorList.get(j));
+                            pairs.add(new DiseasePair(anchorList.get(i), anchorList.get(j)));
                         }
                     }
                 }
             }
         }
         return pairs;
+    }
+
+    /**
+     * Returns the diseases the given entry is made of: the disease itself for a singleton anchor,
+     * or the two blended diseases (in pairing order) for a blended pair.
+     *
+     * @param diseaseId a disease ID returned by {@link #getDiseaseIds()}
+     * @return the component disease IDs, never empty
+     * @throws IllegalArgumentException if the disease ID is not part of this data
+     */
+    public List<String> componentsOf(String diseaseId) {
+        List<String> components = this.componentsByDiseaseId.get(diseaseId);
+        if (components == null) {
+            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
+        }
+        return components;
     }
 
     /**

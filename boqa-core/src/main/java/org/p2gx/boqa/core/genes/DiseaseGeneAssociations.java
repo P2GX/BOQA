@@ -1,4 +1,4 @@
-package org.p2gx.boqa.cli.genes;
+package org.p2gx.boqa.core.genes;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -63,6 +63,11 @@ public class DiseaseGeneAssociations {
                 .filter(entry -> !Collections.disjoint(entry.getValue(), geneIds))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
+    }
+
+    // Return the associations as a disease ID to gene IDs map
+    public Map<String, Set<String>> geneIdsByDisease() {
+        return Collections.unmodifiableMap(geneIdsByDisease);
     }
 
     // Return all gene IDs associated with any disease
