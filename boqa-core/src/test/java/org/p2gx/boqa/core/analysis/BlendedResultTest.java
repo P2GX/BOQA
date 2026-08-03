@@ -5,15 +5,16 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class BlendedResultTest {
 
     private static final TargetDisease MARFAN =
-            new TargetDisease("OMIM:154700", "Marfan syndrome", 2200, "FBN1");
+            new TargetDisease("OMIM:154700", "Marfan syndrome", 2200, "FBN1", Set.of());
     private static final TargetDisease GLUTARIC_ACIDURIA =
-            new TargetDisease("OMIM:231670", "Glutaric acidemia I", 2639, "GCDH");
+            new TargetDisease("OMIM:231670", "Glutaric acidemia I", 2639, "GCDH",Set.of());
 
     private static final BoqaCounts MARFAN_COUNTS =
             new BoqaCounts("OMIM:154700", "Marfan syndrome", 3, 1, 10, 2);
