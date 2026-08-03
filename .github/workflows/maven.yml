@@ -48,5 +48,5 @@ jobs:
     - name: Run CLI
       shell: bash
       run: |
-        JAR=$(ls boqa-cli/target/boqa-cli-*.jar | head -n 1)
+        JAR=$(ls boqa-cli/target/ | grep -E '^boqa-cli-[0-9]+\.[0-9]+\.[0-9]+\.jar$')
         java -jar "$JAR" --help
