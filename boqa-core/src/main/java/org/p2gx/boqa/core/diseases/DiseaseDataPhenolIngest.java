@@ -74,12 +74,8 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
             throws IOException{
 
         LOGGER.info("Ingesting HPOA file 'phenotype.hpoa' using Phenol ...");
-
-        // Temporarily needed to explore HpoDiseases in test class because there is no adequate phenol documentation
         this.hpo = OntologyLoader.loadOntology(ontologyStream);
         this.diseases = getPhenolHpoDiseases(hpo, annotationsStream, validDatabaseList);
-
-
         // Create dictionary using Phenol
         this.diseaseFeaturesDict = phenolIngest();
     }
