@@ -1,7 +1,7 @@
 package org.p2gx.boqa.core.algorithm;
 
 import org.p2gx.boqa.core.Counter;
-import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.DiagnosisData;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BoqaSetCounterTest {
 
-    private DiseaseData diseaseData;
+    private DiagnosisData diagnosisData;
     private Counter counter;
     private Ontology hpo;
 
@@ -36,7 +36,7 @@ class BoqaSetCounterTest {
     void setup() throws IOException {
         try (InputStream annotationStream = new GZIPInputStream(BoqaSetCounterTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
-            this.diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
+            this.diagnosisData = DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
         }
         try (
             InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
@@ -44,7 +44,7 @@ class BoqaSetCounterTest {
         ) {
             this.hpo = OntologyLoader.loadOntology(ontologyStream);
         }
-        this.counter = new BoqaSetCounter(diseaseData, hpo);
+        this.counter = new BoqaSetCounter(diagnosisData, hpo);
     }
 
     @Tag("expensive_test")
@@ -88,7 +88,7 @@ class BoqaSetCounterTest {
             int fpExp,
             int tpExp
     ) throws URISyntaxException, IOException {
-        Map<String,String> idToLabel = diseaseData.getIdToLabel();
+        Map<String,String> idToLabel = diagnosisData.getIdToLabel();
         List<SingleDiseaseInfo> diseases = new ArrayList<>();
         diseases.add(new SingleDiseaseInfo(diagnosedDiseaseId, idToLabel.get(diagnosedDiseaseId)));
         BoqaCounts pyboqaCounts = new BoqaCounts(

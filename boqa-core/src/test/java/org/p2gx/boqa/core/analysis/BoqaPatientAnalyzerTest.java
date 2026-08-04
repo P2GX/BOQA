@@ -3,7 +3,7 @@ package org.p2gx.boqa.core.analysis;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.p2gx.boqa.core.Counter;
-import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.DiagnosisData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.TestBase;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
@@ -11,7 +11,7 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.diseases.DiagnosisDataPhenolIngest;
 import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 import org.p2gx.boqa.core.patient.QueryDataFromString;
 import java.io.IOException;
@@ -27,8 +27,8 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
     @BeforeAll
     static void setup() throws IOException {
-        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases());
-        counter = new BoqaSetCounter(diseaseData, hpo());
+        DiagnosisData diagnosisData = DiagnosisDataPhenolIngest.of(hpo(), hpoDiseases());
+        counter = new BoqaSetCounter(diagnosisData, hpo());
     }
 
     /**

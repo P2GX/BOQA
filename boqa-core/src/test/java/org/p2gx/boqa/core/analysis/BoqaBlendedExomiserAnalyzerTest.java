@@ -1,28 +1,9 @@
 package org.p2gx.boqa.core.analysis;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
-import org.p2gx.boqa.core.DiseaseData;
-import org.p2gx.boqa.core.PatientData;
-import org.p2gx.boqa.core.TestBase;
-import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
-import org.p2gx.boqa.core.patient.QueryDataFromString;
+import org.p2gx.boqa.core.DiagnosisData;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +17,7 @@ class BoqaBlendedExomiserAnalyzerTest {
     private static final String FBN1 = "NCBIGene:5781";
     private static final String OTHER_GENE = "NCBIGene:9871";
 
-    private static DiseaseData diseaseData;
+    private static DiagnosisData diagnosisData;
     private static Map<String, Set<String>> genesByDisease;
     private static BoqaBlendedExomiserAnalyser analyzer;
 

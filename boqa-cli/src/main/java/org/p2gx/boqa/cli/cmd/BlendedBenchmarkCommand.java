@@ -157,6 +157,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             LOGGER.info("Creating BlendedDiseaseData object ...");
 
             // Initialize Counter
+            // TODO need to adapt this
             Counter counter = new BoqaSetCounter(blendedDiseaseData, hpo);
             LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
 

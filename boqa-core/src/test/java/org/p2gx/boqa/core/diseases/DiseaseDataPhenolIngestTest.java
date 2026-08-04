@@ -7,17 +7,13 @@ import org.junit.jupiter.api.Test;
 import org.monarchinitiative.phenol.annotations.base.Ratio;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.TestBase;
-import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,11 +27,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 class DiseaseDataPhenolIngestTest extends TestBase {
 
-    private static DiseaseData testCandidateDiagnosis;
+    private static DiseaseData testDiseaseDict;
 
     @BeforeAll
     static void setup() throws IOException {
-        testCandidateDiagnosis = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases());
+        testDiseaseDict = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases());
     }
 
     @Test
@@ -54,30 +50,22 @@ class DiseaseDataPhenolIngestTest extends TestBase {
 
          */
         String diseaseId = "OMIM:604091";
-        String diseaseLabel = "HDL deficiency, familial, 1";
-        Set disesaseInfoExample =  Set.of(new SingleDiseaseInfo(diseaseId, diseaseLabel));
-        // Find disease
-        CandidateDiagnosis matchingDiagnosis = testCandidateDiagnosis
-                .getCandidateDiagnosisList().stream()
-                .filter(cd -> cd.diseasesInfo()==disesaseInfoExample)
-                .findFirst()
-                .get();
+        //System.out.println(diseaseId);
+
         // Included
-        Set<TermId> actualIncluded = matchingDiagnosis
-                .observedPhenotypes().stream().map(TermId::of)
-                .collect(Collectors.toSet());
-        Set<TermId> expectedIncluded = Stream.of(
-                "HP:0003233", "HP:0001658", "HP:0005181")
-                .map(TermId::of)
-                .collect(Collectors.toSet());
+        Set<String> actualIncluded = testDiseaseDict.getObservedDiseaseFeatures(diseaseId);
+        //System.out.println("Included: " + actualIncluded);
+        Set<String> expectedIncluded = new HashSet<>();
+        expectedIncluded.add("HP:0003233");
+        expectedIncluded.add("HP:0001658");
+        expectedIncluded.add("HP:0005181");
         assertEquals(expectedIncluded, actualIncluded);
 
         // Excluded
-        Set<TermId> actualExcluded = matchingDiagnosis
-                .excludedPhenotypes().stream().map(TermId::of)
-                .collect(Collectors.toSet());
+        Set<String> actualExcluded = testDiseaseDict.getExcludedDiseaseFeatures(diseaseId);
         //System.out.println("Excluded: " + actualExcluded);
-        Set<TermId> expectedExcluded = Set.of(TermId.of("HP:0002155"));
+        Set<String> expectedExcluded = new HashSet<>();
+        expectedExcluded.add("HP:0002155");
         assertEquals(expectedExcluded, actualExcluded);
     }
 

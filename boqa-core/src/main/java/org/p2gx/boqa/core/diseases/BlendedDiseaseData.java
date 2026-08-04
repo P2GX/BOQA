@@ -1,7 +1,6 @@
 package org.p2gx.boqa.core.diseases;
 
 import org.p2gx.boqa.core.DiseaseData;
-import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +23,10 @@ import java.util.function.BiPredicate;
  * Use the created BlendedDiseaseData object for the BOQA analysis.</p>
  *
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ *
+ * @Note Keeping this for benchmarking.
  */
-public abstract class BlendedDiseaseData implements DiseaseData {
+public class BlendedDiseaseData implements DiseaseData {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BlendedDiseaseData.class);
 
@@ -79,7 +80,7 @@ public abstract class BlendedDiseaseData implements DiseaseData {
             this.blendedDiseaseFeaturesDict.get(diseaseId).get("E").addAll(plainDiseaseData.getExcludedDiseaseFeatures(diseaseId));
         }
 
-        List<List<SingleDiseaseInfo>> allDiseases = plainDiseaseData.getDiagnosisIds();
+        Set<String> allDiseases = plainDiseaseData.getDiseaseIds();
         List<DiseasePair> diseasePairs = formDiseasePairs(strategy, anchorDiseaseIds, allDiseases, mayBlendAnchors);
         if (diseasePairs.isEmpty()) {
             LOGGER.warn("ANCHOR_VS_ANCHOR produced no pairs for anchor diseases {} — no anchor pair passed the blending predicate. Analysis will run on singletons only.", anchorDiseaseIds);
@@ -118,15 +119,13 @@ public abstract class BlendedDiseaseData implements DiseaseData {
                 genesByDisease.getOrDefault(diseaseId2, Set.of()));
     }
 
-    private List<DiseasePair> formDiseasePairs(PairingStrategy strategy, Set<String> anchorDiseases,
-                                               List<List<SingleDiseaseInfo>> allDiseases,
+    private List<DiseasePair> formDiseasePairs(PairingStrategy strategy, Set<String> anchorDiseases, Set<String> allDiseases,
                                                BiPredicate<String, String> mayBlendAnchors) {
         List<DiseasePair> pairs = new ArrayList<>();
         switch (strategy) {
             case ANCHOR_VS_ALL -> {
                 for (String diseaseId1 : anchorDiseases) {
-                    for ( List<SingleDiseaseInfo> d: allDiseases) {
-                        String diseaseId2 = d.getFirst().id();
+                    for (String diseaseId2 : allDiseases) {
                         if (!anchorDiseases.contains(diseaseId2)) {
                             pairs.add(new DiseasePair(diseaseId1, diseaseId2));
                         }

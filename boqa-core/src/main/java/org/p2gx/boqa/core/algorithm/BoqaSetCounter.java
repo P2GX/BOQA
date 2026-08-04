@@ -5,7 +5,7 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.Counter;
-import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.DiagnosisData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @implNote Consider implementing XML or JSON serialization to cache disease layers, avoiding recomputation.
  * Avoid `Serializable` interface, since it is heavily criticized and deprecated.
  * Especially important for melded/digenic where combinatorial complexity increases.
- * @todo should idToLabel live in {@link DiseaseData}?
+ * @todo should idToLabel live in {@link DiagnosisData}?
  */
 public class BoqaSetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaSetCounter.class);
@@ -44,17 +44,17 @@ public class BoqaSetCounter implements Counter {
     /**
      * Constructs a BoqaSetCounter and initializes all disease layers.
      * <p>
-     * Precomputes the induced HPO graph for each disease based on observed phenotypes from {@link DiseaseData}.
+     * Precomputes the induced HPO graph for each disease based on observed phenotypes from {@link DiagnosisData}.
      * The computation considers only descendants of the "Phenotypic Abnormality" term.
      *
-     * @param diseaseData     the disease data containing disease IDs, labels, and observed phenotypes
+     * @param diagnosisData     the disease data containing disease IDs, labels, and observed phenotypes
      * @param hpo             the HPO ontology used to traverse and expand phenotype terms
      * @todo remove filtering after successful testing in exomiser and modification to diseaseData
      */
-    public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo) {
+    public BoqaSetCounter(DiagnosisData diagnosisData, Ontology hpo) {
         //this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
         this.ontologyTraverser = new OntologyTraverser(hpo);
-        Set<CandidateDiagnosis> candidateDiagnoses = Set.copyOf(diseaseData.getCandidateDiagnosisList());
+        Set<CandidateDiagnosis> candidateDiagnoses = Set.copyOf(diagnosisData.getCandidateDiagnosisList());
         this.candidateDiagnosesIds = candidateDiagnoses
                 .parallelStream()
                 .map(CandidateDiagnosis::diseasesInfo)

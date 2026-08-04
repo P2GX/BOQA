@@ -1,12 +1,6 @@
 package org.p2gx.boqa.core;
 
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
-import org.p2gx.boqa.core.diseases.CandidateDisease;
-import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 /**

@@ -10,7 +10,7 @@ import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
-import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.diseases.DiagnosisDataPhenolIngest;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -159,7 +159,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         HpoDiseaseLoaderOptions options = HpoDiseaseLoaderOptions.of(DiseaseDatabaseSet,false, defaultCohortSize);
         HpoDiseaseLoader loader = HpoDiseaseLoaders.defaultLoader(hpo, options);
         HpoDiseases diseases = loader.load(phenotypeAnnotationFile);
-        DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
+        DiagnosisData diagnosisData = DiagnosisDataPhenolIngest.of(hpo, diseases);
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
@@ -167,8 +167,8 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
         // Initialize Counter
-        Counter counter = new BoqaSetCounter(diseaseData, hpo);
-        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
+        Counter counter = new BoqaSetCounter(diagnosisData, hpo);
+        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", diagnosisData.size());
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
