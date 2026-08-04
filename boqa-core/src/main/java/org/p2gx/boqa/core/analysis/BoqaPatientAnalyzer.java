@@ -49,7 +49,10 @@ public final class BoqaPatientAnalyzer {
             PatientData patientData,
             Counter counter,
             AlgorithmParameters params) {
-        List<BoqaResult> allResults = counter.getDiseaseIds()
+
+        // TODO change this to more natural Set<CandidateDiagnosis> way of doing things, I suspect we don't need
+        // TODO counter.getDiagnosisIds() in Counters
+        List<BoqaResult> allResults = counter.getDiagnosisIds()
                 .parallelStream() // fast: computes counts + scores in parallel
                 .map(dId -> {
                     BoqaCounts bc = counter.computeBoqaCounts(dId, patientData);
@@ -62,9 +65,9 @@ public final class BoqaPatientAnalyzer {
     }
 
     /**
-     * To do, consider making API a little more convenient and reduced code
+     * TODO, consider making API a little more convenient and reduced code
      * duplication with above
-     * 
+     *
      * @param patientData
      * @param counter
      * @return
@@ -72,7 +75,7 @@ public final class BoqaPatientAnalyzer {
     public static BoqaAnalysisResult computeBoqaResultsRescaled(
             PatientData patientData, Counter counter) {
         AlgorithmParameters params = AlgorithmParameters.defaultParams();
-        List<BoqaResult> allResults = counter.getDiseaseIds()
+        List<BoqaResult> allResults = counter.getDiagnosisIds()
                 .parallelStream() // fast: computes counts + scores in parallel
                 .map(dId -> {
                     BoqaCounts bc = counter.computeBoqaCounts(dId, patientData);
@@ -109,9 +112,9 @@ public final class BoqaPatientAnalyzer {
      *         <p>
      */
     public static BoqaAnalysisResult computeBoqaResults(
-            PatientData patientData, 
-            Counter counter, 
-            int resultsLimit, 
+            PatientData patientData,
+            Counter counter,
+            int resultsLimit,
             AlgorithmParameters params) {
 
         // Get BoqaResults with raw log scores
@@ -148,7 +151,7 @@ public final class BoqaPatientAnalyzer {
      * <p>
      * log(P) = fp × log(α) + fn × log(β) + tn × log(1-α) + tp × log(1-β)
      * </p>
-     * 
+     *
      * @param params alpha, beta, log(alpha), log(beta) etc.
      * @param counts The {@link BoqaCounts} for a query and a disease.
      * @return The un-normalized BOQA log probability score.
@@ -167,7 +170,7 @@ public final class BoqaPatientAnalyzer {
      * P = α<sup>fpBoqaCount</sup> × β<sup>fpBoqaCount</sup> ×
      * (1-α)<sup>fnBoqaCount</sup> × (1-β)<sup>tpBoqaCount</sup>
      * </pre>
-     * 
+     *
      * @param alpha  False positive rate parameter.
      * @param beta   False negative rate parameter.
      * @param counts The {@link BoqaCounts} for a disease.

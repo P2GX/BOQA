@@ -1,5 +1,6 @@
 package org.p2gx.boqa.core.diseases;
 
+import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.DiseaseData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
@@ -10,6 +11,7 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +36,8 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     private static final Logger LOGGER = LoggerFactory.getLogger(DiseaseDataPhenolIngest.class);
     private static final int cohortSize = 100; // Imaginary cohort size using phenol to convert HPO frequency terms to ratios
     HpoDiseases diseases; // Temporarily needed to explore Phenols HpoDiseases, as there is no documentation
-    HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict;
+
+    Set<CandidateDiagnosis> candidateDiagnosisSet;
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
     private final Ontology hpo;
 
@@ -46,7 +49,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         this.hpo = hpo;
         this.diseases = diseases;
         // Create dictionary using Phenol
-        this.diseaseFeaturesDict = phenolIngest();
+        this.candidateDiagnosisSet = phenolIngest();
     }
 
     /**
@@ -77,7 +80,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         this.hpo = OntologyLoader.loadOntology(ontologyStream);
         this.diseases = getPhenolHpoDiseases(hpo, annotationsStream, validDatabaseList);
         // Create dictionary using Phenol
-        this.diseaseFeaturesDict = phenolIngest();
+        this.candidateDiagnosisSet = phenolIngest();
     }
 
     private HpoDiseases getPhenolHpoDiseases(Ontology hpo, InputStream phenotypeAnnotations, List<String> validDatabaseList) throws IOException {
@@ -93,12 +96,13 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         return loader.load(phenotypeAnnotations);
     }
 
-    private HashMap<String, HashMap<String, Set<String>>> phenolIngest() {
+    private Set<CandidateDiagnosis> phenolIngest() {
         /*
         Use phenol to construct a dictionary that contains, for each disease, associated features and explicitly
         non-associated features.
          */
-        HashMap<String, HashMap<String, Set<String>>> diseaseFeaturesDict = new HashMap<>();
+        Set<CandidateDiagnosis> candidateDiagnosisSet = new HashSet<>() {
+        };
 
         // Filter for phenotypic abnormality terms
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpo.graph().getDescendantSet(PHENOTYPIC_ABNORMALITY));
@@ -111,9 +115,6 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
                     .filter(termId -> disease.getFrequencyOfTermInDisease(termId).orElseThrow().numerator() != 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
-            HashMap<String, Set<String>> iTerms = new HashMap<>();
-            iTerms.put("I", observedTerms);
-            diseaseFeaturesDict.putIfAbsent(disease.id().toString(), iTerms);
 
             // Excluded
             Set<String> excludedTerms = disease.annotationTermIdList().stream()
@@ -121,11 +122,16 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
                     .filter(termId -> disease.getFrequencyOfTermInDisease(termId).orElseThrow().numerator() == 0)
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
-            HashMap<String, Set<String>> eTerms = new HashMap<>();
-            iTerms.put("E", excludedTerms);
-            diseaseFeaturesDict.putIfAbsent(disease.id().toString(), eTerms);
+
+            candidateDiagnosisSet.add(
+                    new CandidateDiagnosis(Set.of(
+                            new DiseaseDTO(disease.id().toString(), disease.diseaseName())),
+                            observedTerms,
+                            excludedTerms
+                    )
+            );
         }
-        return diseaseFeaturesDict;
+        return candidateDiagnosisSet;
     }
 
     /**
@@ -138,32 +144,40 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     /**
      Methods that implement the DiseaseDict interface
      */
-
     @Override
     public int size() {
-        return this.diseaseFeaturesDict.size();
+        return this.candidateDiagnosisSet.size();
     }
 
+    //TODO could it be that in the end DiseaseData is simply a data container? If so:
+    // TODO should it be a record? What should it expose?
     @Override
-    public Set<String> getDiseaseIds() {
-        return this.diseaseFeaturesDict.keySet();
+    public Set<CandidateDiagnosis> getCandidateDiagnosisSet() {
+        return this.candidateDiagnosisSet;
+    }
+    @Override
+    public Set<Set<DiseaseDTO>> getDiagnosisIds() {
+        return this.candidateDiagnosisSet.stream()
+                .map(CandidateDiagnosis::diseasesInfo)
+                .collect(Collectors.toSet());
     }
 
-    @Override
-    public Set<String> getObservedDiseaseFeatures(String diseaseId) {
-        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
-            return this.diseaseFeaturesDict.get(diseaseId).get("I");
-        } else {
-            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
-        }
-    }
-
-    @Override
-    public Set<String> getExcludedDiseaseFeatures(String diseaseId){
-        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
-            return this.diseaseFeaturesDict.get(diseaseId).get("E");
-        } else {
-            throw new IllegalArgumentException("Disease ID \"" + diseaseId + "\" not found!");
-        }
-    }
+    //TODO having this tested is not bad, but how does this change?
+//    @Override
+//    public Set<String> getObservedDiseaseFeatures(DiseaseDTO diseaseId) {
+//        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+//            return this.diseaseFeaturesDict.get(diseaseId).get("I");
+//        } else {
+//            throw new IllegalArgumentException("Disease ID \"" + diseaseId.id() + "\" not found!");
+//        }
+//    }
+//
+//    @Override
+//    public Set<String> getExcludedDiseaseFeatures(DiseaseDTO diseaseId){
+//        if (this.diseaseFeaturesDict.containsKey(diseaseId)) {
+//            return this.diseaseFeaturesDict.get(diseaseId).get("E");
+//        } else {
+//            throw new IllegalArgumentException("Disease ID \"" + diseaseId.id() + "\" not found!");
+//        }
+//    }
 }

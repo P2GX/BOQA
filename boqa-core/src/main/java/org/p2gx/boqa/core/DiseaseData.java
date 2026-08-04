@@ -1,6 +1,7 @@
 package org.p2gx.boqa.core;
 
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 
 import java.util.Map;
 import java.util.Set;
@@ -16,20 +17,18 @@ public interface DiseaseData {
     int size();
 
     // Get set of all disease IDs
-    Set<String> getDiseaseIds();
+    Set<Set<DiseaseDTO>> getDiagnosisIds();
 
     // Return HPO terms associated with a disease
-    Set<String> getObservedDiseaseFeatures(String diseaseId);
+    //Set<String> getObservedDiseaseFeatures(DiseaseDTO diseaseId);
 
     // Return HPO terms that are explicitly not associated with a disease
-    default Set<String> getExcludedDiseaseFeatures(String diseaseId) {
+    //default Set<String> getExcludedDiseaseFeatures(DiseaseDTO diseaseId) {
         // If excluded terms are not used or not available
-        return Set.of();
-    }
+    //    return Set.of();
+    //}
 
-    default Map<String, String> getIdToLabel() {
-        return Map.of();
-    }
+    Set<CandidateDiagnosis> getCandidateDiagnosisSet();
 
     default HpoDiseases getDiseases() {
         return null;

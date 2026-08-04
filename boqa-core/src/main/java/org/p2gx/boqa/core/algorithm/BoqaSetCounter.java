@@ -3,16 +3,16 @@ package org.p2gx.boqa.core.algorithm;
 import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.internal.OntologyTraverser;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,9 +35,10 @@ public class BoqaSetCounter implements Counter {
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
     private final OntologyTraverser ontologyTraverser;
-    private final Map<TermId, Set<TermId>> diseaseLayers;
-    private final Set<String> diseaseIds;
-    private final Map<String, String> idToLabel;
+    private final Map<Set<DiseaseDTO>, Set<TermId>> diseaseLayers;
+//    private final Set<CandidateDiagnosis> candidateDiagnoses;
+    private final Set<Set<DiseaseDTO>> candidateDiagnosesIds;
+    //private final Map<String, String> idToLabel;
 
 
     /**
@@ -51,20 +52,29 @@ public class BoqaSetCounter implements Counter {
      * @todo remove filtering after successful testing in exomiser and modification to diseaseData
      */
     public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo) {
-        this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
+        //this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
         this.ontologyTraverser = new OntologyTraverser(hpo);
-        this.diseaseIds = Set.copyOf(diseaseData.getDiseaseIds());
-        LOGGER.info("Initializing disease layers for {} diseases", diseaseIds.size());
+        Set<CandidateDiagnosis> candidateDiagnoses = Set.copyOf(diseaseData.getCandidateDiagnosisSet());
+        this.candidateDiagnosesIds = candidateDiagnoses
+                .parallelStream()
+                .map(CandidateDiagnosis::diseasesInfo)
+                .collect(Collectors.toSet());
+        LOGGER.info("Initializing disease layers for {} diseases", candidateDiagnoses.size());
         OntologyGraph<TermId> hpoGraph = ontologyTraverser.getHpoGraph();
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
-        this.diseaseLayers = diseaseIds.parallelStream()
-                .collect(Collectors.toUnmodifiableMap(TermId::of, diseaseId -> {
-                    Set<TermId> diseasePhenotypes = diseaseData.getObservedDiseaseFeatures(diseaseId).stream()
-                            .map(TermId::of)
-                            .filter(phenotypicAbnormalities::contains)
-                            .collect(Collectors.toSet());
-                    return ontologyTraverser.initLayer(diseasePhenotypes);
-                }));
+        this.diseaseLayers = candidateDiagnoses.parallelStream()
+                .collect(
+                        Collectors.toUnmodifiableMap(CandidateDiagnosis::diseasesInfo,
+                            cd -> {
+                                Set<TermId> diseasePhenotypes = cd.observedPhenotypes()
+                                        .stream()
+                                        .map(TermId::of)
+                                        .filter(phenotypicAbnormalities::contains)
+                                        .collect(Collectors.toSet());
+                                return ontologyTraverser.initLayer(diseasePhenotypes);
+                            }
+                        )
+                );
         LOGGER.info("Finished initializing disease layers");
     }
 
@@ -79,10 +89,10 @@ public class BoqaSetCounter implements Counter {
      * @implNote Consider caching children of all ON nodes to improve offNodesCount calculation.
      */
     @Override
-    public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
+    public BoqaCounts computeBoqaCounts(Set<DiseaseDTO> diagnosisId, PatientData patientData) {
         Set<TermId> observedHpos = patientData.getObservedTerms();
         Set<TermId> queryLayer = ontologyTraverser.initLayer(observedHpos);
-        Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
+        Set<TermId> diseaseLayer = diseaseLayers.get(diagnosisId);
 
         // TP
         Set<TermId> truePositives = new HashSet<>(diseaseLayer);
@@ -125,13 +135,21 @@ public class BoqaSetCounter implements Counter {
             }
         }
         LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
-        LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
-
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        LOGGER.debug("BOQA counts computed for diagnosis {}", diagnosisId.stream().toString()); //TODO is this a bad idea?
+//        List<DiseaseDTO> diseaseDTOList = new ArrayList<>();
+        //TODO remove LOGGER statement
+        //LOGGER.info("Full key {} exists: {}", diseaseId, idToLabel.containsKey(diseaseId));
+//        for (String d : diagnosisIds) {
+//            //TODO remove LOGGER statement
+//            LOGGER.info("Split key '{}' exists: {}", d, idToLabel.containsKey(d));
+//            diseaseDTOList.add(new DiseaseDTO(d, idToLabel.get(d)));
+//            // TODO labels come back null both for plain and blended. Melded branch introduced bug into plain!
+//        }
+        return new BoqaCounts(diagnosisId, truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override
-    public Set<String> getDiseaseIds() {
-        return this.diseaseIds;
+    public Set<Set<DiseaseDTO>> getDiagnosisIds() {
+        return this.candidateDiagnosesIds;
     }
 }

@@ -112,7 +112,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
-        LOGGER.info("Number of annotated diseases: " + diseaseData.size());
+        LOGGER.info("Number of annotated diseases: {}", diseaseData.size());
 
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());

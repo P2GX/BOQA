@@ -12,8 +12,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 import org.p2gx.boqa.core.patient.QueryDataFromString;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -64,7 +66,10 @@ class BoqaPatientAnalyzerTest extends TestBase {
             double expectedScore
     ){
         // Initialize BoqaCounts
-        BoqaCounts counts = new BoqaCounts("idIsUnimportant", "labelIsUnimportant", count1mb, countA, count1ma, countB);
+        List<DiseaseDTO> diseases = new ArrayList<>();
+        diseases.add(new DiseaseDTO("idIsUnimportant", "labelIsUnimportant"));
+
+        BoqaCounts counts = new BoqaCounts(diseases, count1mb, countA, count1ma, countB);
         double actualScore = computeUnnormalizedProbability(alpha, beta, counts);
 
         // Assert with small delta for floating-point comparison
@@ -94,7 +99,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Prepare arguments for 'computeBoqaResults'
         PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
-        int limit = counter.getDiseaseIds().size();
+        int limit = counter.getDiagnosisIds().size();
         double alpha = 0.01;
         double beta = 0.9;
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);

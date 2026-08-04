@@ -10,6 +10,7 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.patient.DiseaseDTO;
 
 import java.util.HashMap;
 import java.util.List;
@@ -70,7 +71,10 @@ public final class BoqaBlendedExomiserAnalyzer {
         // Keep only anchor diseases we actually have phenotype annotations for.
         Map<String, TargetDisease> anchorsByDiseaseId = new HashMap<>();
         for (TargetDisease anchor : anchorDiseases) {
-            if (!diseaseData.getDiseaseIds().contains(anchor.diseaseId())) {
+            // target diseasaes are singletons!
+            // TODO placeholder, in future we only want one, DiseaseInfo or DiseaseDTO or TargetDisease...
+            Set<DiseaseDTO> fullId = Set.of(new DiseaseDTO(anchor.diseaseId(), anchor.diseaseLabel()));
+            if (!diseaseData.getDiagnosisIds().contains(fullId)) {
                 continue;
             }
             TargetDisease alreadyAnchored = anchorsByDiseaseId.put(anchor.diseaseId(), anchor);
@@ -94,9 +98,10 @@ public final class BoqaBlendedExomiserAnalyzer {
         BoqaAnalysisResult scoredEntries = BoqaPatientAnalyzer.computeBoqaResults(
                 patient, counter, blendedDiseaseData.size(), params);
 
+        // TODO unnecessary in new framework, could be for item in setof DiseaseDTO...
         Map<String, BoqaCounts> countsByDiseaseId = new HashMap<>();
         for (BoqaResult scoredEntry : scoredEntries.boqaResults()) {
-            countsByDiseaseId.put(scoredEntry.counts().diseaseId(), scoredEntry.counts());
+            countsByDiseaseId.put(scoredEntry.counts().diseases(), scoredEntry.counts());
         }
 
         // The scored entries are already ranked by score, so assembling them in order keeps that ranking.
@@ -116,8 +121,10 @@ public final class BoqaBlendedExomiserAnalyzer {
     private static BlendedResult assembleResult(BoqaResult scoredEntry, BlendedDiseaseData blendedDiseaseData,
                                                 Map<String, TargetDisease> anchorsByDiseaseId,
                                                 Map<String, BoqaCounts> countsByDiseaseId) {
+        // TODO unnecessary splitter
         List<String> componentIds = blendedDiseaseData.componentsOf(scoredEntry.counts().diseaseId());
         List<TargetDisease> components = componentIds.stream().map(anchorsByDiseaseId::get).toList();
+        // if len DiseaseInfo > 1, for each DiseaseInfo in a BoqaResult also get the BoqaCounts of the subcomponents
         List<BoqaCounts> componentCounts = componentIds.stream().map(countsByDiseaseId::get).toList();
         return new BlendedResult(components, componentCounts, scoredEntry.counts(), scoredEntry.boqaScore());
     }
