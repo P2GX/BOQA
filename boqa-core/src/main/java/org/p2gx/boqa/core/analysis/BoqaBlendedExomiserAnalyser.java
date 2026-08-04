@@ -17,6 +17,7 @@ import org.p2gx.boqa.core.diseases.CandidateResult;
 import org.p2gx.boqa.core.diseases.DiseaseComponent;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
+import org.p2gx.boqa.core.patient.DefaultPatientData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * This class evaluates a single patient's phenotypic profile (HPO terms)
  * against all HPOA-annotated diseases and computes probability scores for diagnostic ranking.
+ *
+ * @TODO move to an exomiser adapter module, as originally decided?
+ *
  */
 public class BoqaBlendedExomiserAnalyser {
     private static final Logger LOGGER = LoggerFactory.getLogger(BoqaBlendedExomiserAnalyser.class);
@@ -32,18 +36,19 @@ public class BoqaBlendedExomiserAnalyser {
     private HpoDiseases hpoDiseases;
     private final DiseaseData diseaseData;
     private final AlgorithmParameters params;
-
+    private final PatientData patientData;
      /**
      * @param hpo      the HPO ontology
      * @param diseases the phenol disease-phenotype annotations; converted internally into the
      *                 plain {@link DiseaseData} used for scoring
      * @param params   BOQA algorithm parameters (alpha, beta)
      */
-    public BoqaBlendedExomiserAnalyser(Ontology hpo, HpoDiseases diseases) {
+    public BoqaBlendedExomiserAnalyser(Ontology hpo, HpoDiseases diseases, List<String> observedHposFromExomiser) {
         this.hpo = hpo;
         this.hpoDiseases = diseases;
         this.diseaseData = DiseaseDataPhenolIngest.of(hpo, diseases);
         this.params = AlgorithmParameters.defaultParams();
+        this.patientData = DefaultPatientData.fromObservedHpoTermList(observedHposFromExomiser, hpo);
     }
 
      /**

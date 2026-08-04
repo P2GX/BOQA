@@ -62,17 +62,16 @@ public class BlendedCounter implements Counter {
                   }
                }
                case CandidateDisease.Blended b -> {
-                 List<TargetDisease> list = b.components(); 
+                  List<TargetDisease> list = b.components();
                   Set<TermId> observed = new HashSet<>();
                   for (TargetDisease td: list) {
                     TermId diseaseId = TermId.of(td.diseaseId());
-                  HpoDisease hpoDisease = hpoDiseaseMap.get(diseaseId);
-                  if (hpoDisease != null) {
-                    for (HpoDiseaseAnnotation hda : hpoDisease.presentAnnotations() ){
-                        observed.add(hda.id());
+                    HpoDisease hpoDisease = hpoDiseaseMap.get(diseaseId);
+                    if (hpoDisease != null) {
+                        for (HpoDiseaseAnnotation hda : hpoDisease.presentAnnotations() ){
+                            observed.add(hda.id());
+                        }
                     }
-                    
-                  }
                   }
                   TermId meldedId = TermId.of(b.diseaseId());
                   diseaseLayers.put(meldedId, observed);

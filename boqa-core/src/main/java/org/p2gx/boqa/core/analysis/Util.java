@@ -17,6 +17,7 @@ public class Util {
      * <p>This ensures that the minimum raw score maps to 0, and the maximum maps to 1.</p>
      *
      * @param boqaResults the list of BOQA results to rescale
+     * @TODO move to an exomiser adapter module, as originally decided?
      * @return a list of BOQA results with rescaled scores
      */
     public static List<BoqaResult> reScaledRawLogBoqaExomiserScores(List<BoqaResult> boqaResults) {

@@ -29,6 +29,8 @@ import java.util.function.BiPredicate;
  * <p>The heavy, reusable inputs (ontology, disease-phenotype annotations and algorithm parameters)
  * are supplied once at construction; {@link #analyze} is then called per patient. Instances are
  * immutable and the analysis is read-only, so a single instance may be reused across patients.</p>
+ *
+ * @TODO move to an exomiser adapter module, as originally decided?
  */
 public final class BoqaBlendedExomiserAnalyzer {
 

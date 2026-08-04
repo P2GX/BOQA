@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
  * Class that implements the QueryData interface by parsing comma-separated strings of HPO terms.
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
+ * @deprecated in favor of {@link DefaultPatientData}
  */
 public class QueryDataFromString implements PatientData {
     private static final Logger LOGGER = LoggerFactory.getLogger(QueryDataFromString.class);

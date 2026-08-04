@@ -10,6 +10,9 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * @deprecated not used any more!
+ */
 public class DiseaseMerger {
 
 
