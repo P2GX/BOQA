@@ -8,7 +8,7 @@ import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.internal.OntologyTraverser;
-import org.p2gx.boqa.core.patient.DiseaseDTO;
+import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,9 +35,9 @@ public class BoqaSetCounter implements Counter {
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
     private final OntologyTraverser ontologyTraverser;
-    private final Map<Set<DiseaseDTO>, Set<TermId>> diseaseLayers;
+    private final Map<List<SingleDiseaseInfo>, Set<TermId>> diseaseLayers;
 //    private final Set<CandidateDiagnosis> candidateDiagnoses;
-    private final Set<Set<DiseaseDTO>> candidateDiagnosesIds;
+    private final List<List<SingleDiseaseInfo>> candidateDiagnosesIds;
     //private final Map<String, String> idToLabel;
 
 
@@ -54,11 +54,11 @@ public class BoqaSetCounter implements Counter {
     public BoqaSetCounter(DiseaseData diseaseData, Ontology hpo) {
         //this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
         this.ontologyTraverser = new OntologyTraverser(hpo);
-        Set<CandidateDiagnosis> candidateDiagnoses = Set.copyOf(diseaseData.getCandidateDiagnosisSet());
+        Set<CandidateDiagnosis> candidateDiagnoses = Set.copyOf(diseaseData.getCandidateDiagnosisList());
         this.candidateDiagnosesIds = candidateDiagnoses
                 .parallelStream()
                 .map(CandidateDiagnosis::diseasesInfo)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         LOGGER.info("Initializing disease layers for {} diseases", candidateDiagnoses.size());
         OntologyGraph<TermId> hpoGraph = ontologyTraverser.getHpoGraph();
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
@@ -89,7 +89,7 @@ public class BoqaSetCounter implements Counter {
      * @implNote Consider caching children of all ON nodes to improve offNodesCount calculation.
      */
     @Override
-    public BoqaCounts computeBoqaCounts(Set<DiseaseDTO> diagnosisId, PatientData patientData) {
+    public BoqaCounts computeBoqaCounts(List<SingleDiseaseInfo> diagnosisId, PatientData patientData) {
         Set<TermId> observedHpos = patientData.getObservedTerms();
         Set<TermId> queryLayer = ontologyTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(diagnosisId);
@@ -149,7 +149,7 @@ public class BoqaSetCounter implements Counter {
     }
 
     @Override
-    public Set<Set<DiseaseDTO>> getDiagnosisIds() {
+    public List<List<SingleDiseaseInfo>> getDiagnosisIds() {
         return this.candidateDiagnosesIds;
     }
 }

@@ -9,8 +9,6 @@ import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 import static java.util.stream.Collectors.toSet;
 
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
@@ -39,7 +37,7 @@ import org.slf4j.LoggerFactory;
 public sealed interface CandidateDisease permits CandidateDisease.Single, CandidateDisease.Blended {
     Logger LOGGER = LoggerFactory.getLogger("org.p2gx.boqa.core.diseases.CandidateDisease");
     // This is the merged disease (or the single Mendelian disease for "Single"), i.e., the disease we will be testing
-    TargetDisease finalDisease();
+    ExomiserTargetDisease finalDisease();
     Set<String> observedHpoTermids();
     
     default String diseaseId() {
@@ -48,56 +46,33 @@ public sealed interface CandidateDisease permits CandidateDisease.Single, Candid
     default String diseaseLabel() {
         return finalDisease().diseaseLabel();
     }
-
-
-
-    /**
-     * A single Mendelian disease.
-     */
-    record Single(TargetDisease disease, Set<String> observed) implements CandidateDisease {
-        @Override
-        public TargetDisease finalDisease() {
-            return disease;
-        }
-
-        @Override
-        public Set<String> observedHpoTermids() {
-            return observed;
-        }
-
+    /** A single Mendelian disease. */
+    record Single(ExomiserTargetDisease finalDisease, Set<String> observedHpoTermids) implements CandidateDisease {
     }
 
-    /**
-     * A list of two or more Mendelian diseases (related to distinct genes) with a final blended disease.
-     */
-    record Blended(List<TargetDisease> components, TargetDisease finalDisease, Set<String> observed) implements CandidateDisease {
+    /** A list of two or more Mendelian diseases (related to distinct genes) with a final blended disease. */
+    record Blended(List<ExomiserTargetDisease> components, ExomiserTargetDisease finalDisease, Set<String> observedHpoTermids) implements CandidateDisease {
         public Blended {
             if (components == null || components.size() < 2) {
                 throw new IllegalArgumentException("Blended diseases must contain at least 2 components");
             }
         }
-
-        @Override
-        public Set<String> observedHpoTermids() {
-            return observed;
-        }
-
     }
 
-    private static TargetDisease getMelded(List<TargetDisease> diseasePair) {
+    private static ExomiserTargetDisease getMelded(List<ExomiserTargetDisease> diseasePair) {
         if (diseasePair.size() != 2) {
             throw new PhenolRuntimeException("Unexpected length of pair od target diseases: " + diseasePair.size());
         }
-        TargetDisease t1 = diseasePair.get(0);
-        TargetDisease t2 = diseasePair.get(1);
+        ExomiserTargetDisease t1 = diseasePair.get(0);
+        ExomiserTargetDisease t2 = diseasePair.get(1);
         String diseaseId = t1.diseaseId() + "-" + t2.diseaseId();
         String diseaseLabel = t1.diseaseLabel() + "-" + t2.diseaseLabel();
         String geneId = t1.geneId() + "-" + t2.geneId();
         String symbol = t1.geneSymbol() + "-" + t2.geneSymbol();
-        return new TargetDisease(diseaseId, diseaseLabel, geneId, symbol);
+        return new ExomiserTargetDisease(diseaseId, diseaseLabel, geneId, symbol);
     }
 
-    public static Optional<Set<String>> getObservedIds(String diseaseId, HpoDiseases hpoDiseases) {
+    static Optional<Set<String>> getObservedIds(String diseaseId, HpoDiseases hpoDiseases) {
        TermId tid = TermId.of(diseaseId);
        return hpoDiseases.diseaseById(tid)
             .map(disease -> StreamSupport.stream(disease.presentAnnotations().spliterator(), false)
@@ -105,27 +80,28 @@ public sealed interface CandidateDisease permits CandidateDisease.Single, Candid
                     .collect(toSet()));
     }
 
-    public static List<CandidateDisease> createCandidateDiseases(
-        List<TargetDisease> targetDiseases,
-        HpoDiseases hpoDiseases) {
+    static List<CandidateDisease> createCandidateDiagnoses(
+        List<ExomiserTargetDisease> exomiserTargetDiseases,
+        HpoDiseases hpoDiseases
+    ) {
         List<CandidateDisease> candidates = new ArrayList<>();
         // first add the singleton diseases
-        for (var td: targetDiseases) {
+        for (var td: exomiserTargetDiseases) {
             getObservedIds(td.diseaseId(), hpoDiseases).ifPresentOrElse(
                 observedIds -> candidates.add(new CandidateDisease.Single(td, observedIds)),
                 () -> LOGGER.error("Could not retrieve disease model for '{}'", td.diseaseId())
             );
         }
         // Now add all pairwise combinations
-        List<List<TargetDisease>> diseasePairs = IntStream.range(0, targetDiseases.size())
+        List<List<ExomiserTargetDisease>> diseasePairs = IntStream.range(0, exomiserTargetDiseases.size())
             .boxed()
-            .flatMap(i -> IntStream.range(i + 1, targetDiseases.size())
-                .mapToObj(j -> List.of(targetDiseases.get(i), targetDiseases.get(j))))
+            .flatMap(i -> IntStream.range(i + 1, exomiserTargetDiseases.size())
+                .mapToObj(j -> List.of(exomiserTargetDiseases.get(i), exomiserTargetDiseases.get(j))))
             .toList();
         // Create candidate disease pairs except if a disease pair has the same gene
         diseasePairs.forEach(pair -> {
             if (!pair.get(0).geneSymbol().equals(pair.get(1).geneSymbol())) {
-                TargetDisease meldedDisease = getMelded(pair); 
+                ExomiserTargetDisease meldedDisease = getMelded(pair);
                 Optional<Set<String>> opt0 = getObservedIds(pair.get(0).diseaseId(), hpoDiseases);
                 Optional<Set<String>> opt1 = getObservedIds(pair.get(1).diseaseId(), hpoDiseases);
                 if (opt0.isPresent() && opt1.isPresent()) {

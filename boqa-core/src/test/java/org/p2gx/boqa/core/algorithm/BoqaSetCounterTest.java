@@ -6,7 +6,7 @@ import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
 import org.p2gx.boqa.core.internal.OntologyTraverserTest;
-import org.p2gx.boqa.core.patient.DiseaseDTO;
+import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -89,8 +89,8 @@ class BoqaSetCounterTest {
             int tpExp
     ) throws URISyntaxException, IOException {
         Map<String,String> idToLabel = diseaseData.getIdToLabel();
-        List<DiseaseDTO> diseases = new ArrayList<>();
-        diseases.add(new DiseaseDTO(diagnosedDiseaseId, idToLabel.get(diagnosedDiseaseId)));
+        List<SingleDiseaseInfo> diseases = new ArrayList<>();
+        diseases.add(new SingleDiseaseInfo(diagnosedDiseaseId, idToLabel.get(diagnosedDiseaseId)));
         BoqaCounts pyboqaCounts = new BoqaCounts(
                 diseases,
                 tpExp,

@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * as well as the Phenopacket ID can be queried through {@link #getObservedTerms() getObservedTerms},
  * {@link #getExcludedTerms() getExcludedTerms}, and {@link #getID() getID}.
  * <p>
- * {@link #getDiseases()} returns a list of {@link DiseaseDTO} records containing OMIM ID and label.
+ * {@link #getDiseases()} returns a list of {@link SingleDiseaseInfo} records containing OMIM ID and label.
  * This list can contain no diseases (unknown, unclear), one disease (standard Mendelian disease)
  * or any number of diseases (blended phenotype).
  * <p>
@@ -38,7 +38,7 @@ public class PhenopacketData implements PatientData {
     private final String ppktId;
     private final Set<TermId> observedTerms;
     private final Set<TermId> excludedTerms;
-    private final List<DiseaseDTO> diseases;
+    private final List<SingleDiseaseInfo> diseases;
 
     // Primary constructor
     public PhenopacketData(Phenopacket phenopacket, Ontology hpo) {
@@ -63,7 +63,7 @@ public class PhenopacketData implements PatientData {
                 .filter(Objects::nonNull) // If old HPO is used without a term, avoids the program crashing
                 .collect(Collectors.toSet());
         this.diseases = phenopacket.getDiseasesList().stream().map(d ->
-                new DiseaseDTO(d.getTerm().getId(), d.getTerm().getLabel())).toList();
+                new SingleDiseaseInfo(d.getTerm().getId(), d.getTerm().getLabel())).toList();
     }
 
     // Convenience constructor (allow from file)
@@ -72,7 +72,7 @@ public class PhenopacketData implements PatientData {
     }
 
     @JsonProperty("diagnosis")
-    List<DiseaseDTO> getDiseases() {
+    List<SingleDiseaseInfo> getDiseases() {
         return List.copyOf(diseases);
     }
 

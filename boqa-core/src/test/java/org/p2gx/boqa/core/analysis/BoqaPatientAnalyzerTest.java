@@ -12,7 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
-import org.p2gx.boqa.core.patient.DiseaseDTO;
+import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 import org.p2gx.boqa.core.patient.QueryDataFromString;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -66,8 +66,8 @@ class BoqaPatientAnalyzerTest extends TestBase {
             double expectedScore
     ){
         // Initialize BoqaCounts
-        List<DiseaseDTO> diseases = new ArrayList<>();
-        diseases.add(new DiseaseDTO("idIsUnimportant", "labelIsUnimportant"));
+        List<SingleDiseaseInfo> diseases = new ArrayList<>();
+        diseases.add(new SingleDiseaseInfo("idIsUnimportant", "labelIsUnimportant"));
 
         BoqaCounts counts = new BoqaCounts(diseases, count1mb, countA, count1ma, countB);
         double actualScore = computeUnnormalizedProbability(alpha, beta, counts);

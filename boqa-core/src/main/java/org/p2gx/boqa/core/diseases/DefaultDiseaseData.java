@@ -2,8 +2,9 @@ package org.p2gx.boqa.core.diseases;
 
 import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.DiseaseData;
-import org.p2gx.boqa.core.patient.DiseaseDTO;
+import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,13 +29,13 @@ public class DefaultDiseaseData implements DiseaseData {
 
     // TODO between here and the next todo we have a quick fix to simply make stuff compile
     @Override
-    public Set<Set<DiseaseDTO>> getDiagnosisIds() {
-        return Set.of();
+    public List<List<SingleDiseaseInfo>> getDiagnosisIds() {
+        return List.of();
     }
 
     @Override
-    public Set<CandidateDiagnosis> getCandidateDiagnosisSet() {
-        return Set.of();
+    public List<CandidateDiagnosis> getCandidateDiagnosisList() {
+        return List.of();
     }
 
 //    @Override

@@ -11,7 +11,7 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.p2gx.boqa.core.patient.DiseaseDTO;
+import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
     private static final int cohortSize = 100; // Imaginary cohort size using phenol to convert HPO frequency terms to ratios
     HpoDiseases diseases; // Temporarily needed to explore Phenols HpoDiseases, as there is no documentation
 
-    Set<CandidateDiagnosis> candidateDiagnosisSet;
+    List<CandidateDiagnosis> candidateDiagnosisList;
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
     private final Ontology hpo;
 
@@ -49,7 +49,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         this.hpo = hpo;
         this.diseases = diseases;
         // Create dictionary using Phenol
-        this.candidateDiagnosisSet = phenolIngest();
+        this.candidateDiagnosisList = phenolIngest();
     }
 
     /**
@@ -80,7 +80,7 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         this.hpo = OntologyLoader.loadOntology(ontologyStream);
         this.diseases = getPhenolHpoDiseases(hpo, annotationsStream, validDatabaseList);
         // Create dictionary using Phenol
-        this.candidateDiagnosisSet = phenolIngest();
+        this.candidateDiagnosisList = phenolIngest();
     }
 
     private HpoDiseases getPhenolHpoDiseases(Ontology hpo, InputStream phenotypeAnnotations, List<String> validDatabaseList) throws IOException {
@@ -96,13 +96,12 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
         return loader.load(phenotypeAnnotations);
     }
 
-    private Set<CandidateDiagnosis> phenolIngest() {
+    private List<CandidateDiagnosis> phenolIngest() {
         /*
         Use phenol to construct a dictionary that contains, for each disease, associated features and explicitly
         non-associated features.
          */
-        Set<CandidateDiagnosis> candidateDiagnosisSet = new HashSet<>() {
-        };
+        List<CandidateDiagnosis> candidateDiagnosisList = new ArrayList<>();
 
         // Filter for phenotypic abnormality terms
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpo.graph().getDescendantSet(PHENOTYPIC_ABNORMALITY));
@@ -123,15 +122,15 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
 
-            candidateDiagnosisSet.add(
-                    new CandidateDiagnosis(Set.of(
-                            new DiseaseDTO(disease.id().toString(), disease.diseaseName())),
+            candidateDiagnosisList.add(
+                    new CandidateDiagnosis(List.of(
+                            new SingleDiseaseInfo(disease.id().toString(), disease.diseaseName())),
                             observedTerms,
                             excludedTerms
                     )
             );
         }
-        return candidateDiagnosisSet;
+        return candidateDiagnosisList;
     }
 
     /**
@@ -146,20 +145,20 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
      */
     @Override
     public int size() {
-        return this.candidateDiagnosisSet.size();
+        return this.candidateDiagnosisList.size();
     }
 
     //TODO could it be that in the end DiseaseData is simply a data container? If so:
     // TODO should it be a record? What should it expose?
     @Override
-    public Set<CandidateDiagnosis> getCandidateDiagnosisSet() {
-        return this.candidateDiagnosisSet;
+    public List<CandidateDiagnosis> getCandidateDiagnosisList() {
+        return this.candidateDiagnosisList;
     }
     @Override
-    public Set<Set<DiseaseDTO>> getDiagnosisIds() {
-        return this.candidateDiagnosisSet.stream()
+    public List<List<SingleDiseaseInfo>> getDiagnosisIds() {
+        return this.candidateDiagnosisList.stream()
                 .map(CandidateDiagnosis::diseasesInfo)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
     //TODO having this tested is not bad, but how does this change?

@@ -50,8 +50,7 @@ public final class BoqaPatientAnalyzer {
             Counter counter,
             AlgorithmParameters params) {
 
-        // TODO change this to more natural Set<CandidateDiagnosis> way of doing things, I suspect we don't need
-        // TODO counter.getDiagnosisIds() in Counters
+        // TODO is there a more natural way of doing this with List<CandidateDiagnosis>?
         List<BoqaResult> allResults = counter.getDiagnosisIds()
                 .parallelStream() // fast: computes counts + scores in parallel
                 .map(dId -> {

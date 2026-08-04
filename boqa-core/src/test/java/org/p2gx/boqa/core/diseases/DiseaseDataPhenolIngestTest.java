@@ -10,7 +10,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.TestBase;
-import org.p2gx.boqa.core.patient.DiseaseDTO;
+import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -55,10 +55,10 @@ class DiseaseDataPhenolIngestTest extends TestBase {
          */
         String diseaseId = "OMIM:604091";
         String diseaseLabel = "HDL deficiency, familial, 1";
-        Set disesaseInfoExample =  Set.of(new DiseaseDTO(diseaseId, diseaseLabel));
+        Set disesaseInfoExample =  Set.of(new SingleDiseaseInfo(diseaseId, diseaseLabel));
         // Find disease
         CandidateDiagnosis matchingDiagnosis = testCandidateDiagnosis
-                .getCandidateDiagnosisSet().stream()
+                .getCandidateDiagnosisList().stream()
                 .filter(cd -> cd.diseasesInfo()==disesaseInfoExample)
                 .findFirst()
                 .get();
