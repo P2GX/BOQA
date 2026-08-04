@@ -10,7 +10,7 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
-import org.p2gx.boqa.core.diseases.ExomiserTargetDisease;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import java.util.function.BiPredicate;
 /**
  * Runs a single BOQA-blended analysis for one patient, intended to be called from Exomiser.
  *
- * <p>The caller supplies its candidate diseases as {@link ExomiserTargetDisease}s, each carrying the gene
+ * <p>The caller supplies its candidate diseases as {@link TargetDisease}s, each carrying the gene
  * that made it a candidate. The candidates are paired with each other (each pair's HPO annotations
  * blended into one entry), and the patient is scored against the candidates and those blends. Two
  * candidates are only blended when their genes differ, so a single gene never explains both halves
@@ -63,22 +63,22 @@ public final class BoqaBlendedExomiserAnalyzer {
      *                                  anchors against each other needs at least two, or if a
      *                                  disease is anchored more than once
      */
-    public List<BlendedResult> analyze(PatientData patient, Set<ExomiserTargetDisease> anchorDiseases, int resultsLimit) {
+    public List<BlendedResult> analyze(PatientData patient, Set<TargetDisease> anchorDiseases, int resultsLimit) {
         if (anchorDiseases.size() < 2) {
             throw new IllegalArgumentException(
                     "Blended analysis requires at least two anchor diseases, but got: " + anchorDiseases);
         }
 
         // Keep only anchor diseases we actually have phenotype annotations for.
-        Map<String, ExomiserTargetDisease> anchorsByDiseaseId = new HashMap<>();
-        for (ExomiserTargetDisease anchor : anchorDiseases) {
+        Map<String, TargetDisease> anchorsByDiseaseId = new HashMap<>();
+        for (TargetDisease anchor : anchorDiseases) {
             // target diseasaes are singletons!
             // TODO placeholder, in future we only want one, DiseaseInfo or DiseaseDTO or ExomiserTargetDisease...
             Set<SingleDiseaseInfo> fullId = Set.of(new SingleDiseaseInfo(anchor.diseaseId(), anchor.diseaseLabel()));
             if (!diseaseData.getDiagnosisIds().contains(fullId)) {
                 continue;
             }
-            ExomiserTargetDisease alreadyAnchored = anchorsByDiseaseId.put(anchor.diseaseId(), anchor);
+            TargetDisease alreadyAnchored = anchorsByDiseaseId.put(anchor.diseaseId(), anchor);
             if (alreadyAnchored != null) {
                 throw new IllegalArgumentException("Disease " + anchor.diseaseId() + " is anchored twice, on genes "
                         + alreadyAnchored.geneSymbol() + " and " + anchor.geneSymbol()
@@ -113,18 +113,18 @@ public final class BoqaBlendedExomiserAnalyzer {
     }
 
     /** Allows two anchor diseases to blend only when different genes made them candidates. */
-    private static BiPredicate<String, String> differingGenes(Map<String, ExomiserTargetDisease> anchorsByDiseaseId) {
+    private static BiPredicate<String, String> differingGenes(Map<String, TargetDisease> anchorsByDiseaseId) {
         return (diseaseId1, diseaseId2) ->
                 anchorsByDiseaseId.get(diseaseId1).geneId() != anchorsByDiseaseId.get(diseaseId2).geneId();
     }
 
     /** Joins a scored entry to the diseases it is made of, and to each of their counts. */
     private static BlendedResult assembleResult(BoqaResult scoredEntry, BlendedDiseaseData blendedDiseaseData,
-                                                Map<String, ExomiserTargetDisease> anchorsByDiseaseId,
+                                                Map<String, TargetDisease> anchorsByDiseaseId,
                                                 Map<String, BoqaCounts> countsByDiseaseId) {
         // TODO unnecessary splitter
         List<String> componentIds = blendedDiseaseData.componentsOf(scoredEntry.counts().diseaseId());
-        List<ExomiserTargetDisease> components = componentIds.stream().map(anchorsByDiseaseId::get).toList();
+        List<TargetDisease> components = componentIds.stream().map(anchorsByDiseaseId::get).toList();
         // if len DiseaseInfo > 1, for each DiseaseInfo in a BoqaResult also get the BoqaCounts of the subcomponents
         List<BoqaCounts> componentCounts = componentIds.stream().map(countsByDiseaseId::get).toList();
         return new BlendedResult(components, componentCounts, scoredEntry.counts(), scoredEntry.boqaScore());

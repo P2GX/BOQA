@@ -1,5 +1,6 @@
 package org.p2gx.boqa.core.diseases;
 
+import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.p2gx.boqa.core.CandidateDiagnosis;
 import org.p2gx.boqa.core.DiseaseData;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
@@ -18,6 +19,10 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.StreamSupport;
+
+import static java.util.stream.Collectors.toSet;
 
 /**
  * Class that implements the {@code DiseaseData} interface by parsing disease annotations
@@ -29,6 +34,8 @@ import java.util.stream.Collectors;
  *     <li>Terms associated with a given disease are considered <i>excluded</i> if they have a
  *         frequency of {@code 0}; otherwise, they are defined as <i>observed</i>.</li>
  * </ol>
+ *
+ * @todo add possibility of using TargetDisease or list of genes also for plain!
  *
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
@@ -125,12 +132,54 @@ public class DiseaseDataPhenolIngest implements DiseaseData {
             candidateDiagnosisList.add(
                     new CandidateDiagnosis(List.of(
                             new SingleDiseaseInfo(disease.id().toString(), disease.diseaseName())),
-                            observedTerms,
-                            excludedTerms
+                            observedTerms
                     )
             );
         }
         return candidateDiagnosisList;
+    }
+
+    public addBlendedDiagnosisCandidates(List<TargetDisease> targetDiseases) {
+        // Now add all pairwise combinations
+        List<List<TargetDisease>> diseasePairs = IntStream.range(0, targetDiseases.size())
+                .boxed()
+                .flatMap(i -> IntStream.range(i + 1, targetDiseases.size())
+                        .mapToObj(j -> List.of(targetDiseases.get(i), targetDiseases.get(j))))
+                .toList();
+        // Create candidate disease pairs except if a disease pair has the same gene
+        diseasePairs.forEach(pair -> {
+                    if (!pair.get(0).geneSymbol().equals(pair.get(1).geneSymbol())) {
+                        candidateDiagnosisList.add(blendDiseases(pair));
+                    }
+        });
+    }
+
+    static Optional<Set<String>> getObservedHpos(String diseaseId, HpoDiseases hpoDiseases) {
+        TermId tid = TermId.of(diseaseId);
+        return hpoDiseases.diseaseById(tid)
+                .map(disease -> StreamSupport.stream(disease.presentAnnotations().spliterator(), false)
+                        .map(annot -> annot.id().getValue())
+                        .collect(toSet()));
+    }
+
+    private CandidateDiagnosis blendDiseases(List<TargetDisease> diseasePair) {
+        if (diseasePair.size() != 2) {
+            throw new PhenolRuntimeException("Unexpected length of pair of target diseases: " + diseasePair.size());
+        }
+        // TODO somewhere here and probably also in plain do Map<CandidateDiagnosis, Set<TargetDisease>> provenance;
+        List<SingleDiseaseInfo> diseasesInfo = new ArrayList<>();
+        Set<String> observedHpos= new HashSet<>();
+        for(TargetDisease disease : diseasePair) {
+            diseasesInfo.add(new SingleDiseaseInfo(disease.diseaseId(), disease.diseaseLabel()));
+            Optional<Set<String>> hposToAdd = getObservedHpos(disease.diseaseId(), diseases);
+            if (hposToAdd.isPresent()) {
+                observedHpos.addAll(hposToAdd.get());
+            } else {
+                LOGGER.error("Could not retrieve observed phenotypes for disease: {}",
+                        disease.diseaseId());
+            }
+        }
+        return new CandidateDiagnosis(diseasesInfo, observedHpos);
     }
 
     /**

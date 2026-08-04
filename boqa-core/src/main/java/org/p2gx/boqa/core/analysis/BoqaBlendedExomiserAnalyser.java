@@ -16,7 +16,7 @@ import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.CandidateResult;
 import org.p2gx.boqa.core.diseases.DiseaseComponent;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
-import org.p2gx.boqa.core.diseases.ExomiserTargetDisease;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.patient.DefaultPatientData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,21 +71,21 @@ public class BoqaBlendedExomiserAnalyser {
      */
     public List<CandidateResult> computeBlendedBoqaResults(
         PatientData patientData, 
-        List<ExomiserTargetDisease> exomiserTargetDiseaseList
+        List<TargetDisease> targetDiseaseList
     ) {
-        List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiagnoses(exomiserTargetDiseaseList, this.hpoDiseases);
+        List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiagnoses(targetDiseaseList, this.hpoDiseases);
         List<CandidateResult> bbqResults = new ArrayList<>();
         Counter counter = new BlendedCounter(hpo, hpoDiseases, candidateDiseaseList);
         for (CandidateDisease candidate : candidateDiseaseList) {
             switch (candidate) {
-                case CandidateDisease.Single(ExomiserTargetDisease disease, Set<String> observed) -> {
+                case CandidateDisease.Single(TargetDisease disease, Set<String> observed) -> {
                     BoqaCounts bcounts = counter.computeBoqaCounts(disease.diseaseId(), patientData);
                     double boqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
                     DiseaseComponent dcomponent = new DiseaseComponent(disease, bcounts, boqaScore);
                     CandidateResult result = new CandidateResult.Single(dcomponent);
                     bbqResults.add(result);
                 }
-                case CandidateDisease.Blended(List<ExomiserTargetDisease> components, ExomiserTargetDisease finalDisease, Set<String> observed) -> {
+                case CandidateDisease.Blended(List<TargetDisease> components, TargetDisease finalDisease, Set<String> observed) -> {
                     BoqaCounts bcounts = counter.computeBoqaCounts(finalDisease.diseaseId(), patientData); // result for the blended
                     double blendedBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
                     DiseaseComponent blendedDisease = new DiseaseComponent(finalDisease, bcounts, blendedBoqaScore);

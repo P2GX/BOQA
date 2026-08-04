@@ -1,9 +1,15 @@
 package org.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set; /**
+import java.util.Set;
+/**
  * TODO change and update the description below
  * Diagnosis has a score, name, explanation,
  * one or more diseases, genes and the supporting variants.
@@ -15,6 +21,6 @@ import java.util.Set; /**
  * <p>
  * Here we summarize the information to present to the user.
  */
-public record CandidateDiagnosis(List<SingleDiseaseInfo> diseasesInfo, Set<String> observedPhenotypes, Set<String> excludedPhenotypes) {
+public record CandidateDiagnosis(List<SingleDiseaseInfo> diseasesInfo, Set<String> observedPhenotypes) {
 }
 
