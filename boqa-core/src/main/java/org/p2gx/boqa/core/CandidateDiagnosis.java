@@ -1,7 +1,7 @@
 package org.p2gx.boqa.core;
 
 import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
-import java.util.List;
+
 import java.util.Set;
 /**
  * TODO change and update the description below
@@ -15,6 +15,6 @@ import java.util.Set;
  * <p>
  * Here we summarize the information to present to the user.
  */
-public record CandidateDiagnosis(List<SingleDiseaseInfo> diseasesInfo, Set<String> observedPhenotypes) {
+public record CandidateDiagnosis(Set<SingleDiseaseInfo> diseasesInfo, Set<String> observedPhenotypes) {
 }
 

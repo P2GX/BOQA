@@ -23,10 +23,10 @@ public interface Counter {
      * Given a patient's observed HPOs, returns a BoqaCounts object representing
      * the exponents of alpha, beta, 1-alpha, 1-beta
      */
-    BoqaCounts computeBoqaCounts(List<SingleDiseaseInfo> diagnosisId, PatientData patientData);
+    BoqaCounts computeBoqaCounts(Set<SingleDiseaseInfo> diagnosisId, PatientData patientData);
 
     /**
      * Return a set with all disease IDs.
      */
-    List<List<SingleDiseaseInfo>> getDiagnosisIds();
+    Set<Set<SingleDiseaseInfo>> getDiagnosisIds();
 }

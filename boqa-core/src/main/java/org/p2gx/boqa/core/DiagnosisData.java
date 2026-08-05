@@ -3,7 +3,7 @@ package org.p2gx.boqa.core;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.p2gx.boqa.core.patient.SingleDiseaseInfo;
 
-import java.util.List;
+import java.util.Set;
 
 /**
  * Interface that provides disease annotations from various sources such as HPOA.
@@ -16,7 +16,7 @@ public interface DiagnosisData {
     int size();
 
     // Get set of all disease IDs
-    List<List<SingleDiseaseInfo>> getDiagnosisIds();
+    Set<Set<SingleDiseaseInfo>> getDiagnosisIds();
 
     // Return HPO terms associated with a disease
     //Set<String> getObservedDiseaseFeatures(DiseaseDTO diseaseId);
@@ -27,7 +27,7 @@ public interface DiagnosisData {
     //    return Set.of();
     //}
 
-    List<CandidateDiagnosis> getCandidateDiagnosisList();
+    Set<CandidateDiagnosis> getCandidateDiagnosisSet();
 
     default HpoDiseases getDiseases() {
         return null;

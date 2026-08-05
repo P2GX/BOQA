@@ -35,11 +35,8 @@ public class BoqaSetCounter implements Counter {
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
     private final OntologyTraverser ontologyTraverser;
-    private final Map<List<SingleDiseaseInfo>, Set<TermId>> diseaseLayers;
-//    private final Set<CandidateDiagnosis> candidateDiagnoses;
-    private final List<List<SingleDiseaseInfo>> candidateDiagnosesIds;
-    //private final Map<String, String> idToLabel;
-
+    private final Map<Set<SingleDiseaseInfo>, Set<TermId>> diseaseLayers;
+    private final Set<Set<SingleDiseaseInfo>> candidateDiagnosesIds;
 
     /**
      * Constructs a BoqaSetCounter and initializes all disease layers.
@@ -54,11 +51,11 @@ public class BoqaSetCounter implements Counter {
     public BoqaSetCounter(DiagnosisData diagnosisData, Ontology hpo) {
         //this.idToLabel = Map.copyOf(diseaseData.getIdToLabel());
         this.ontologyTraverser = new OntologyTraverser(hpo);
-        Set<CandidateDiagnosis> candidateDiagnoses = Set.copyOf(diagnosisData.getCandidateDiagnosisList());
+        Set<CandidateDiagnosis> candidateDiagnoses = Set.copyOf(diagnosisData.getCandidateDiagnosisSet());
         this.candidateDiagnosesIds = candidateDiagnoses
                 .parallelStream()
                 .map(CandidateDiagnosis::diseasesInfo)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
         LOGGER.info("Initializing disease layers for {} diseases", candidateDiagnoses.size());
         OntologyGraph<TermId> hpoGraph = ontologyTraverser.getHpoGraph();
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
@@ -89,7 +86,7 @@ public class BoqaSetCounter implements Counter {
      * @implNote Consider caching children of all ON nodes to improve offNodesCount calculation.
      */
     @Override
-    public BoqaCounts computeBoqaCounts(List<SingleDiseaseInfo> diagnosisId, PatientData patientData) {
+    public BoqaCounts computeBoqaCounts(Set<SingleDiseaseInfo> diagnosisId, PatientData patientData) {
         Set<TermId> observedHpos = patientData.getObservedTerms();
         Set<TermId> queryLayer = ontologyTraverser.initLayer(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(diagnosisId);
@@ -149,7 +146,7 @@ public class BoqaSetCounter implements Counter {
     }
 
     @Override
-    public List<List<SingleDiseaseInfo>> getDiagnosisIds() {
+    public Set<Set<SingleDiseaseInfo>> getDiagnosisIds() {
         return this.candidateDiagnosesIds;
     }
 }

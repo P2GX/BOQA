@@ -30,6 +30,7 @@ TODO This should not be used everywhere in BOQA, just at the boundary with the o
  * @param geneSymbol   A symbol for the gene such as {@code GCDH}
  *
  * @remark We allow for null geneId and geneSymbol, so BOQA can be used as phenotype-only prioritization tool
+ * @todo maybe use sealed interface, disease with gene and without it
  */
 public record TargetDisease(
     String diseaseId,
@@ -40,7 +41,7 @@ public record TargetDisease(
     public TargetDisease {
         Objects.requireNonNull(diseaseId, "diseaseId cannot be null");
         Objects.requireNonNull(diseaseLabel, "diseaseLabel cannot be null");
-        //Objects.requireNonNull(geneId, "geneId cannot be null");
-        //Objects.requireNonNull(geneSymbol, "geneSymbol cannot be null");
+        Objects.requireNonNull(geneId, "geneId cannot be null");
+        Objects.requireNonNull(geneSymbol, "geneSymbol cannot be null");
     }
 }

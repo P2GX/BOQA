@@ -44,7 +44,7 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
     private static final int cohortSize = 100; // Imaginary cohort size using phenol to convert HPO frequency terms to ratios
     HpoDiseases diseases;
 
-    List<CandidateDiagnosis> candidateDiagnosisList;
+    Set<CandidateDiagnosis> candidateDiagnosisSet;
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
     private final Ontology hpo;
 
@@ -56,7 +56,7 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
         this.hpo = hpo;
         this.diseases = diseases;
         // Create dictionary using Phenol
-        this.candidateDiagnosisList = phenolIngest();
+        this.candidateDiagnosisSet = phenolIngest();
     }
 
     /**
@@ -87,7 +87,7 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
         this.hpo = OntologyLoader.loadOntology(ontologyStream);
         this.diseases = getPhenolHpoDiseases(hpo, annotationsStream, validDatabaseList);
         // Create dictionary using Phenol
-        this.candidateDiagnosisList = phenolIngest();
+        this.candidateDiagnosisSet = phenolIngest();
     }
 
     private HpoDiseases getPhenolHpoDiseases(Ontology hpo, InputStream phenotypeAnnotations, List<String> validDatabaseList) throws IOException {
@@ -103,12 +103,12 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
         return loader.load(phenotypeAnnotations);
     }
 
-    private List<CandidateDiagnosis> phenolIngest() {
+    private Set<CandidateDiagnosis> phenolIngest() {
         /*
         Use phenol to construct a dictionary that contains, for each disease, associated features and explicitly
         non-associated features.
          */
-        List<CandidateDiagnosis> candidateDiagnosisList = new ArrayList<>();
+        Set<CandidateDiagnosis> candidateDiagnosisSet = new HashSet<>();
 
         // Filter for phenotypic abnormality terms
         Set<TermId> phenotypicAbnormalities = Set.copyOf(hpo.graph().getDescendantSet(PHENOTYPIC_ABNORMALITY));
@@ -129,17 +129,17 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
                     .map(TermId::toString)
                     .collect(Collectors.toSet());
 
-            candidateDiagnosisList.add(
-                    new CandidateDiagnosis(List.of(
+            candidateDiagnosisSet.add(
+                    new CandidateDiagnosis(Set.of(
                             new SingleDiseaseInfo(disease.id().toString(), disease.diseaseName())),
                             observedTerms
                     )
             );
         }
-        return candidateDiagnosisList;
+        return candidateDiagnosisSet;
     }
 
-    public void addBlendedDiagnosisCandidates(List<TargetDisease> targetDiseases) {
+    public DiagnosisData addBlendedDiagnosisCandidates(List<TargetDisease> targetDiseases) {
         // Now add all pairwise combinations
         List<List<TargetDisease>> diseasePairs = IntStream.range(0, targetDiseases.size())
                 .boxed()
@@ -149,7 +149,7 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
         // Create candidate disease pairs except if a disease pair has the same gene
         diseasePairs.forEach(pair -> {
                     if (!pair.get(0).geneSymbol().equals(pair.get(1).geneSymbol())) {
-                        candidateDiagnosisList.add(blendDiseases(pair));
+                        candidateDiagnosisSet.add(blendDiseases(pair));
                     }
         });
     }
@@ -167,7 +167,7 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
             throw new PhenolRuntimeException("Unexpected length of pair of target diseases: " + diseasePair.size());
         }
         // TODO somewhere here and probably also in plain do Map<CandidateDiagnosis, Set<TargetDisease>> provenance;
-        List<SingleDiseaseInfo> diseasesInfo = new ArrayList<>();
+        Set<SingleDiseaseInfo> diseasesInfo = new HashSet<>();
         Set<String> observedHpos= new HashSet<>();
         for(TargetDisease disease : diseasePair) {
             diseasesInfo.add(new SingleDiseaseInfo(disease.diseaseId(), disease.diseaseLabel()));
@@ -194,20 +194,20 @@ public class DiagnosisDataPhenolIngest implements DiagnosisData {
      */
     @Override
     public int size() {
-        return this.candidateDiagnosisList.size();
+        return this.candidateDiagnosisSet.size();
     }
 
     //TODO could it be that in the end DiseaseData is simply a data container? If so:
     // TODO should it be a record? What should it expose?
     @Override
-    public List<CandidateDiagnosis> getCandidateDiagnosisList() {
-        return this.candidateDiagnosisList;
+    public Set<CandidateDiagnosis> getCandidateDiagnosisSet() {
+        return this.candidateDiagnosisSet;
     }
     @Override
-    public List<List<SingleDiseaseInfo>> getDiagnosisIds() {
-        return this.candidateDiagnosisList.stream()
+    public Set<Set<SingleDiseaseInfo>> getDiagnosisIds() {
+        return this.candidateDiagnosisSet.stream()
                 .map(CandidateDiagnosis::diseasesInfo)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
     }
 
     //TODO having this tested is not bad, but how does this change?
