@@ -2,6 +2,7 @@ package org.p2gx.boqa.core.analysis;
 
 import org.junit.jupiter.api.Test;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 
 import java.util.ArrayList;
 import java.util.List;

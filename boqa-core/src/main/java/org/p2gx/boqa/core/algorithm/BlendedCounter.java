@@ -139,9 +139,9 @@ public class BlendedCounter implements Counter {
             }
         }
         LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
-        LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
+        LOGGER.debug("BOQA counts computed for disease {}", diseaseId);
 
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts(truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override

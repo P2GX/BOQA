@@ -49,39 +49,21 @@ public sealed interface CandidateDisease permits CandidateDisease.Single, Candid
         return finalDisease().diseaseLabel();
     }
 
-
-
     /**
      * A single Mendelian disease.
      */
-    record Single(TargetDisease disease, Set<String> observed) implements CandidateDisease {
-        @Override
-        public TargetDisease finalDisease() {
-            return disease;
-        }
-
-        @Override
-        public Set<String> observedHpoTermids() {
-            return observed;
-        }
-
+    record Single(TargetDisease finalDisease, Set<String> observedHpoTermids) implements CandidateDisease {
     }
 
     /**
      * A list of two or more Mendelian diseases (related to distinct genes) with a final blended disease.
      */
-    record Blended(List<TargetDisease> components, TargetDisease finalDisease, Set<String> observed) implements CandidateDisease {
+    record Blended(List<TargetDisease> components, TargetDisease finalDisease, Set<String> observedHpoTermids) implements CandidateDisease {
         public Blended {
             if (components == null || components.size() < 2) {
                 throw new IllegalArgumentException("Blended diseases must contain at least 2 components");
             }
         }
-
-        @Override
-        public Set<String> observedHpoTermids() {
-            return observed;
-        }
-
     }
 
     private static TargetDisease getMelded(List<TargetDisease> diseasePair) {
