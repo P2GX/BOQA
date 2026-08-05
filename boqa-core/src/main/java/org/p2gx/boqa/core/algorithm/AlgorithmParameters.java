@@ -31,7 +31,7 @@ public final class AlgorithmParameters {
 
     /**
      * Create parameters with custom alpha and beta values.
-     * If a value is null, the default will be used.
+     * If alpha value is null, the default will be used.
      *
      * @param alpha the alpha parameter (false positive probability), or null for default
      * @param beta the beta parameter (false negative probability), or null for default
@@ -39,23 +39,21 @@ public final class AlgorithmParameters {
      * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1)
      */
     public static AlgorithmParameters create(Double alpha, Double beta) {
-        double a = (alpha != null) ? alpha : DEFAULT_ALPHA;
-        double b = (beta != null) ? beta : DEFAULT_BETA;
         // Validate alpha
-        if (a <= 0.0 || a >= 1.0) {
+        if (alpha <= 0.0 || alpha >= 1.0) {
             throw new IllegalArgumentException(
                     String.format("Alpha must be in the range (0, 1), exclusive. Got: %f", alpha)
             );
         }
 
         // Validate beta
-        if (b <= 0.0 || b >= 1.0) {
+        if (beta <= 0.0 || beta >= 1.0) {
             throw new IllegalArgumentException(
                     String.format("Beta must be in the range (0, 1), exclusive. Got: %f", beta)
             );
         }
 
-        return new AlgorithmParameters(a, b);
+        return new AlgorithmParameters(alpha, beta);
     }
 
     public static AlgorithmParameters defaultParams() {
