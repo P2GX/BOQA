@@ -35,4 +35,14 @@ public interface PatientData {
         // If excluded terms are not used or not available
         return Set.of();
     }
+
+    /** The Exomiser provides us with a List of HPO identifiers as Strings. */
+    public static PatientData fromObservedHpoTermList(List<String> observed) {
+        String randomId = java.util.UUID.randomUUID().toString();
+        Set<TermId> observedTidSet = observed.stream()
+            .map(TermId::of)
+            .collect(toSet());
+        return new DefaultPatientData(randomId, observedTidSet);
+    }
+
 }
