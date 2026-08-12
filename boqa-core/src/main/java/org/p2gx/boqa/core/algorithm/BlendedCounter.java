@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
+import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
@@ -46,6 +47,8 @@ public class BlendedCounter implements Counter {
                     CandidateDisease::diseaseLabel,
                     (existingValue, newValue) -> existingValue // Keeps the first label seen if IDs collide
             ));
+        OntologyGraph<TermId> hpoGraph = ontologyTraverser.getHpoGraph();
+        Set<TermId> phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
         this.diseaseLayers = new HashMap<>();
         Map<TermId, HpoDisease> hpoDiseaseMap = diseases.diseaseById();
         for (CandidateDisease candidate: candidateDiseaseList) {
@@ -56,9 +59,11 @@ public class BlendedCounter implements Counter {
                   if (hpoDisease != null) {
                     Set<TermId> observed = new HashSet<>();
                     for (HpoDiseaseAnnotation hda : hpoDisease.presentAnnotations() ){
-                        observed.add(hda.id());
+                        if(phenotypicAbnormalities.contains(hda.id())) {
+                            observed.add(hda.id());
+                        }
                     }
-                    diseaseLayers.put(diseaseId, observed);
+                    diseaseLayers.put(diseaseId, ontologyTraverser.initLayer(observed));
                   }
                }
                case CandidateDisease.Blended b -> {
@@ -69,13 +74,14 @@ public class BlendedCounter implements Counter {
                   HpoDisease hpoDisease = hpoDiseaseMap.get(diseaseId);
                   if (hpoDisease != null) {
                     for (HpoDiseaseAnnotation hda : hpoDisease.presentAnnotations() ){
-                        observed.add(hda.id());
+                        if(phenotypicAbnormalities.contains(hda.id())) {
+                            observed.add(hda.id());
+                        }
                     }
-                    
                   }
-                  }
-                  TermId meldedId = TermId.of(b.diseaseId());
-                  diseaseLayers.put(meldedId, observed);
+                }
+                TermId meldedId = TermId.of(b.diseaseId());
+                diseaseLayers.put(meldedId, ontologyTraverser.initLayer(observed));
               }
              }
         }
@@ -139,9 +145,9 @@ public class BlendedCounter implements Counter {
             }
         }
         LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
-        LOGGER.debug("BOQA counts computed for disease {} ({})", diseaseId, idToLabel.get(diseaseId));
+        LOGGER.debug("BOQA counts computed for disease {}", diseaseId);
 
-        return new BoqaCounts(diseaseId, idToLabel.get(diseaseId), truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts(truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override

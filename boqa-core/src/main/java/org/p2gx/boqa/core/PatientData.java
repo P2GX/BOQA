@@ -44,4 +44,5 @@ public interface PatientData {
             .collect(toSet());
         return new DefaultPatientData(randomId, observedTidSet);
     }
+
 }
