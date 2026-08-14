@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.monarchinitiative.phenol.base.PhenolRuntimeException;
+import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +102,12 @@ public sealed interface CandidateDisease permits CandidateDisease.Single, Candid
             )
             .collect(Collectors.toSet());
         return new TargetDisease.Gene(diseaseId, diseaseLabel, geneId, symbol, combinedObserved);
+    }
+
+    public static List<CandidateDisease.Single> createSingleDiseaseCandidates(List<TargetDisease.Gene> targetDiseases) {
+        return targetDiseases.stream()
+            .map(td -> new CandidateDisease.Single(td))
+            .toList();
     }
 
 

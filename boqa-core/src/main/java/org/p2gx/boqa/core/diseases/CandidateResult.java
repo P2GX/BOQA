@@ -2,6 +2,8 @@ package org.p2gx.boqa.core.diseases;
 
 import java.util.List;
 
+import org.p2gx.boqa.core.algorithm.BoqaCounts;
+
 /**
  * The sealed result type. This guarantees that your HTML generator 
  * only receives valid data states.
@@ -15,6 +17,14 @@ public sealed interface CandidateResult permits CandidateResult.Single, Candidat
      */
     default boolean improvedComparedToBestSingleDisease() {
         return false;
+    }
+
+    default double score() {
+        return finalDiseaseModel().score();
+    }
+
+    default BoqaCounts counts() {
+        return finalDiseaseModel().counts();
     }
     
 

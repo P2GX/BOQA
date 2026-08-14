@@ -1,7 +1,9 @@
 package org.p2gx.boqa.core.analysis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
@@ -67,35 +69,45 @@ public class BoqaBlendedExomiserAnalyser {
     public List<CandidateResult> computeBlendedBoqaResults(
         PatientData patientData, 
         List<TargetDisease.Gene> targetDiseaseList) {
-        List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
+        //List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
         List<CandidateResult> bbqResults = new ArrayList<>();
         Counter counter = new BlendedCounter(hpo, hpoDiseases, candidateDiseaseList);
+        List<CandidateDisease.Single> singleDiseaseCandidateList = CandidateDisease.createSingleDiseaseCandidates(targetDiseaseList);
+        Map< CandidateDisease, CandidateResult> singleResultMap = new HashMap<>();
+        for (CandidateDisease cd : singleDiseaseCandidateList) {
+            if (cd instanceof CandidateDisease.Blended) continue; // only analyse singles
+            BoqaCounts bcounts = counter.computeBoqaCounts(cd.diseaseId(), patientData);
+            double boqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
+            DiseaseComponent dcomponent = new DiseaseComponent(cd.finalDisease(), bcounts, boqaScore);
+            CandidateResult result = new CandidateResult.Single(dcomponent);
+            singleResultMap.put(cd, result);
+        }
+
         for (CandidateDisease candidate : candidateDiseaseList) {
-            switch (candidate) {
-                case CandidateDisease.Single(TargetDisease.Gene disease) -> {
-                    BoqaCounts bcounts = counter.computeBoqaCounts(disease.diseaseId(), patientData);
-                    double boqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
-                    DiseaseComponent dcomponent = new DiseaseComponent(disease, bcounts, boqaScore);
-                    CandidateResult result = new CandidateResult.Single(dcomponent);
-                    bbqResults.add(result);
+            if (candidate instanceof CandidateDisease.Blended blended) {
+                TargetDisease finalDisease = blended.finalDisease();
+                List<TargetDisease.Gene> components = blended.components();
+                BoqaCounts bcounts = counter.computeBoqaCounts(finalDisease.diseaseId(), patientData); // result for the blended
+                double blendedBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
+                DiseaseComponent blendedDisease = new DiseaseComponent(finalDisease, bcounts, blendedBoqaScore);
+                // we also want to get the scores for the component diseases. 
+                // there is probably a more efficient way, this is recalculating
+                List<DiseaseComponent> dComponents = new ArrayList<>();
+                for (var dc: components) {
+                   // BoqaCounts singleDiseaseBoqaCounts = counter.computeBoqaCounts(dc.diseaseId(), patientData); 
+                    //double singleDiseaseBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, singleDiseaseBoqaCounts);
+                    CandidateResult cresult = singleResultMap.get(dc);
+                    if (cresult == null) {
+                        System.err.println("[ERROR] Could not retrieved result for " + dc);
+                    }
+                    dComponents.add(new DiseaseComponent(dc, cresult.counts(), cresult.score()));
                 }
-                case CandidateDisease.Blended(List<TargetDisease.Gene> components, TargetDisease finalDisease) -> {
-                    BoqaCounts bcounts = counter.computeBoqaCounts(finalDisease.diseaseId(), patientData); // result for the blended
-                    double blendedBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
-                    DiseaseComponent blendedDisease = new DiseaseComponent(finalDisease, bcounts, blendedBoqaScore);
-                    // we also want to get the scores for the component diseases. 
-                    // there is probably a more efficient way, this is recalculating
-                    List<DiseaseComponent> dComponents = new ArrayList<>();
-                    for (var dc: components) {
-                        BoqaCounts singleDiseaseBoqaCounts = counter.computeBoqaCounts(dc.diseaseId(), patientData); 
-                        double singleDiseaseBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, singleDiseaseBoqaCounts);
-                        dComponents.add(new DiseaseComponent(dc, singleDiseaseBoqaCounts, singleDiseaseBoqaScore));
-                    }
-                    CandidateResult result = new CandidateResult.Blended(dComponents, blendedDisease);
-                    if (result.improvedComparedToBestSingleDisease()) {
-                        bbqResults.add(result); // only record melded candidates that are better than the best single disease
-                    }
-                }  
+                CandidateResult result = new CandidateResult.Blended(dComponents, blendedDisease);
+                if (result.improvedComparedToBestSingleDisease()) {
+                    bbqResults.add(result); // only record melded candidates that are better than the best single disease
+                }
+            }
+                
             }
         }
         return bbqResults;

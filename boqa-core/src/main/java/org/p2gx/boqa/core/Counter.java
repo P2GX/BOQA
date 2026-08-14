@@ -1,6 +1,8 @@
 package org.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 
 import java.util.Set;
 
@@ -22,6 +24,11 @@ public interface Counter {
      * the exponents of alpha, beta, 1-alpha, 1-beta
      */
     BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData);
+
+
+    default BoqaCounts computeBoqaCountsFromDisease(Set<TermId> observedDiseaseHpoIds, PatientData patientData) {
+        throw new RuntimeException("computeBoqaCountsFromDisease Not implemented - needs refactor");
+    }
 
     /**
      * Return a set with all disease IDs.
