@@ -62,7 +62,7 @@ public class BlendedCounter implements Counter {
                   }
                }
                case CandidateDisease.Blended b -> {
-                 List<TargetDisease> list = b.components(); 
+                 List<TargetDisease.Gene> list = b.components(); 
                   Set<TermId> observed = new HashSet<>();
                   for (TargetDisease td: list) {
                     TermId diseaseId = TermId.of(td.diseaseId());
