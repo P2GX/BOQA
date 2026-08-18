@@ -2,6 +2,7 @@ package org.p2gx.boqa.core;
 
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 import org.p2gx.boqa.core.diseases.TargetDisease;
 
 import java.util.Set;
@@ -26,7 +27,10 @@ public interface Counter {
     BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData);
 
 
-    default BoqaCounts computeBoqaCountsFromDisease(Set<TermId> observedDiseaseHpoIds, PatientData patientData) {
+    default BoqaCountsNew computeBoqaCountsFromDisease(
+            Set<TermId> observedDiseaseHpoIds,
+            Set<TermId> observedPatientHpoIds
+    ) {
         throw new RuntimeException("computeBoqaCountsFromDisease Not implemented - needs refactor");
     }
 

@@ -14,6 +14,7 @@ import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BlendedCounter;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.CandidateResult;
 import org.p2gx.boqa.core.diseases.DiseaseComponent;
@@ -69,28 +70,28 @@ public class BoqaBlendedExomiserAnalyser {
     public List<CandidateResult> computeBlendedBoqaResults(
         PatientData patientData, 
         List<TargetDisease.Gene> targetDiseaseList) {
-        //List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
-        List<CandidateResult> bbqResults = new ArrayList<>();
+        List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
+        // Records cannot be modified, let us accept keeping CandidateDisease around for now, and worry about List<CandidateResult> later
+        //List<CandidateResult> bbqResults = new ArrayList<>();
+
+        // The counter should not need hpoDiseases, those have to be built before, only the induced terms happen there
         Counter counter = new BlendedCounter(hpo, hpoDiseases, candidateDiseaseList);
-        List<CandidateDisease.Single> singleDiseaseCandidateList = CandidateDisease.createSingleDiseaseCandidates(targetDiseaseList);
-        Map< CandidateDisease, CandidateResult> singleResultMap = new HashMap<>();
-        for (CandidateDisease cd : singleDiseaseCandidateList) {
-            if (cd instanceof CandidateDisease.Blended) continue; // only analyse singles
-            BoqaCounts bcounts = counter.computeBoqaCounts(cd.diseaseId(), patientData);
-            double boqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
+        List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
+        Map< CandidateDisease, CandidateResult> resultMap = new HashMap<>();
+        for (CandidateDisease cd : diseaseCandidateList) {
+            BoqaCountsNew bcounts = counter.computeBoqaCountsFromDisease(
+                    cd.observedHpoTermids(),
+                    patientData.getObservedTerms()
+            );
+            double boqaScore = BoqaPatientAnalyzerNew.computeUnnormalizedLogProbability(params, bcounts);
             DiseaseComponent dcomponent = new DiseaseComponent(cd.finalDisease(), bcounts, boqaScore);
+            // TODO got here
+            // TODO NOW and only NOW we use the sealed interfaces power, we treat CandidateResults differently
             CandidateResult result = new CandidateResult.Single(dcomponent);
-            singleResultMap.put(cd, result);
+            resultMap.put(cd, result);
         }
 
-        for (CandidateDisease candidate : candidateDiseaseList) {
-            if (candidate instanceof CandidateDisease.Blended blended) {
-                TargetDisease finalDisease = blended.finalDisease();
-                List<TargetDisease.Gene> components = blended.components();
-                BoqaCounts bcounts = counter.computeBoqaCounts(finalDisease.diseaseId(), patientData); // result for the blended
-                double blendedBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
-                DiseaseComponent blendedDisease = new DiseaseComponent(finalDisease, bcounts, blendedBoqaScore);
-                // we also want to get the scores for the component diseases. 
+
                 // there is probably a more efficient way, this is recalculating
                 List<DiseaseComponent> dComponents = new ArrayList<>();
                 for (var dc: components) {

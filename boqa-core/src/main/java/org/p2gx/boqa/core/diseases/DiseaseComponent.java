@@ -1,9 +1,9 @@
 package org.p2gx.boqa.core.diseases;
 
-import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 
-final public record DiseaseComponent(
+public record DiseaseComponent(
     TargetDisease disease,
-    BoqaCounts counts,
+    BoqaCountsNew counts,
     double score
 ) {}

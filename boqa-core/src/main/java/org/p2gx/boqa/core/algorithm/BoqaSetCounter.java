@@ -63,7 +63,7 @@ public class BoqaSetCounter implements Counter {
                             .map(TermId::of)
                             .filter(phenotypicAbnormalities::contains)
                             .collect(Collectors.toSet());
-                    return ontologyTraverser.initLayer(diseasePhenotypes);
+                    return ontologyTraverser.getObservedWithAncestors(diseasePhenotypes);
                 }));
         LOGGER.info("Finished initializing disease layers");
     }
@@ -81,7 +81,7 @@ public class BoqaSetCounter implements Counter {
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
         Set<TermId> observedHpos = patientData.getObservedTerms();
-        Set<TermId> queryLayer = ontologyTraverser.initLayer(observedHpos);
+        Set<TermId> queryLayer = ontologyTraverser.getObservedWithAncestors(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
 
         // TP

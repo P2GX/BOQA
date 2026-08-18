@@ -1,5 +1,7 @@
 package org.p2gx.boqa.core.diseases;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -7,21 +9,21 @@ import java.util.Set;
  * Represents a disease target which can either be a pure disease-level target 
  * or a more specific gene-disease target.
  */
-public sealed interface TargetDisease permits TargetDisease.Disease, TargetDisease.Gene {
+public sealed interface TargetDisease permits TargetDisease.Phenotype, TargetDisease.Gene {
     
     String diseaseId();
     String diseaseLabel();
-    Set<String> observedHpoIds();
+    Set<TermId> observedHpoIds();
 
     /**
      * A disease target without associated gene information.
      */
-    record Disease(
+    record Phenotype(
         String diseaseId,
         String diseaseLabel,
-        Set<String> observedHpoIds
+        Set<TermId> observedHpoIds
     ) implements TargetDisease {
-        public Disease {
+        public Phenotype {
             Objects.requireNonNull(diseaseId, "diseaseId cannot be null");
             Objects.requireNonNull(diseaseLabel, "diseaseLabel cannot be null");
         }
@@ -35,7 +37,7 @@ public sealed interface TargetDisease permits TargetDisease.Disease, TargetDisea
         String diseaseLabel,
         String geneId,
         String geneSymbol,
-        Set<String> observedHpoIds
+        Set<TermId> observedHpoIds
     ) implements TargetDisease {
         public Gene {
             Objects.requireNonNull(diseaseId, "diseaseId cannot be null");
