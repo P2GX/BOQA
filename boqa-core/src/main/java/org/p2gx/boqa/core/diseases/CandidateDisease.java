@@ -87,9 +87,8 @@ public sealed interface CandidateDisease permits CandidateDisease.Single, Candid
 
     private static CandidateDisease.Blended getMelded(List<TargetDisease.Gene> diseaseNplet) {
         if (diseaseNplet.size() != 2) {
-            throw new PhenolRuntimeException("Only doublets of target diseases supported, found: " + diseaseNplet.size());
+           LOGGER.warn("Only doublets of target diseases are supported, found: " + diseaseNplet.size());
         }
-
         Set<TermId> combinedObservedHpoIds = diseaseNplet.stream()
                 .flatMap(d -> d.observedHpoIds().stream())
                 .collect(Collectors.toSet());

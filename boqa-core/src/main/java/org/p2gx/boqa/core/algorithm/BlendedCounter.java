@@ -25,52 +25,14 @@ public class BlendedCounter implements Counter {
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
     private final OntologyTraverser ontologyTraverser;
-    // OMIM to set of observed HPO and ancestors
-    private final Map<TermId, Set<TermId>> diseaseLayers;
     private final Ontology hpo;
 
 
     public BlendedCounter(
-        Ontology hpo,
-        HpoDiseases diseases, 
-        List<CandidateDisease> candidateDiseaseList
+        Ontology hpo
     ) {
         this.ontologyTraverser = new OntologyTraverser(hpo);
         this.hpo = hpo;
-        this.diseaseLayers = new HashMap<>();
-
-        Map<TermId, HpoDisease> hpoDiseaseMap = diseases.diseaseById();
-        for (CandidateDisease candidate: candidateDiseaseList) {
-             switch (candidate) {
-              case CandidateDisease.Single s -> {
-                TermId diseaseId = TermId.of(s.diseaseId());
-                  HpoDisease hpoDisease = hpoDiseaseMap.get(diseaseId);
-                  if (hpoDisease != null) {
-                    Set<TermId> observed = new HashSet<>();
-                    for (HpoDiseaseAnnotation hda : hpoDisease.presentAnnotations() ){
-                        observed.add(hda.id());
-                    }
-                    diseaseLayers.put(diseaseId, observed);
-                  }
-              }
-              case CandidateDisease.Blended b -> {
-                  List<TargetDisease.Gene> list = b.components();
-                  Set<TermId> observed = new HashSet<>();
-                  for (TargetDisease td: list) {
-                    TermId diseaseId = TermId.of(td.diseaseId());
-                  HpoDisease hpoDisease = hpoDiseaseMap.get(diseaseId);
-                  if (hpoDisease != null) {
-                    for (HpoDiseaseAnnotation hda : hpoDisease.presentAnnotations() ){
-                        observed.add(hda.id());
-                    }
-                    
-                  }
-                  }
-                  TermId meldedId = TermId.of(b.diseaseId());
-                  diseaseLayers.put(meldedId, observed);
-              }
-             }
-        }
     }
 
     /**
@@ -86,53 +48,7 @@ public class BlendedCounter implements Counter {
      */
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
-        Set<TermId> observedHpos = patientData.getObservedTerms();
-        Set<TermId> queryLayer = ontologyTraverser.getObservedWithAncestors(observedHpos);
-        Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
-
-        // TP
-        Set<TermId> truePositives = new HashSet<>(diseaseLayer);
-        truePositives.retainAll(queryLayer);
-
-        // FP
-        Set<TermId> falsePositives = new HashSet<>(queryLayer);
-        falsePositives.removeAll(diseaseLayer);
-
-        // FN
-        Set<TermId> falseNegatives = new HashSet<>(diseaseLayer);
-        falseNegatives.removeAll(queryLayer); // equivalent with removeAll(intersection)
-        // Now iterate over these and count only those with all parents ON
-        int betaCounts = 0; // exponent of beta
-        for (TermId node : falseNegatives) {
-            if (ontologyTraverser.allParentsActive(node, queryLayer)) {
-                betaCounts += 1;
-            }
-        }
-        int offNodesCount = 0; // exponent of 1-alpha
-        Set<TermId> checkedNodes = new HashSet<>(); // used to avoid overcounting
-        for (TermId qobs : queryLayer) {
-            Set<TermId> children = new HashSet<>(ontologyTraverser.getHpoGraph().extendWithChildren(qobs, false));
-            // Go through all children of ON terms
-            for (TermId child : children) { // TODO consider a set with children of all of the terms
-                // Find those that are off
-                if (!queryLayer.contains(child)) {
-                    // Check if they are also off in the disease Layer
-                    if (!diseaseLayer.contains(child)) {
-                        // Make sure the node has not already been counted
-                        if (!checkedNodes.contains(child)) {
-                            // increase counter iff all parents are ON
-                            if (ontologyTraverser.allParentsActive(child, queryLayer)) {
-                                offNodesCount += 1;
-                                checkedNodes.add(child);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
-
-        return new BoqaCounts(diseaseId, "doesntmatter", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts("", "", 1, 1, 1, 1);
     }
 
 
@@ -159,7 +75,6 @@ public class BlendedCounter implements Counter {
     ) {
         Set<TermId> patientLayer = ontologyTraverser.getObservedWithAncestors(observedPatientHpoIds);
         Set<TermId> diseaseLayer = ontologyTraverser.getObservedWithAncestors(diseaseObservedHpoIds);
-       // diseaseLayers.get(TermId.of(diseaseId));
 
         // TP
         Set<TermId> truePositives = new HashSet<>(diseaseLayer);
@@ -210,5 +125,4 @@ public class BlendedCounter implements Counter {
     public Set<String> getDiseaseIds() {
         return Set.of();
     }
-
 }
