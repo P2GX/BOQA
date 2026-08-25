@@ -41,6 +41,11 @@ public final class BoqaPatientAnalyzer {
      *         counts and raw log scores for each HPOA-annotated disease.
      */
     public static BoqaAnalysisResult computeBoqaResultsRawLog(
+            PatientData patientData, Counter counter) {
+        return computeBoqaResultsRawLog(patientData, counter, AlgorithmParameters.defaultParams());
+    }
+
+    public static BoqaAnalysisResult computeBoqaResultsRawLog(
             PatientData patientData,
             Counter counter,
             AlgorithmParameters params) {
@@ -54,6 +59,29 @@ public final class BoqaPatientAnalyzer {
                 .toList();
 
         return new BoqaAnalysisResult(patientData, allResults);
+    }
+
+    /**
+     * To do, consider making API a little more convenient and reduced code
+     * duplication with above
+     * 
+     * @param patientData
+     * @param counter
+     * @return
+     */
+    public static BoqaAnalysisResult computeBoqaResultsRescaled(
+            PatientData patientData, Counter counter) {
+        AlgorithmParameters params = AlgorithmParameters.defaultParams();
+        List<BoqaResult> allResults = counter.getDiseaseIds()
+                .parallelStream() // fast: computes counts + scores in parallel
+                .map(dId -> {
+                    BoqaCounts bc = counter.computeBoqaCounts(dId, patientData);
+                    double rawScore = computeUnnormalizedLogProbability(params, bc);
+                    return new BoqaResult(bc, rawScore);
+                })
+                .toList();
+        List<BoqaResult> rescaled = Util.reScaledRawLogBoqaExomiserScores(allResults);
+        return new BoqaAnalysisResult(patientData, rescaled);
     }
 
     /**

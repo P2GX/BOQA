@@ -58,6 +58,10 @@ public final class AlgorithmParameters {
         return new AlgorithmParameters(a, b);
     }
 
+    public static AlgorithmParameters defaultParams() {
+        return AlgorithmParameters.create(DEFAULT_ALPHA, DEFAULT_BETA);
+    }
+
     public double getAlpha() {
         return alpha;
     }
