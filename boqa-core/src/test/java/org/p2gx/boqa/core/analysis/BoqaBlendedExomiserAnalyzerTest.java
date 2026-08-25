@@ -78,8 +78,8 @@ class BoqaBlendedExomiserAnalyzerTest {
         // singletons are scored, with no blended pair.
         List<String> sameGeneDiseases = diseasesForGene(FBN1);
         assumeFalse(sameGeneDiseases.size() < 2, "Fixture must have two diseases for the same gene");
-        TargetDisease anchor1 = new TargetDisease(sameGeneDiseases.get(0), "first", 5781, "FBN1");
-        TargetDisease anchor2 = new TargetDisease(sameGeneDiseases.get(1), "second", 5781, "FBN1");
+        TargetDisease anchor1 = new TargetDisease(sameGeneDiseases.get(0), "first", 5781, "FBN1", Set.of());
+        TargetDisease anchor2 = new TargetDisease(sameGeneDiseases.get(1), "second", 5781, "FBN1", Set.of());
         PatientData patient = patientFromDisease(anchor1.diseaseId());
 
         List<BlendedResult> results = analyzer.analyze(patient, Set.of(anchor1, anchor2), Integer.MAX_VALUE);
@@ -139,8 +139,8 @@ class BoqaBlendedExomiserAnalyzerTest {
     void diseaseAnchoredOnTwoGenes_throws() {
         // The same disease cannot be anchored twice, since an entry is keyed by its disease ID.
         String diseaseId = anchorOnGene(FBN1).diseaseId();
-        TargetDisease anchor1 = new TargetDisease(diseaseId, "label", 5781, "FBN1");
-        TargetDisease anchor2 = new TargetDisease(diseaseId, "label", 9871, "OTHER");
+        TargetDisease anchor1 = new TargetDisease(diseaseId, "label", 5781, "FBN1", Set.of());
+        TargetDisease anchor2 = new TargetDisease(diseaseId, "label", 9871, "OTHER", Set.of());
         PatientData patient = patientFromDisease(diseaseId);
 
         assertThrows(IllegalArgumentException.class,
@@ -181,7 +181,7 @@ class BoqaBlendedExomiserAnalyzerTest {
         List<String> diseases = diseasesForGene(geneId);
         assumeFalse(diseases.isEmpty(), "Fixture must contain an annotated disease for gene " + geneId);
         String diseaseId = diseases.getFirst();
-        return new TargetDisease(diseaseId, diseaseId, Integer.parseInt(geneId.substring("NCBIGene:".length())), geneId);
+        return new TargetDisease(diseaseId, diseaseId, Integer.parseInt(geneId.substring("NCBIGene:".length())), geneId, Set.of());
     }
 
     // The annotated diseases of a gene, most observed features first.
