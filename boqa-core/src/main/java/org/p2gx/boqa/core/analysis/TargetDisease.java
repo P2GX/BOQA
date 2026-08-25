@@ -1,6 +1,7 @@
 package org.p2gx.boqa.core.analysis;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A candidate disease to be analyzed, together with the gene that made it a candidate.
@@ -15,7 +16,7 @@ import java.util.Objects;
  * @param geneId       the NCBI gene ID as a plain number, i.e. {@code 2639} for {@code NCBIGene:2639}
  * @param geneSymbol   the gene symbol, e.g. {@code GCDH}
  */
-public record TargetDisease(String diseaseId, String diseaseLabel, int geneId, String geneSymbol) {
+public record TargetDisease(String diseaseId, String diseaseLabel, int geneId, String geneSymbol, Set<String> observedHpoTermIdSet) {
 
     public TargetDisease {
         Objects.requireNonNull(diseaseId, "Disease ID must not be null!");
