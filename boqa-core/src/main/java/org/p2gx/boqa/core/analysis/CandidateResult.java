@@ -1,15 +1,15 @@
-package org.p2gx.boqa.core.diseases;
+package org.p2gx.boqa.core.analysis;
 
 import java.util.List;
 
-import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
+import org.p2gx.boqa.core.diseases.DiseaseComponent;
 
 /**
  * The sealed result type. This guarantees that your HTML generator 
  * only receives valid data states.
  */
 public sealed interface CandidateResult extends Comparable<CandidateResult>
-        permits CandidateResult.Single, CandidateResult.Blended {
+        permits CandidateResult.SingleResult, CandidateResult.BlendedResult {
 
     /** Assess improvement over best single disease. Only makes sense for the Blended, but it is easeir
      * to define in the interface, and the result must be false for a single-disease, which cannot have
@@ -19,7 +19,6 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
         return false;
     }
     double score();
-    BoqaCountsNew counts();
 
 //    default double score() {
 //        return finalDiseaseModel().score();
@@ -59,24 +58,18 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
     /**
      * Variant 1: Exactly one disease and one set of counts.
      */
-    record Single(DiseaseComponent component) implements CandidateResult {
+    record SingleResult(DiseaseComponent component) implements CandidateResult {
         @Override
         public double score() {
             return component.score();
-        }
-
-        @Override
-        public BoqaCountsNew counts() {
-            return component.counts();
         }
     }
 
     /**
      * Variant 2: Multiple distinct components, plus the final melded result.
      */
-    record Blended(
+    record BlendedResult(
             List<DiseaseComponent> components,
-            BoqaCountsNew counts,
             double score
     ) implements CandidateResult {
 //        public Blended {

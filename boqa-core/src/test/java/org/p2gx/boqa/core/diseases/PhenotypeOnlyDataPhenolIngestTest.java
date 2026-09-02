@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-class PhenotypeDataPhenolIngestTest extends TestBase {
+class PhenotypeOnlyDataPhenolIngestTest extends TestBase {
 
     private static DiseaseData testDiseaseDict;
 

@@ -9,7 +9,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BlendedResultTest {
+class BlendedDiseaseNewDiseaseResultResultTest {
 
     private static final TargetDisease MARFAN =
             new TargetDisease("OMIM:154700", "Marfan syndrome", 2200, "FBN1", Set.of());

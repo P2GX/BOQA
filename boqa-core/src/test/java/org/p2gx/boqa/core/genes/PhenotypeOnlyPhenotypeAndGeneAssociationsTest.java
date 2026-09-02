@@ -13,13 +13,13 @@ import java.util.zip.GZIPInputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PhenotypeGeneAssociationsTest {
+class PhenotypeOnlyPhenotypeAndGeneAssociationsTest {
 
     private static DiseaseGeneAssociations geneAssociations;
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream stream = new GZIPInputStream(Objects.requireNonNull(PhenotypeGeneAssociationsTest.class
+        try (InputStream stream = new GZIPInputStream(Objects.requireNonNull(PhenotypeOnlyPhenotypeAndGeneAssociationsTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
             geneAssociations = DiseaseGeneAssociations.fromStream(stream);
         }

@@ -1,13 +1,12 @@
 package org.p2gx.boqa.core.analysis;
 
-import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
 
 /**
- * Record wrapping around {@link BoqaCounts} and combining it with a probability score.
+ * Record wrapping around {@link } and combining it with a probability score.
  *
- * <p>This record pairs the {@link BoqaCounts} (which depend only on the ontology and patient data)
+ * <p>This record pairs the {@link } (which depend only on the ontology and patient data)
  * with the computed BOQA score (which additionally depends on algorithm parameters α and β, and
  * the normalization across all diseases being analyzed).
  *
@@ -24,7 +23,7 @@ import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
  *                  indicate greater diagnostic likelihood.
  *
  */
-public record BoqaResultNew(BoqaCountsNew counts, double boqaScore, CandidateDiseaseNew candidate) implements Comparable<BoqaResultNew> {
+record BoqaResultNew(BoqaCountsNew counts, double boqaScore, CandidateDiseaseNew candidate) implements Comparable<BoqaResultNew> {
     /**
      * Compares BoqaResults by score in descending order (highest score first).
      *
