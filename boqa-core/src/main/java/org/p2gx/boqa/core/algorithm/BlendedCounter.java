@@ -95,7 +95,7 @@ public class BlendedCounter implements Counter {
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
         Set<TermId> observedHpos = patientData.getObservedTerms();
-        Set<TermId> queryLayer = ontologyTraverser.initLayer(observedHpos);
+        Set<TermId> queryLayer = ontologyTraverser.getObservedWithAncestors(observedHpos);
         Set<TermId> diseaseLayer = diseaseLayers.get(TermId.of(diseaseId));
 
         // TP
