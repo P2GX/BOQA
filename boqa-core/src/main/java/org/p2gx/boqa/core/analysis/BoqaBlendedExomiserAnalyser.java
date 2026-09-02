@@ -1,8 +1,6 @@
 package org.p2gx.boqa.core.analysis;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -12,11 +10,7 @@ import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BlendedCounter;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
-import org.p2gx.boqa.core.diseases.CandidateDisease;
-import org.p2gx.boqa.core.diseases.CandidateResult;
-import org.p2gx.boqa.core.diseases.DiseaseComponent;
-import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
-import org.p2gx.boqa.core.diseases.TargetDisease;
+import org.p2gx.boqa.core.diseases.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,38 +60,25 @@ public class BoqaBlendedExomiserAnalyser {
      */
     public List<CandidateResult> computeBlendedBoqaResults(
         PatientData patientData, 
-        List<TargetDisease> targetDiseaseList) {
-        List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiseases(targetDiseaseList, this.hpoDiseases);
-        List<CandidateResult> bbqResults = new ArrayList<>();
-        Counter counter = new BlendedCounter(hpo, hpoDiseases, candidateDiseaseList);
-        for (CandidateDisease candidate : candidateDiseaseList) {
-            switch (candidate) {
-                case CandidateDisease.Single(TargetDisease disease, Set<String> observed) -> {
-                    BoqaCounts bcounts = counter.computeBoqaCounts(disease.diseaseId(), patientData);
-                    double boqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
-                    DiseaseComponent dcomponent = new DiseaseComponent(disease, bcounts, boqaScore);
-                    CandidateResult result = new CandidateResult.Single(dcomponent);
-                    bbqResults.add(result);
-                }
-                case CandidateDisease.Blended(List<TargetDisease> components, TargetDisease finalDisease, Set<String> observed) -> {
-                    BoqaCounts bcounts = counter.computeBoqaCounts(finalDisease.diseaseId(), patientData); // result for the blended
-                    double blendedBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
-                    DiseaseComponent blendedDisease = new DiseaseComponent(finalDisease, bcounts, blendedBoqaScore);
-                    // we also want to get the scores for the component diseases. 
-                    // there is probably a more efficient way, this is recalculating
-                    List<DiseaseComponent> dComponents = new ArrayList<>();
-                    for (var dc: components) {
-                        BoqaCounts singleDiseaseBoqaCounts = counter.computeBoqaCounts(dc.diseaseId(), patientData); 
-                        double singleDiseaseBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, singleDiseaseBoqaCounts);
-                        dComponents.add(new DiseaseComponent(dc, singleDiseaseBoqaCounts, singleDiseaseBoqaScore));
-                    }
-                    CandidateResult result = new CandidateResult.Blended(dComponents, blendedDisease);
-                    if (result.improvedComparedToBestSingleDisease()) {
-                        bbqResults.add(result); // only record melded candidates that are better than the best single disease
-                    }
-                }  
-            }
-        }
-        return bbqResults;
+        List<TargetDisease.PhenotypeAndGene> targetDiseaseList) {
+
+        // Now the counter is really only computing counts (though it needs HPO to do the induced HPOs)
+        Counter counter = new BlendedCounter(hpo);
+        // TODO Equivalent in spirit to previous DiseaseData. Given some input, generate a representation of HPOA for
+        //  diseases of interest. Here HPOA comes from TargetDisease, which should already inlcude the HPOs. We need a
+        //  to create a DiseaseDataIngest that returns List<TargetDisease.Phenotype> to recover the previous pure BOQA
+        List<CandidateDiseaseNew> diseaseCandidateList = CandidateDiseaseNew.createCandidateDiseases(targetDiseaseList);
+
+        // At this point our design, which PNR liked, pretty much had one "action" happening, namely:
+        // BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
+        //                                ppkt, counter, limit, params)
+        // In this way, all of the internals of the anlaysis happen in the core module, and not in this Exomiser
+        // specific Analyser class. The class BoqaAnalysisResult holds results for all diseases, maybe this needs to
+        // be reworked
+        //TODO fix resultsLimit
+        int resultsLimit = 100000;
+        return BoqaPatientAnalyzerNew.computeBoqaResults(
+                patientData, counter, resultsLimit, params, diseaseCandidateList
+        );
     }
 }

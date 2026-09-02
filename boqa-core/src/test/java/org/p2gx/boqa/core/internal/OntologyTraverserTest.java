@@ -37,11 +37,11 @@ public class OntologyTraverserTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("activeLayers")
-    void testInitLayer(String testName, Set<String> expectedNodes, Set<TermId> observedNodes ) {
+    void testGetObservedWithAncestors(String testName, Set<String> expectedNodes, Set<TermId> observedNodes ) {
         Set<TermId> expectedNodesTermIds = expectedNodes.stream()
                 .map(TermId::of)
                 .collect(Collectors.toSet());
-        assertEquals(expectedNodesTermIds, ontologyTraverser.initLayer(observedNodes));
+        assertEquals(expectedNodesTermIds, ontologyTraverser.getObservedWithAncestors(observedNodes));
     }
     // TODO: Daniel suggests using @CsvSource
     private static Stream<Arguments> activeLayers(){
@@ -74,7 +74,7 @@ public class OntologyTraverserTest {
         Set<TermId> observedNodesTermIds = observedNodes.stream()
                 .map(ontologyTraverser::getPrimaryTermId)
                 .collect(Collectors.toSet());
-        assertEquals(expectedNodesTermIds, ontologyTraverser.initLayer(observedNodesTermIds));
+        assertEquals(expectedNodesTermIds, ontologyTraverser.getObservedWithAncestors(observedNodesTermIds));
     }
     private static Stream<Arguments> oldTerms(){
         // Manually curated example: start from Arachnodactyly, HP:0001166, and go up
