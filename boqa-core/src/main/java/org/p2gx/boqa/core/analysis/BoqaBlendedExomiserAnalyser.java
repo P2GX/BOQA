@@ -12,6 +12,7 @@ import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BlendedCounter;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.CandidateResult;
 import org.p2gx.boqa.core.diseases.DiseaseComponent;
@@ -75,23 +76,23 @@ public class BoqaBlendedExomiserAnalyser {
                 case CandidateDisease.Single(TargetDisease disease) -> {
                     BoqaCounts bcounts = counter.computeBoqaCounts(disease.diseaseId(), patientData);
                     double boqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
-                    DiseaseComponent dcomponent = new DiseaseComponent(disease, bcounts, boqaScore);
+                    DiseaseComponent dcomponent = new DiseaseComponent(disease, asCountsNew(bcounts), boqaScore);
                     CandidateResult result = new CandidateResult.Single(dcomponent);
                     bbqResults.add(result);
                 }
                 case CandidateDisease.Blended(List<TargetDisease.Gene> components, TargetDisease.Gene finalDisease) -> {
                     BoqaCounts bcounts = counter.computeBoqaCounts(finalDisease.diseaseId(), patientData); // result for the blended
                     double blendedBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, bcounts);
-                    DiseaseComponent blendedDisease = new DiseaseComponent(finalDisease, bcounts, blendedBoqaScore);
+                    DiseaseComponent blendedDisease = new DiseaseComponent(finalDisease, asCountsNew(bcounts), blendedBoqaScore);
                     // we also want to get the scores for the component diseases. 
                     // there is probably a more efficient way, this is recalculating
                     List<DiseaseComponent> dComponents = new ArrayList<>();
                     for (var dc: components) {
                         BoqaCounts singleDiseaseBoqaCounts = counter.computeBoqaCounts(dc.diseaseId(), patientData); 
                         double singleDiseaseBoqaScore = BoqaPatientAnalyzer.computeUnnormalizedLogProbability(params, singleDiseaseBoqaCounts);
-                        dComponents.add(new DiseaseComponent(dc, singleDiseaseBoqaCounts, singleDiseaseBoqaScore));
+                        dComponents.add(new DiseaseComponent(dc, asCountsNew(singleDiseaseBoqaCounts), singleDiseaseBoqaScore));
                     }
-                    CandidateResult result = new CandidateResult.Blended(dComponents, blendedDisease);
+                    CandidateResult result = new CandidateResult.Blended(dComponents, blendedDisease.counts(), blendedDisease.score());
                     if (result.improvedComparedToBestSingleDisease()) {
                         bbqResults.add(result); // only record melded candidates that are better than the best single disease
                     }
@@ -99,5 +100,10 @@ public class BoqaBlendedExomiserAnalyser {
             }
         }
         return bbqResults;
+    }
+
+    private static BoqaCountsNew asCountsNew(BoqaCounts counts) {
+        return new BoqaCountsNew(counts.tpBoqaCount(), counts.fpBoqaCount(),
+                counts.tnBoqaCount(), counts.fnBoqaCount());
     }
 }
