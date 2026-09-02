@@ -22,7 +22,7 @@ import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class BlendedPhenotypeDataTest {
+class BlendedDiseaseNewDiseaseResultPhenotypeOnlyDataTest {
 
     private static final Set<String> ANCHOR_DISEASES = Set.of(
             "OMIM:617898", "OMIM:615360", "OMIM:613094", "OMIM:118100", "OMIM:613703");
@@ -35,11 +35,11 @@ class BlendedPhenotypeDataTest {
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(PhenotypeDataParseIngestTest.class.
+        try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(PhenotypeOnlyDataParseIngestTest.class.
                 getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")))) {
             testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoa);
         }
-        try (InputStream geneAssociations = new GZIPInputStream(Objects.requireNonNull(PhenotypeDataParseIngestTest.class.
+        try (InputStream geneAssociations = new GZIPInputStream(Objects.requireNonNull(PhenotypeOnlyDataParseIngestTest.class.
                 getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
             geneIdsByDisease = parseGeneIdsByDisease(geneAssociations);
         }

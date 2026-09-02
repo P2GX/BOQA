@@ -1,10 +1,6 @@
 package org.p2gx.boqa.core.analysis;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
@@ -14,7 +10,6 @@ import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BlendedCounter;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
-import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 import org.p2gx.boqa.core.diseases.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +60,7 @@ public class BoqaBlendedExomiserAnalyser {
      */
     public List<CandidateResult> computeBlendedBoqaResults(
         PatientData patientData, 
-        List<TargetDisease.Gene> targetDiseaseList) {
+        List<TargetDisease.PhenotypeAndGene> targetDiseaseList) {
 
         // Now the counter is really only computing counts (though it needs HPO to do the induced HPOs)
         Counter counter = new BlendedCounter(hpo);

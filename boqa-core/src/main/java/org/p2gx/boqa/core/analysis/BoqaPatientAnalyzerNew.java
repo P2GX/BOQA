@@ -5,7 +5,6 @@ import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
-import org.p2gx.boqa.core.diseases.CandidateResult;
 import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.diseases.DiseaseComponent;
 import org.slf4j.Logger;
@@ -141,9 +140,9 @@ public final class BoqaPatientAnalyzerNew {
 
         // Use CandidateResult only now. Filter out most melded
         Map<String, BoqaResultNew> singleResultsById = allResults.stream()
-                .filter(r -> r.candidate() instanceof CandidateDiseaseNew.Single)
+                .filter(r -> r.candidate() instanceof CandidateDiseaseNew.SingleDiseaseNew)
                 .collect(Collectors.toMap(
-                        r -> ((CandidateDiseaseNew.Single) r.candidate())
+                        r -> ((CandidateDiseaseNew.SingleDiseaseNew) r.candidate())
                                 .disease().diseaseId(),
                         Function.identity()
                 ));
@@ -153,7 +152,7 @@ public final class BoqaPatientAnalyzerNew {
 
         return candidateResults.stream()
                 .filter(r ->
-                        !(r instanceof CandidateResult.Blended)
+                        !(r instanceof CandidateResult.BlendedResult)
                                 || r.improvedComparedToBestSingleDisease())
                 .sorted()
                 .limit(resultsLimit)
@@ -162,7 +161,7 @@ public final class BoqaPatientAnalyzerNew {
 
     private static DiseaseComponent toDiseaseComponent(
             BoqaResultNew result,
-            CandidateDiseaseNew.Single candidate) {
+            CandidateDiseaseNew.SingleDiseaseNew candidate) {
 
         return new DiseaseComponent(
                 candidate.disease(),
@@ -170,30 +169,29 @@ public final class BoqaPatientAnalyzerNew {
                 result.boqaScore()
         );
     }
-
+    // TODO actually make sure BlendedResults have also counts and score of the blended disease
     private static CandidateResult toCandidateResult(
             BoqaResultNew result,
             Map<String, BoqaResultNew> singleResultsById) {
 
         return switch (result.candidate()) {
-            case CandidateDiseaseNew.Single single ->
-                    new CandidateResult.Single(
-                            toDiseaseComponent(result, single)
+            case CandidateDiseaseNew.SingleDiseaseNew singleDiseaseNew ->
+                    new CandidateResult.SingleResult(
+                            toDiseaseComponent(result, singleDiseaseNew)
                     );
-            case CandidateDiseaseNew.Blended blended -> {
+            case CandidateDiseaseNew.BlendedDiseaseNew blended -> {
                 List<DiseaseComponent> components = blended.components().stream()
-                        .map(TargetDisease.Gene::diseaseId)
+                        .map(TargetDisease.PhenotypeAndGene::diseaseId)
                         .map(singleResultsById::get)
                         .map(r -> {
-                            CandidateDiseaseNew.Single single =
-                                    (CandidateDiseaseNew.Single) r.candidate();
-                            return toDiseaseComponent(r, single);
+                            CandidateDiseaseNew.SingleDiseaseNew singleDiseaseNew =
+                                    (CandidateDiseaseNew.SingleDiseaseNew) r.candidate();
+                            return toDiseaseComponent(r, singleDiseaseNew);
                         })
                         .toList();
 
-                yield new CandidateResult.Blended(
+                yield new CandidateResult.BlendedResult(
                         components,
-                        result.counts(),
                         result.boqaScore()
                 );
             }
@@ -238,3 +236,4 @@ public final class BoqaPatientAnalyzerNew {
                 Math.pow(1 - beta, counts.tpBoqaCount());
     }
 }
+
