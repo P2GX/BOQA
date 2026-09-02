@@ -19,22 +19,22 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-class DiseaseDataCmpParsePhenolIngestTest {
+class PhenotypeDataCmpParsePhenolIngestTest {
 
     private static DiseaseData testDiseaseDictParse;
     private static DiseaseData testDiseaseDictPhenol;
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream is = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
+        try (InputStream is = new GZIPInputStream(PhenotypeDataCmpParsePhenolIngestTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
             testDiseaseDictParse = DiseaseDataParser.parseDiseaseDataFromHpoa(is);
         }
 
         try (
-            InputStream annotationStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
+            InputStream annotationStream = new GZIPInputStream(PhenotypeDataCmpParsePhenolIngestTest.class
                     .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"));
-            InputStream ontologyStream = new GZIPInputStream(DiseaseDataCmpParsePhenolIngestTest.class
+            InputStream ontologyStream = new GZIPInputStream(PhenotypeDataCmpParsePhenolIngestTest.class
                     .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz"))
         ) {
             testDiseaseDictPhenol = new DiseaseDataPhenolIngest(ontologyStream, annotationStream);
