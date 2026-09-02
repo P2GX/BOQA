@@ -40,4 +40,25 @@ public class Util {
                 .toList();
     }
 
+    public static List<BoqaResultNew> reScaledRawLogBoqaExomiserScoresNew(List<BoqaResultNew> boqaResults) {
+
+        // Extract raw BOQA log scores
+        List<Double> rawLogBoqaScores =
+                boqaResults.stream()
+                        .map(BoqaResultNew::boqaScore)
+                        .toList();
+
+        // Compute offset and normalization factor
+        double offset = Math.abs(Collections.min(rawLogBoqaScores));
+        double scale = Collections.max(rawLogBoqaScores) + offset;
+
+        // Rescale
+        return boqaResults.stream()
+                .map(br -> {
+                    double boqaExomiserScore = (br.boqaScore() + offset) / scale;
+                    return new BoqaResultNew(br.counts(), boqaExomiserScore, br.candidate());
+                })
+                .toList();
+    }
+
 }
