@@ -69,7 +69,7 @@ public class BoqaBlendedExomiserAnalyser {
         List<TargetDisease.Gene> targetDiseaseList) {
         List<CandidateDisease> candidateDiseaseList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
         List<CandidateResult> bbqResults = new ArrayList<>();
-        Counter counter = new BlendedCounter(hpo, hpoDiseases, candidateDiseaseList);
+        Counter counter = new BlendedCounter(hpo);
         for (CandidateDisease candidate : candidateDiseaseList) {
             switch (candidate) {
                 case CandidateDisease.Single(TargetDisease disease) -> {
