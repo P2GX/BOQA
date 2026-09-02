@@ -1,6 +1,8 @@
 package org.p2gx.boqa.core.analysis;
 
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
+import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
 
 /**
  * Record wrapping around {@link BoqaCounts} and combining it with a probability score.
@@ -22,7 +24,7 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
  *                  indicate greater diagnostic likelihood.
  *
  */
-public record BoqaResult(BoqaCounts counts, double boqaScore) implements Comparable<BoqaResult> {
+public record BoqaResultNew(BoqaCountsNew counts, double boqaScore, CandidateDiseaseNew candidate) implements Comparable<BoqaResultNew> {
     /**
      * Compares BoqaResults by score in descending order (highest score first).
      *
@@ -33,7 +35,7 @@ public record BoqaResult(BoqaCounts counts, double boqaScore) implements Compara
      * @return negative if this score is higher, positive if lower, zero if equal
      */
     @Override
-    public int compareTo(BoqaResult other) {
+    public int compareTo(BoqaResultNew other) {
         boolean isThisNaN = Double.isNaN(this.boqaScore);
         boolean isOtherNaN = Double.isNaN(other.boqaScore);
 
