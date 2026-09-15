@@ -25,3 +25,5 @@ boqacore.*.gz
 
 docs/_build/
 .vscode/
+.DS_Store
+

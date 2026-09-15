@@ -375,10 +375,24 @@
                                 <scanPackage>org.p2gx.boqa.core</scanPackage>
                             </scanPackages>
 
-                            <hideFields>true</hideFields>
-                            <hideMethods>true</hideMethods>
+                            <hideFields>false</hideFields>
+                            <hideMethods>false</hideMethods>
                             <useShortClassNames>true</useShortClassNames>
                             <useShortClassNamesInFieldsAndMethods>true</useShortClassNamesInFieldsAndMethods>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-sequence-diagram</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generateSequenceDiagram</goal>
+                        </goals>
+                        <configuration>
+                            <outputFilename>boqa-sequence.puml</outputFilename>
+                            <outputDirectory>${maven.multiModuleProjectDirectory}</outputDirectory>
+                            <showReturnTypes>true</showReturnTypes>
+                            <startClass>org.p2gx.boqa.core.analysis.BoqaBlendedExomiserAnalyser</startClass>
+                            <startMethod>computeBlendedBoqaResults</startMethod>
                         </configuration>
                     </execution>
                 </executions>
