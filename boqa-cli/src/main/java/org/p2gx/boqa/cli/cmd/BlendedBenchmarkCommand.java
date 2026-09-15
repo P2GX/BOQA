@@ -18,7 +18,7 @@ import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.analysis.CandidateResult;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
-import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.output.JsonResultWriter;
@@ -165,7 +165,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                                     .map(TermId::of).collect(Collectors.toSet())
                     )).toList();
 
-            List<CandidateDiseaseNew> diseaseCandidateList = CandidateDiseaseNew.createCandidateDiseases( //TODO these should be single diseases
+            List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases( //TODO these should be single diseases
                     targetDiseaseList);
 
             LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());

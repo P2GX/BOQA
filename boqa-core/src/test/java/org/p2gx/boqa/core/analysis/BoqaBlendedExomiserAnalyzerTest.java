@@ -31,7 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 class BoqaBlendedExomiserAnalyzerTest {
-
+    // TODO the BoqaBlendedExomiserAnalyzer class does not exist anymore, still tests in here
+    //  may be useful
     // Two genes whose diseases are annotated and do not overlap, so their anchors can blend.
     private static final String FBN1 = "NCBIGene:5781";
     private static final String OTHER_GENE = "NCBIGene:9871";

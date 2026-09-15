@@ -37,7 +37,7 @@ public interface PatientData {
     }
 
     /** The Exomiser provides us with a List of HPO identifiers as Strings. */
-    public static PatientData fromObservedHpoTermList(List<String> observed) {
+    static PatientData fromObservedHpoTermList(List<String> observed) {
         String randomId = java.util.UUID.randomUUID().toString();
         Set<TermId> observedTidSet = observed.stream()
             .map(TermId::of)

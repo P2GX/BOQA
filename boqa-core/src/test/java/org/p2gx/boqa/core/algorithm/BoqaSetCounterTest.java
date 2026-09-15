@@ -1,10 +1,14 @@
 package org.p2gx.boqa.core.algorithm;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
+import org.p2gx.boqa.core.analysis.CandidateResult;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.internal.OntologyTraverserTest;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
@@ -19,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeBoqaResults;
@@ -28,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BoqaSetCounterTest {
 
     private DiseaseData diseaseData;
+    List<CandidateDisease> diseaseCandidateList;
     private Counter counter;
     private Ontology hpo;
 
@@ -36,6 +42,13 @@ class BoqaSetCounterTest {
         try (InputStream annotationStream = new GZIPInputStream(BoqaSetCounterTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
             this.diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
+            List<TargetDisease.PhenotypeOnly> targetDiseaseList = diseaseData.getDiseaseIds().stream()
+                    .map(d -> new TargetDisease.PhenotypeOnly(d,"LABEL",
+                            diseaseData.getObservedDiseaseFeatures(d).stream()
+                                    .map(TermId::of).collect(Collectors.toSet())
+                    )).toList();
+            // TODO only single diseases ok?
+            this.diseaseCandidateList = CandidateDisease.createSingleDiseaseCandidates(targetDiseaseList);
         }
         try (
             InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
@@ -86,10 +99,7 @@ class BoqaSetCounterTest {
             int fpExp,
             int tpExp
     ) throws URISyntaxException, IOException {
-        Map<String,String> idToLabel = diseaseData.getIdToLabel();
-        BoqaCounts referenceBoqaCounts = new BoqaCounts(
-                diagnosedDiseaseId,
-                idToLabel.get(diagnosedDiseaseId),
+        BoqaCountsNew referenceBoqaCounts = new BoqaCountsNew(
                 tpExp,
                 fpExp,
                 tnExp,
@@ -104,16 +114,11 @@ class BoqaSetCounterTest {
         Path ppkt = Path.of(resourceUrl.toURI());
         int limit =  Integer.MAX_VALUE;
         AlgorithmParameters params = AlgorithmParameters.create(0.2,0.3); // numbers don't matter
-        PatientAnalysisResult patientAnalysisResult = computeBoqaResults(
-                new PhenopacketData(ppkt, hpo), counter, limit, params);
+        List<CandidateDisease> diagnosedCandidate = diseaseCandidateList.stream()
+                .filter(d -> Objects.equals(d.diseaseId(), Set.of(diagnosedDiseaseId)))
+                .toList();
 
-        BoqaCounts match = null;
-        for (BoqaResult br : patientAnalysisResult.boqaResults()){
-            if (br.counts().diseaseId().equals(diagnosedDiseaseId)) {
-                match = br.counts();
-                break;
-            }
-        }
-        assertEquals(referenceBoqaCounts, match);
+        List<CandidateResult> candidateResults = computeBoqaResults(new PhenopacketData(ppkt, hpo), counter, limit, params, diagnosedCandidate);
+        assertEquals(referenceBoqaCounts, candidateResults.getFirst().counts());
     }
 }

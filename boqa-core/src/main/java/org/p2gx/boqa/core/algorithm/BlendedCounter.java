@@ -1,21 +1,12 @@
 package org.p2gx.boqa.core.algorithm;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.PatientData;
-import org.p2gx.boqa.core.diseases.CandidateDisease;
-import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

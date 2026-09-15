@@ -67,7 +67,7 @@ public class BoqaBlendedExomiserAnalyser {
         // TODO Equivalent in spirit to previous DiseaseData. Given some input, generate a representation of HPOA for
         //  diseases of interest. Here HPOA comes from TargetDisease, which should already inlcude the HPOs. We need a
         //  to create a DiseaseDataIngest that returns List<TargetDisease.Phenotype> to recover the previous pure BOQA
-        List<CandidateDiseaseNew> diseaseCandidateList = CandidateDiseaseNew.createCandidateDiseases(targetDiseaseList);
+        List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
 
         // At this point our design, which PNR liked, pretty much had one "action" happening, namely:
         // BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(

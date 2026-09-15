@@ -12,7 +12,7 @@ import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.analysis.CandidateResult;
-import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.output.JsonResultWriter;
@@ -173,7 +173,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                                 .map(TermId::of).collect(Collectors.toSet())
                 )).toList();
 
-        List<CandidateDiseaseNew> diseaseCandidateList = CandidateDiseaseNew.createSingleDiseaseCandidates(targetDiseaseList);
+        List<CandidateDisease> diseaseCandidateList = CandidateDisease.createSingleDiseaseCandidates(targetDiseaseList);
 
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
