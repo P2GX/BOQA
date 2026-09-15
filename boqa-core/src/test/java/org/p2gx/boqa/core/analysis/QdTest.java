@@ -129,7 +129,7 @@ public class QdTest extends TestBase  {
         // Step 8: run the full scoring pipeline — compute raw log scores, normalize with
         // log-sum-exp, sort descending. Limit=100 (more than 3, so all results are returned).
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
-        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
+        PatientAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
                 ppktData, counter, 100, params);
 
         // Step 9: print normalized probability scores (sum to 1.0), sorted best-first.

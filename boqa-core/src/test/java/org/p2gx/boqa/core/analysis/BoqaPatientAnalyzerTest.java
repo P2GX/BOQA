@@ -100,11 +100,11 @@ class BoqaPatientAnalyzerTest extends TestBase {
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
 
         // Run 'computeBoqaResults'
-        BoqaAnalysisResult boqaAnalysisResult = BoqaPatientAnalyzer.computeBoqaResults(
+        PatientAnalysisResult patientAnalysisResult = BoqaPatientAnalyzer.computeBoqaResults(
                 patientData, counter, limit, params);
 
         // Recompute un-normalized probabilities in the conventional way
-        List<Double> rawProbs = boqaAnalysisResult.boqaResults().stream()
+        List<Double> rawProbs = patientAnalysisResult.boqaResults().stream()
                 .map(result -> computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), result.counts()))
                 .toList();
 
@@ -112,7 +112,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
         double rawProbsSum = rawProbs.stream().mapToDouble(Double::doubleValue).sum();
 
         // Compare normalized probabilities from BoqaResults with those recalculated from counts
-        boqaAnalysisResult.boqaResults().forEach(br-> {
+        patientAnalysisResult.boqaResults().forEach(br-> {
             double expectedNormProb = computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), br.counts()) / rawProbsSum;
             double actualNormProb = br.boqaScore();
             assertEquals(expectedNormProb, actualNormProb, 1e-9);

@@ -55,7 +55,7 @@ public class BoqaBlendedExomiserAnalyser {
      *
      * @param patientData  Query data (symptoms/features observed in a patient)
      * @param counter      The counter object that computes BoqaCounts for each HPOA-annotated disease
-     * @return A {@link BoqaAnalysisResult} containing the patient data along with
+     * @return A {@link PatientAnalysisResult} containing the patient data along with
      * counts and raw log scores for each HPOA-annotated disease.
      */
     public List<CandidateResult> computeBlendedBoqaResults(
@@ -77,7 +77,7 @@ public class BoqaBlendedExomiserAnalyser {
         // be reworked
         //TODO fix resultsLimit
         int resultsLimit = 100000;
-        return BoqaPatientAnalyzerNew.computeBoqaResults(
+        return BoqaPatientAnalyzer.computeBoqaResults(
                 patientData, counter, resultsLimit, params, diseaseCandidateList
         );
     }

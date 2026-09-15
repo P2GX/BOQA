@@ -7,16 +7,20 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.Writer;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
+import org.p2gx.boqa.core.analysis.CandidateResult;
+import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
+import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.p2gx.boqa.core.genes.DiseaseGeneAssociations;
@@ -123,7 +127,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         LOGGER.info("Results limit set to {}", limit);
 
         AtomicInteger fileCount = new AtomicInteger(0);
-        List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
+        List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();
 
         // Two diseases may blend only if no single gene explains both. The anchors differ per
         // iteration, but the rule does not, so it is built once here.
@@ -153,6 +157,17 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                             : BlendedDiseaseData.PairingStrategy.ANCHOR_VS_ANCHOR,
                     mayBlendAnchors);
 
+            // TODO we are blending twice... not sure this is the right thing
+            List<TargetDisease.PhenotypeAndGene> targetDiseaseList = blendedDiseaseData.getDiseaseIds().stream()
+                    .map(d -> new TargetDisease.PhenotypeAndGene(d,"LABEL",
+                            "geneID", "geneName", // TODO fix this
+                            blendedDiseaseData.getObservedDiseaseFeatures(d).stream()
+                                    .map(TermId::of).collect(Collectors.toSet())
+                    )).toList();
+
+            List<CandidateDiseaseNew> diseaseCandidateList = CandidateDiseaseNew.createCandidateDiseases( //TODO these should be single diseases
+                    targetDiseaseList);
+
             LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
             LOGGER.info("Creating BlendedDiseaseData object ...");
 
@@ -170,10 +185,11 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             }
 
             PatientData ppkt = new PhenopacketData(jsonFilePath, hpo);
-
-            boqaAnalysisResults.add(
-                    BoqaPatientAnalyzer.computeBoqaResults(
-                            ppkt, counter, limit, params)
+            List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
+                    ppkt, counter, limit, params,  diseaseCandidateList);
+            patientAnalysisResults.add(
+                    new PatientAnalysisResult(
+                            ppkt, candidateResults.stream().limit(resultsLimit).toList())
             );
             int count = fileCount.incrementAndGet();
             if (count % 10 == 0) {
@@ -186,7 +202,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
         Writer writer = new JsonResultWriter();
         writer.writeResults(
-                boqaAnalysisResults,
+                patientAnalysisResults,
                 Paths.get(ontologyFile),
                 phenotypeAnnotationFile,
                 cliArgs,

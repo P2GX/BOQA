@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.luben.zstd.ZstdOutputStream;
 
 import org.p2gx.boqa.core.Writer;
-import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
 
 import java.io.*;
@@ -43,7 +43,7 @@ public class JsonResultWriter implements Writer {
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
 
     @Override
-    public void writeResults(List<BoqaAnalysisResult> boqaAnalysisResults,
+    public void writeResults(List<PatientAnalysisResult> patientAnalysisResults,
                              Path hpoPath,
                              Path hpoaPath,
                              String cliArgs,
@@ -89,7 +89,7 @@ public class JsonResultWriter implements Writer {
                 )
         );
 
-        ResultBundle bundle = new ResultBundle(metadata, boqaAnalysisResults);
+        ResultBundle bundle = new ResultBundle(metadata, patientAnalysisResults);
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         if (compress) {
             try (

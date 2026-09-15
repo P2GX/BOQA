@@ -5,12 +5,16 @@ import org.monarchinitiative.phenol.annotations.io.hpo.DiseaseDatabase;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoader;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaderOptions;
 import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.*;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
-import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
+import org.p2gx.boqa.core.analysis.CandidateResult;
+import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -163,6 +167,14 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
         LOGGER.debug("Disease data parsed from {}", phenotypeAnnotationFile);
 
+        List<TargetDisease.PhenotypeOnly> targetDiseaseList = diseaseData.getDiseaseIds().stream()
+                .map(d -> new TargetDisease.PhenotypeOnly(d,"LABEL",
+                        diseaseData.getObservedDiseaseFeatures(d).stream()
+                                .map(TermId::of).collect(Collectors.toSet())
+                )).toList();
+
+        List<CandidateDiseaseNew> diseaseCandidateList = CandidateDiseaseNew.createSingleDiseaseCandidates(targetDiseaseList);
+
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
@@ -171,7 +183,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
-        List<BoqaAnalysisResult> boqaAnalysisResults = new ArrayList<>();
+        List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();
 
         AtomicInteger fileCount = new AtomicInteger(0);
 
@@ -179,18 +191,21 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.info("Results limit set to {}", limit);
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
-            boqaAnalysisResults = stream
+            patientAnalysisResults = stream
                     .map(Path::of)
                     .parallel()
                     .map(singleFile -> {
                         PatientData ppkt = new PhenopacketData(singleFile, hpo);
-                        BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
-                                ppkt, counter, limit, params);
+                        List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
+                                ppkt, counter, limit, params,  diseaseCandidateList);
+                        PatientAnalysisResult patientAnalysisResult = new PatientAnalysisResult(
+                                ppkt, candidateResults.stream().limit(resultsLimit).toList());
+
                         int count = fileCount.incrementAndGet();
                         if (count % 50 == 0) {
                             System.out.println("Processed: " + count);
                         }
-                        return result;
+                        return patientAnalysisResult;
                     })
                     .toList();
         } catch (IOException e) {
@@ -201,8 +216,9 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.info("Writing results to {}", outPath);
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
         Writer writer = new JsonResultWriter();
+        //TODO output format has not been checked
         writer.writeResults(
-                boqaAnalysisResults,
+                patientAnalysisResults,
                 Paths.get(ontologyFile),
                 phenotypeAnnotationFile,
                 cliArgs,

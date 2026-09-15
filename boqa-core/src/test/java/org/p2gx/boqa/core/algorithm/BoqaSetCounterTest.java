@@ -2,7 +2,7 @@ package org.p2gx.boqa.core.algorithm;
 
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
-import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
 import org.p2gx.boqa.core.internal.OntologyTraverserTest;
@@ -105,11 +105,11 @@ class BoqaSetCounterTest {
         Path ppkt = Path.of(resourceUrl.toURI());
         int limit =  Integer.MAX_VALUE;
         AlgorithmParameters params = AlgorithmParameters.create(0.2,0.3); // numbers don't matter
-        BoqaAnalysisResult boqaAnalysisResult = computeBoqaResults(
+        PatientAnalysisResult patientAnalysisResult = computeBoqaResults(
                 new PhenopacketData(ppkt, hpo), counter, limit, params);
 
         BoqaCounts match = null;
-        for (BoqaResult br : boqaAnalysisResult.boqaResults()){
+        for (BoqaResult br : patientAnalysisResult.boqaResults()){
             if (br.counts().diseaseId().equals(diagnosedDiseaseId)) {
                 match = br.counts();
                 break;
