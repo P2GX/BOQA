@@ -40,12 +40,12 @@ public class Util {
                 .toList();
     }
 
-    public static List<BoqaResultNew> reScaledRawLogBoqaExomiserScoresNew(List<BoqaResultNew> boqaResults) {
+    public static List<AlgorithmResult> reScaledRawLogBoqaExomiserScoresNew(List<AlgorithmResult> boqaResults) {
 
         // Extract raw BOQA log scores
         List<Double> rawLogBoqaScores =
                 boqaResults.stream()
-                        .map(BoqaResultNew::boqaScore)
+                        .map(AlgorithmResult::boqaScore)
                         .toList();
 
         // Compute offset and normalization factor
@@ -56,7 +56,7 @@ public class Util {
         return boqaResults.stream()
                 .map(br -> {
                     double boqaExomiserScore = (br.boqaScore() + offset) / scale;
-                    return new BoqaResultNew(br.counts(), boqaExomiserScore, br.candidate());
+                    return new AlgorithmResult(br.counts(), boqaExomiserScore, br.candidate());
                 })
                 .toList();
     }

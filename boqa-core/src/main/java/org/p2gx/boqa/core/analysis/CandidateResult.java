@@ -2,7 +2,7 @@ package org.p2gx.boqa.core.analysis;
 
 import java.util.List;
 
-import org.p2gx.boqa.core.diseases.DiseaseComponent;
+import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
 
 /**
  * The sealed result type. This guarantees that your HTML generator 
@@ -19,6 +19,7 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
         return false;
     }
     double score();
+    BoqaCountsNew counts();
 
 //    default double score() {
 //        return finalDiseaseModel().score();
@@ -58,10 +59,14 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
     /**
      * Variant 1: Exactly one disease and one set of counts.
      */
-    record SingleResult(DiseaseComponent component) implements CandidateResult {
+    record SingleResult(AlgorithmResult component) implements CandidateResult {
         @Override
         public double score() {
-            return component.score();
+            return component.boqaScore();
+        }
+        @Override
+        public BoqaCountsNew counts() {
+            return component.counts();
         }
     }
 
@@ -69,8 +74,8 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
      * Variant 2: Multiple distinct components, plus the final melded result.
      */
     record BlendedResult(
-            List<DiseaseComponent> components,
-            double score
+            List<AlgorithmResult> components,
+            AlgorithmResult blendedDisease
     ) implements CandidateResult {
 //        public Blended {
 //            if (components == null || components.size() < 2) {
@@ -78,16 +83,24 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
 //            }
 //        }
         @Override
+        public BoqaCountsNew counts() {
+            return blendedDisease.counts();
+        }
+        @Override
+        public double score() {
+            return blendedDisease.boqaScore();
+        }
+        @Override
         public boolean improvedComparedToBestSingleDisease() {
             return naiveImprovement();
         }
 
         private boolean naiveImprovement() {
             double maxSingleScore = components().stream()
-                .mapToDouble(DiseaseComponent::score)
+                .mapToDouble(AlgorithmResult::boqaScore)
                 .max()
                 .orElse(0.0);
-            return score > maxSingleScore;
+            return blendedDisease.boqaScore() > maxSingleScore;
         }
 
     }

@@ -23,7 +23,7 @@ import org.p2gx.boqa.core.diseases.CandidateDiseaseNew;
  *                  indicate greater diagnostic likelihood.
  *
  */
-record BoqaResultNew(BoqaCountsNew counts, double boqaScore, CandidateDiseaseNew candidate) implements Comparable<BoqaResultNew> {
+public record AlgorithmResult(BoqaCountsNew counts, double boqaScore, CandidateDiseaseNew candidate) implements Comparable<AlgorithmResult> {
     /**
      * Compares BoqaResults by score in descending order (highest score first).
      *
@@ -34,7 +34,7 @@ record BoqaResultNew(BoqaCountsNew counts, double boqaScore, CandidateDiseaseNew
      * @return negative if this score is higher, positive if lower, zero if equal
      */
     @Override
-    public int compareTo(BoqaResultNew other) {
+    public int compareTo(AlgorithmResult other) {
         boolean isThisNaN = Double.isNaN(this.boqaScore);
         boolean isOtherNaN = Double.isNaN(other.boqaScore);
 

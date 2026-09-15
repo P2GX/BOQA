@@ -30,16 +30,23 @@ import java.util.stream.IntStream;
 public sealed interface CandidateDiseaseNew permits CandidateDiseaseNew.SingleDiseaseNew, CandidateDiseaseNew.BlendedDiseaseNew {
     Logger LOGGER = LoggerFactory.getLogger("org.p2gx.boqa.core.diseases.CandidateDisease");
     // This is the merged disease (or the single Mendelian disease for "Single"), i.e., the disease we will be testing
+    Set<String> diseaseId();
+    Set<String> diseaseLabel();
     Set<TermId> observedHpoTermids();
     
    /**
      * A single Mendelian disease.
      */
     record SingleDiseaseNew(TargetDisease disease) implements CandidateDiseaseNew {
-        public TargetDisease finalDisease() {
+        public TargetDisease finalDiagnosis() {
             return disease;
         }
 
+        @Override
+        public Set<String> diseaseId(){ return Set.of(disease.diseaseId());}
+
+        @Override
+        public Set<String> diseaseLabel(){ return Set.of(disease.diseaseLabel());}
         @Override
         public Set<TermId> observedHpoTermids() {
             return disease.observedHpoIds();
@@ -55,6 +62,14 @@ public sealed interface CandidateDiseaseNew permits CandidateDiseaseNew.SingleDi
                 throw new IllegalArgumentException("Blended diseases must contain at least 2 components");
             }
         }
+        @Override
+        public Set<String> diseaseId() {
+            return components.stream().map(TargetDisease.PhenotypeAndGene::diseaseId).collect(Collectors.toSet());
+        }
+        @Override
+        public Set<String> diseaseLabel() {
+            return components.stream().map(TargetDisease.PhenotypeAndGene::diseaseLabel).collect(Collectors.toSet());
+        }
         Set<String> geneId() {
             return components.stream().map(TargetDisease.PhenotypeAndGene::geneId).collect(Collectors.toSet());
         }
@@ -62,7 +77,7 @@ public sealed interface CandidateDiseaseNew permits CandidateDiseaseNew.SingleDi
             return components.stream().map(TargetDisease.PhenotypeAndGene::geneSymbol).collect(Collectors.toSet());
         }
 
-        public Set<TargetDisease> finalDisease() {
+        public Set<TargetDisease> finalDiagnosis() {
             return components.stream()
                     .map(g -> (TargetDisease) g)
                     .collect(Collectors.toSet());
