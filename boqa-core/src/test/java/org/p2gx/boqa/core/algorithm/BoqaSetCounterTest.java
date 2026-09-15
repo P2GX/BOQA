@@ -54,7 +54,7 @@ class BoqaSetCounterTest {
             numLinesToSkip = 2
             // useHeadersInDisplayName = true // does not work, don't use it
     )
-    void testPyboqaFull(
+    void testAgainstReferenceFull(
             String jsonFile,
             String diagnosedDiseaseId,
             int tnExp,
@@ -62,13 +62,12 @@ class BoqaSetCounterTest {
             int fpExp,
             int tpExp
     ) throws URISyntaxException, IOException {
-        testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
+        testComputeBoqaCountsAgainstReference(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
     }
 
-    // As a first idea, test against pyboqa results
     @ParameterizedTest(name = "[{index}] {arguments}")
     @CsvFileSource(resources = "few_examples_boqa_counts_for_top_ranked_diseases.csv", numLinesToSkip = 2)
-    void testPyboqaSubset(
+    void testAgainstReferenceSubset(
             String jsonFile,
             String diagnosedDiseaseId,
             int tnExp,
@@ -76,10 +75,10 @@ class BoqaSetCounterTest {
             int fpExp,
             int tpExp
     ) throws URISyntaxException, IOException {
-        testComputeBoqaCountsAgainstPyboqa(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
+        testComputeBoqaCountsAgainstReference(jsonFile, diagnosedDiseaseId, tnExp, fnExp, fpExp, tpExp);
     }
 
-    void testComputeBoqaCountsAgainstPyboqa(
+    void testComputeBoqaCountsAgainstReference(
             String jsonFile,
             String diagnosedDiseaseId,
             int tnExp,
@@ -88,7 +87,7 @@ class BoqaSetCounterTest {
             int tpExp
     ) throws URISyntaxException, IOException {
         Map<String,String> idToLabel = diseaseData.getIdToLabel();
-        BoqaCounts pyboqaCounts = new BoqaCounts(
+        BoqaCounts referenceBoqaCounts = new BoqaCounts(
                 diagnosedDiseaseId,
                 idToLabel.get(diagnosedDiseaseId),
                 tpExp,
@@ -115,6 +114,6 @@ class BoqaSetCounterTest {
                 break;
             }
         }
-        assertEquals(pyboqaCounts, match);
+        assertEquals(referenceBoqaCounts, match);
     }
 }
