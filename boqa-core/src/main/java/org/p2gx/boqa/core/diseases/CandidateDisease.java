@@ -1,22 +1,13 @@
 package org.p2gx.boqa.core.diseases;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.IntStream;
-import java.util.stream.StreamSupport;
-import static java.util.stream.Collectors.toSet;
-
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDisease;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseaseAnnotation;
-import org.monarchinitiative.phenol.annotations.formats.hpo.HpoDiseases;
-import org.monarchinitiative.phenol.base.PhenolRuntimeException;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 
 /**
@@ -36,110 +27,103 @@ import org.slf4j.LoggerFactory;
  *  }
  * </pre>
  */
-public sealed interface CandidateDisease permits CandidateDisease.Single, CandidateDisease.Blended {
+public sealed interface CandidateDisease permits CandidateDisease.SingleDisease, CandidateDisease.BlendedDisease {
     Logger LOGGER = LoggerFactory.getLogger("org.p2gx.boqa.core.diseases.CandidateDisease");
     // This is the merged disease (or the single Mendelian disease for "Single"), i.e., the disease we will be testing
-    TargetDisease finalDisease();
-    Set<String> observedHpoTermids();
+    Set<String> diseaseId();
+    Set<String> diseaseLabel();
+    Set<TermId> observedHpoTermids();
     
-    default String diseaseId() {
-        return finalDisease().diseaseId();
-    }
-    default String diseaseLabel() {
-        return finalDisease().diseaseLabel();
-    }
-
-
-
-    /**
+   /**
      * A single Mendelian disease.
      */
-    record Single(TargetDisease disease, Set<String> observed) implements CandidateDisease {
-        @Override
-        public TargetDisease finalDisease() {
+    record SingleDisease(TargetDisease disease) implements CandidateDisease {
+        public TargetDisease finalDiagnosis() {
             return disease;
         }
 
         @Override
-        public Set<String> observedHpoTermids() {
-            return observed;
-        }
+        public Set<String> diseaseId(){ return Set.of(disease.diseaseId());}
 
+        @Override
+        public Set<String> diseaseLabel(){ return Set.of(disease.diseaseLabel());}
+        @Override
+        public Set<TermId> observedHpoTermids() {
+            return disease.observedHpoIds();
+        }
     }
 
     /**
      * A list of two or more Mendelian diseases (related to distinct genes) with a final blended disease.
      */
-    record Blended(List<TargetDisease> components, TargetDisease finalDisease, Set<String> observed) implements CandidateDisease {
-        public Blended {
+    record BlendedDisease(Set<TargetDisease.PhenotypeAndGene> components) implements CandidateDisease {
+        public BlendedDisease {
             if (components == null || components.size() < 2) {
                 throw new IllegalArgumentException("Blended diseases must contain at least 2 components");
             }
         }
+        @Override
+        public Set<String> diseaseId() {
+            return components.stream().map(TargetDisease.PhenotypeAndGene::diseaseId).collect(Collectors.toSet());
+        }
+        @Override
+        public Set<String> diseaseLabel() {
+            return components.stream().map(TargetDisease.PhenotypeAndGene::diseaseLabel).collect(Collectors.toSet());
+        }
+        Set<String> geneId() {
+            return components.stream().map(TargetDisease.PhenotypeAndGene::geneId).collect(Collectors.toSet());
+        }
+        Set<String> geneSymbol() {
+            return components.stream().map(TargetDisease.PhenotypeAndGene::geneSymbol).collect(Collectors.toSet());
+        }
+
+        public Set<TargetDisease> finalDiagnosis() {
+            return components.stream()
+                    .map(g -> (TargetDisease) g)
+                    .collect(Collectors.toSet());
+        }
 
         @Override
-        public Set<String> observedHpoTermids() {
-            return observed;
+        public Set<TermId> observedHpoTermids() {
+            return components.stream().flatMap(
+                    d->d.observedHpoIds().stream()).collect(Collectors.toSet());
         }
-
     }
 
-    private static TargetDisease getMelded(List<TargetDisease> diseasePair) {
-        if (diseasePair.size() != 2) {
-            throw new PhenolRuntimeException("Unexpected length of pair od target diseases: " + diseasePair.size());
-        }
-        TargetDisease t1 = diseasePair.get(0);
-        TargetDisease t2 = diseasePair.get(1);
-        String diseaseId = t1.diseaseId() + "-" + t2.diseaseId();
-        String diseaseLabel = t1.diseaseLabel() + "-" + t2.diseaseLabel();
-        String geneId = t1.geneId() + "-" + t2.geneId();
-        String symbol = t1.geneSymbol() + "-" + t2.geneSymbol();
-        return new TargetDisease(diseaseId, diseaseLabel, geneId, symbol);
+    static List<CandidateDisease> createSingleDiseaseCandidates(List<? extends TargetDisease> targetDiseases) {
+        return targetDiseases.stream()
+                .map(SingleDisease::new)
+                .map(candidate -> (CandidateDisease) candidate)
+                .toList();
     }
 
-    public static Optional<Set<String>> getObservedIds(String diseaseId, HpoDiseases hpoDiseases) {
-       TermId tid = TermId.of(diseaseId);
-       return hpoDiseases.diseaseById(tid)
-            .map(disease -> StreamSupport.stream(disease.presentAnnotations().spliterator(), false)
-                    .map(annot -> annot.id().getValue())
-                    .collect(toSet()));
-    }
+    static List<CandidateDisease> createCandidateDiseases(List<TargetDisease.PhenotypeAndGene> targetDiseases) {
+        List<CandidateDisease> candidates = createSingleDiseaseCandidates(targetDiseases);
 
-    public static List<CandidateDisease> createCandidateDiseases(
-        List<TargetDisease> targetDiseases,
-        HpoDiseases hpoDiseases) {
-        List<CandidateDisease> candidates = new ArrayList<>();
-        // first add the singleton diseases
-        for (var td: targetDiseases) {
-            getObservedIds(td.diseaseId(), hpoDiseases).ifPresentOrElse(
-                observedIds -> candidates.add(new CandidateDisease.Single(td, observedIds)),
-                () -> LOGGER.error("Could not retrieve disease model for '{}'", td.diseaseId())
-            );
-        }
-        // Now add all pairwise combinations
-        List<List<TargetDisease>> diseasePairs = IntStream.range(0, targetDiseases.size())
-            .boxed()
-            .flatMap(i -> IntStream.range(i + 1, targetDiseases.size())
-                .mapToObj(j -> List.of(targetDiseases.get(i), targetDiseases.get(j))))
-            .toList();
+        List<Set<TargetDisease.PhenotypeAndGene>> diseaseNplet = makeAllowedCombinations(targetDiseases);
         // Create candidate disease pairs except if a disease pair has the same gene
-        diseasePairs.forEach(pair -> {
-            if (!pair.get(0).geneSymbol().equals(pair.get(1).geneSymbol())) {
-                TargetDisease meldedDisease = getMelded(pair); 
-                Optional<Set<String>> opt0 = getObservedIds(pair.get(0).diseaseId(), hpoDiseases);
-                Optional<Set<String>> opt1 = getObservedIds(pair.get(1).diseaseId(), hpoDiseases);
-                if (opt0.isPresent() && opt1.isPresent()) {
-                    Set<String> observed0 = opt0.get();
-                    Set<String> observed1 = opt1.get();
-                    Set<String> combinedObserved = new HashSet<>(opt0.get());
-                    combinedObserved.addAll(opt1.get());
-                    candidates.add(new CandidateDisease.Blended(pair, meldedDisease, combinedObserved));
-                } else {
-                    LOGGER.error("Could not retrieve observed phenotypes for melded disease: {} - {}", 
-                        pair.get(0).diseaseId(), pair.get(1).diseaseId());
-                }
+        diseaseNplet.forEach(pair -> {
+            if (hasDistinctGenes(pair)) {
+                candidates.add(new BlendedDisease(pair));
             }
         });
         return candidates;
+    }
+
+    static List<Set<TargetDisease.PhenotypeAndGene>> makeAllowedCombinations(List<TargetDisease.PhenotypeAndGene> targetDiseases){
+        // Only paired combinations supported for now
+        List<Set<TargetDisease.PhenotypeAndGene>> diseasePairs = IntStream.range(0, targetDiseases.size())
+                .boxed()
+                .flatMap(i -> IntStream.range(i + 1, targetDiseases.size())
+                        .mapToObj(j -> Set.of(targetDiseases.get(i), targetDiseases.get(j))))
+                .toList();
+        return diseasePairs;
+    }
+
+    private static boolean hasDistinctGenes(Set<TargetDisease.PhenotypeAndGene> diseases) {
+        return diseases.stream()
+                .map(TargetDisease.PhenotypeAndGene::geneSymbol)
+                .distinct()
+                .count() == diseases.size();
     }
 }

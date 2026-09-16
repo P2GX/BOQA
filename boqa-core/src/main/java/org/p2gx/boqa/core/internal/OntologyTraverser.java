@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * This class centralizes operations needed in the BOQA algorithm to:
  * <ul>
  *   <li>Initialize a "layer" of ontology terms by expanding observed HPO terms
- *   with their ancestors ({@link #initLayer(Set)}).</li>
+ *   with their ancestors ({@link #getObservedWithAncestors(Set)}).</li>
  *   <li>Check whether all parents of a given term are active
  *   ({@link #allParentsActive(TermId, Set)}).</li>
  * </ul>
@@ -97,7 +97,7 @@ public class OntologyTraverser {
      * @return the initialized layer of terms including ancestors
      *
      */
-    public Set<TermId> initLayer(Set<TermId> hpoTerms) {
+    public Set<TermId> getObservedWithAncestors(Set<TermId> hpoTerms) {
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms.forEach(t -> {
             // this can be expensive, so use a light cache

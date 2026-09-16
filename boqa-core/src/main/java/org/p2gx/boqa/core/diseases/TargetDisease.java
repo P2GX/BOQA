@@ -1,30 +1,49 @@
 package org.p2gx.boqa.core.diseases;
-import java.util.Objects;
 
-/* Interface with Exomiser that contains all data we need to make an Exomiser result.
-We do not want to import the actual Exomiser library, but we want to make it easy to create objects that will
-implement the PriorityResult interface from Exomiser. These objects have
-1. int geneId();
-2. String geneSymbol();
-3. double score();
-4. PriorityType priorityType();
-5. default String getHTMLCode() {return "";}
-6. Therefore, we need to get this information from the Exomiser
-*/
-final public record TargetDisease(
-    /** A database identifier such as OMIM:154700 */
-    String diseaseId,
-    /** A disease name such as Marfan syndrome */
-    String diseaseLabel,
-    /** A gene identifier, such as HGNC:3603, ENSG00000166147, or NCBIGene:2200 */
-    String geneId,
-    /** A symbol for the gene such as FBN1 */
-    String geneSymbol 
-) {
-    public TargetDisease {
-        Objects.requireNonNull(diseaseId, "diseaseId cannot be null");
-        Objects.requireNonNull(diseaseLabel, "diseaseLabel cannot be null");
-        Objects.requireNonNull(geneId, "geneId cannot be null");
-        Objects.requireNonNull(geneSymbol, "geneSymbol cannot be null");
+import org.monarchinitiative.phenol.ontology.data.TermId;
+
+import java.util.Objects;
+import java.util.Set;
+
+/**
+ * Represents a disease target which can either be a pure disease-level target 
+ * or a more specific gene-disease target.
+ */
+public sealed interface TargetDisease permits TargetDisease.PhenotypeOnly, TargetDisease.PhenotypeAndGene {
+    
+    String diseaseId();
+    String diseaseLabel();
+    Set<TermId> observedHpoIds();
+
+    /**
+     * A disease target without associated gene information.
+     */
+    record PhenotypeOnly(
+        String diseaseId,
+        String diseaseLabel,
+        Set<TermId> observedHpoIds
+    ) implements TargetDisease {
+        public PhenotypeOnly {
+            Objects.requireNonNull(diseaseId, "diseaseId cannot be null");
+            Objects.requireNonNull(diseaseLabel, "diseaseLabel cannot be null");
+        }
+    }
+
+    /**
+     * A disease target tied to a specific gene in addition to the disease id.
+     */
+    record PhenotypeAndGene(
+        String diseaseId,
+        String diseaseLabel,
+        String geneId,
+        String geneSymbol,
+        Set<TermId> observedHpoIds
+    ) implements TargetDisease {
+        public PhenotypeAndGene {
+            Objects.requireNonNull(diseaseId, "diseaseId cannot be null");
+            Objects.requireNonNull(diseaseLabel, "diseaseLabel cannot be null");
+            Objects.requireNonNull(geneId, "geneId cannot be null");
+            Objects.requireNonNull(geneSymbol, "geneSymbol cannot be null");
+        }
     }
 }
