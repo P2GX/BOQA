@@ -4,15 +4,25 @@ import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.algorithm.SetCounter;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Performs BOQA analysis for a given query set of HPO terms (patient's data).
  * <p>
  * This class evaluates a single patient's phenotypic profile (HPO terms)
- * against all HPOA-annotated diseases and computes probability scores for diagnostic ranking.
+ * against all HPOA-annotated diseases and computes probability scores for
+ * diagnostic ranking.
  */
 public final class BoqaPatientAnalyzer {
 
@@ -20,69 +30,99 @@ public final class BoqaPatientAnalyzer {
 
     /**
      * Computes unnormalized BOQA log scores (log(probabilities))
-     * for each HPOA-annotated disease, given a query set of HPO terms (patient's data).
+     * for each HPOA-annotated disease, given a query set of HPO terms (patient's
+     * data).
      * This function is also intended to be used in the BoqaPrioritiser of Exomiser.
      *
-     * <p>For each HPOA-annotated disease, this method performs the following steps:
+     * <p>
+     * For each HPOA-annotated disease, this method performs the following steps:
      * <ol>
-     *   <li>Compute {@link BoqaCounts} using the provided
-     *   {@link org.p2gx.boqa.core.algorithm.BoqaSetCounter}</li>
-     *   <li>Calculate un-normalized log probability using
-     *   {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCounts)}</li>
+     * <li>Compute {@link BoqaCounts} using the provided
+     * {@link SetCounter}</li>
+     * <li>Calculate un-normalized log probability using
+     * {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCounts)}</li>
      * </ol>
      *
-     * @param patientData  Query data (symptoms/features observed in a patient)
-     * @param counter      The counter object that computes BoqaCounts for each HPOA-annotated disease
-     * @return A {@link BoqaAnalysisResult} containing the patient data along with
-     * counts and raw log scores for each HPOA-annotated disease.
+     * @param counter     The counter object that computes BoqaCounts for each
+     *                    HPOA-annotated disease
+     * @return A {@link PatientAnalysisResult} containing the patient data along with
+     *         counts and raw log scores for each HPOA-annotated disease.
      */
-    public static BoqaAnalysisResult computeBoqaResultsRawLog(
-            PatientData patientData, Counter counter, AlgorithmParameters params) {
+    public static  List<AlgorithmResult> computeBoqaResultsRawLog(
+            Counter counter, List<CandidateDisease> diseaseCandidateList) {
+        return computeBoqaResultsRawLog(counter, diseaseCandidateList, AlgorithmParameters.defaultParams());
+    }
 
-        List<BoqaResult> allResults = counter.getDiseaseIds()
+    public static List<AlgorithmResult> computeBoqaResultsRawLog(
+            Counter counter, List<CandidateDisease> diseaseCandidateList,
+            AlgorithmParameters params) {
+        return diseaseCandidateList
                 .parallelStream() // fast: computes counts + scores in parallel
-                .map(dId -> {
-                    BoqaCounts bc = counter.computeBoqaCounts(dId, patientData);
-                    double rawScore = computeUnnormalizedLogProbability(params, bc);
-                    return new BoqaResult(bc, rawScore);
-                })
-                .toList();
-
-        return new BoqaAnalysisResult(patientData, allResults);
+                .map( dc-> {
+                        BoqaCounts bc = counter.computeBoqaCounts(
+                                dc.observedHpoTermids());
+                        double rawScore = computeUnnormalizedLogProbability(params, bc);
+                        return new AlgorithmResult(bc,rawScore, dc);
+                    })
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
-     * Computes normalized BOQA scores (probabilities) for each HPOA-annotated disease,
+     * To do, consider making API a little more convenient and reduced code
+     * duplication with above
+     * 
+     * @param
+     * @param
+     * @return
+     */
+    public static List<AlgorithmResult> computeBoqaResultsRescaled(
+            List<AlgorithmResult> unscaledResults) {
+        return Util.reScaledRawLogBoqaExomiserScoresNew(unscaledResults);
+    }
+
+    /**
+     * Computes normalized BOQA scores (probabilities) for each HPOA-annotated
+     * disease,
      * given a query set of HPO terms (patient's data),
      * and sorts the diseases by score.
      *
-     * <p>This method performs the complete BOQA analysis pipeline:
+     * <p>
+     * This method performs the complete BOQA analysis pipeline:
      * <ol>
-     *   <li>Calculate un-normalized probabilities using
-     *   {@link #computeBoqaResultsRawLog(PatientData, Counter, AlgorithmParameters)}</li>
-     *   <li>Normalize the probabilities so that they sum up to 1.0 across all diseases</li>
-     *   <li>Sort results by score (descending) and limit to top results</li>
+     * <li>Calculate un-normalized probabilities using
+     * {@link #computeBoqaResultsRawLog(Counter, List, AlgorithmParameters)
+     *  computeBoqaResultsRawLog(Counter, List&lt;CandidateDisease&gt;, AlgorithmParameters)}}</li>
+     * <li>Normalize the probabilities so that they sum up to 1.0 across all
+     * diseases</li>
+     * <li>Sort results by score (descending) and limit to top results</li>
      * </ol>
      *
      * @param patientData  Query data (symptoms/features observed in a patient)
-     * @param counter      The counter object that computes BoqaCounts for each HPOA-annotated disease
+     * @param counter      The counter object that computes BoqaCounts for each
+     *                     HPOA-annotated disease
      * @param resultsLimit Maximum number of top-scoring diseases to return
-     * @return A {@link BoqaAnalysisResult} containing the patient data along with
-     * a list of {@link BoqaResult} sorted by score.
-     * <p>
+     * @return A {@link PatientAnalysisResult} containing the patient data along with
+     *         a list of {@link BoqaResult} sorted by score.
+     *         <p>
      */
-    public static BoqaAnalysisResult computeBoqaResults(
-            PatientData patientData, Counter counter, int resultsLimit, AlgorithmParameters params) {
+    public static List<CandidateResult> computeBoqaResults(
+            PatientData patientData, 
+            Counter counter,
+            int resultsLimit, 
+            AlgorithmParameters params,
+            List<CandidateDisease> diseaseCandidateList) {
 
-        // Get BoqaResults with raw log scores
-        List<BoqaResult> rawLogBoqaResults = new ArrayList<>(computeBoqaResultsRawLog(patientData, counter, params).boqaResults());
+        // Get AlgorithmResult (which also contain CandidateDisease now) with raw log scores
+        List<AlgorithmResult> rawLogBoqaResults =
+                computeBoqaResultsRawLog(
+                        counter, diseaseCandidateList, params);
 
         // Sort by raw log score
-        rawLogBoqaResults.sort(Comparator.comparingDouble(BoqaResult::boqaScore).reversed());
+        rawLogBoqaResults.sort(Comparator.comparingDouble(AlgorithmResult::boqaScore).reversed());
 
         // Find max log-prob
         double maxLogP = rawLogBoqaResults.stream()
-                .mapToDouble(BoqaResult::boqaScore)
+                .mapToDouble(AlgorithmResult::boqaScore)
                 .max()
                 .orElse(Double.NEGATIVE_INFINITY);
 
@@ -92,25 +132,76 @@ public final class BoqaPatientAnalyzer {
                 .sum();
 
         // Normalize
-        List<BoqaResult> allResults = new ArrayList<>();
+        List<AlgorithmResult> allResults = new ArrayList<>();
         rawLogBoqaResults.forEach(r -> {
             double normProb = Math.exp(r.boqaScore() - maxLogP) / sum;
-            allResults.add(new BoqaResult(r.counts(), normProb));
+            allResults.add(new AlgorithmResult(r.counts(), normProb, r.candidate()));
         });
 
-        return new BoqaAnalysisResult(patientData, allResults.stream().limit(resultsLimit).toList());
+        // Use CandidateResult only now. Filter out blended and create map from single diseases to allResults
+        Map<String, AlgorithmResult> singleResultsById = allResults.stream()
+                .filter(r -> r.candidate() instanceof CandidateDisease.SingleDisease)
+                .collect(Collectors.toMap(
+                        r -> ((CandidateDisease.SingleDisease) r.candidate())
+                                .disease().diseaseId(),
+                        Function.identity()
+                ));
+        List<CandidateResult> candidateResults = allResults.stream()
+                .map(r -> toCandidateResult(r, singleResultsById))
+                .toList();
+
+        return candidateResults.stream()
+                .filter(r ->
+                        !(r instanceof CandidateResult.BlendedResult)
+                                || r.improvedComparedToBestSingleDisease())
+                .sorted()
+                .limit(resultsLimit)
+                .toList();
+    }
+
+//    private static DiseaseComponent toDiseaseComponent(
+//            BoqaResultNew result,
+//            CandidateDiseaseNew.SingleDiseaseNew candidate) {
+//
+//        return new DiseaseComponent(
+//                candidate.disease(),
+//                result.counts(),
+//                result.boqaScore()
+//        );
+//    }
+    // TODO actually make sure BlendedResults have also counts and score of the blended disease
+    private static CandidateResult toCandidateResult(
+            AlgorithmResult result,
+            Map<String, AlgorithmResult> singleResultsById) {
+
+        return switch (result.candidate()) {
+            case CandidateDisease.SingleDisease ignored -> new CandidateResult.SingleResult(result);
+            case CandidateDisease.BlendedDisease blended -> {
+                List<AlgorithmResult> components = blended.components().stream()
+                        .map(TargetDisease.PhenotypeAndGene::diseaseId)
+                        .map(singleResultsById::get)
+                        .toList();
+
+                yield new CandidateResult.BlendedResult(
+                        components,
+                        result
+                );
+            }
+        };
     }
 
     /**
-     * Computes the un-normalized BOQA log probability for given BoqaCounts and parameters:
+     * Computes the un-normalized BOQA log probability for given BoqaCounts and
+     * parameters:
      * <p>
-     * log(P) = fp × log(α) + fn × log(β) + tn × log(1-α)  + tp × log(1-β)
+     * log(P) = fp × log(α) + fn × log(β) + tn × log(1-α) + tp × log(1-β)
      * </p>
-     * @param params  alpha, beta, log(alpha), log(beta) etc.
+     * 
+     * @param params alpha, beta, log(alpha), log(beta) etc.
      * @param counts The {@link BoqaCounts} for a query and a disease.
      * @return The un-normalized BOQA log probability score.
      */
-    static double computeUnnormalizedLogProbability(AlgorithmParameters params, BoqaCounts counts){
+    static double computeUnnormalizedLogProbability(AlgorithmParameters params, BoqaCounts counts) {
         return counts.fpBoqaCount() * params.getLogAlpha() +
                 counts.fnBoqaCount() * params.getLogBeta() +
                 counts.tnBoqaCount() * params.getLogOneMinusAlpha() +
@@ -118,20 +209,23 @@ public final class BoqaPatientAnalyzer {
     }
 
     /**
-     * Computes the un-normalized BOQA probability P for a given set of BoqaCounts and parameters
+     * Computes the un-normalized BOQA probability P for a given set of BoqaCounts
+     * and parameters
      * <p>
      * P = α<sup>fpBoqaCount</sup> × β<sup>fpBoqaCount</sup> ×
      * (1-α)<sup>fnBoqaCount</sup> × (1-β)<sup>tpBoqaCount</sup>
-     *  </pre>
+     * </pre>
+     * 
      * @param alpha  False positive rate parameter.
      * @param beta   False negative rate parameter.
      * @param counts The {@link BoqaCounts} for a disease.
      * @return The un-normalized probability score.
      */
-    static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts){
-        return Math.pow(alpha, counts.fpBoqaCount())*
-                Math.pow(beta, counts.fnBoqaCount())*
-                Math.pow(1-alpha, counts.tnBoqaCount())*
-                Math.pow(1-beta, counts.tpBoqaCount());
+    static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts) {
+        return Math.pow(alpha, counts.fpBoqaCount()) *
+                Math.pow(beta, counts.fnBoqaCount()) *
+                Math.pow(1 - alpha, counts.tnBoqaCount()) *
+                Math.pow(1 - beta, counts.tpBoqaCount());
     }
 }
+

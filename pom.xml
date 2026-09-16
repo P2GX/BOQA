@@ -6,7 +6,7 @@
     <groupId>io.github.p2gx.boqa</groupId>
     <artifactId>BOQA</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0</version>
+    <version>0.2.4</version>
     <modules>
         <module>boqa-core</module>
         <module>boqa-cli</module>
@@ -353,6 +353,49 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>de.elnarion.maven</groupId>
+                <artifactId>plantuml-generator-maven-plugin</artifactId>
+                <version>3.0.1</version>
+
+                <executions>
+                    <execution>
+                        <id>generate-plantuml</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${maven.multiModuleProjectDirectory}</outputDirectory>
+                            <outputFilename>boqa-core.puml</outputFilename>
+
+                            <scanPackages>
+                                <scanPackage>org.p2gx.boqa.core</scanPackage>
+                            </scanPackages>
+
+                            <hideFields>false</hideFields>
+                            <hideMethods>false</hideMethods>
+                            <useShortClassNames>true</useShortClassNames>
+                            <useShortClassNamesInFieldsAndMethods>true</useShortClassNamesInFieldsAndMethods>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>generate-sequence-diagram</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>generateSequenceDiagram</goal>
+                        </goals>
+                        <configuration>
+                            <outputFilename>boqa-sequence.puml</outputFilename>
+                            <outputDirectory>${maven.multiModuleProjectDirectory}</outputDirectory>
+                            <showReturnTypes>true</showReturnTypes>
+                            <startClass>org.p2gx.boqa.core.analysis.BoqaBlendedExomiserAnalyser</startClass>
+                            <startMethod>computeBlendedBoqaResults</startMethod>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
