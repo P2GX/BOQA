@@ -8,7 +8,7 @@ import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BlendedCounter;
+import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.diseases.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +62,7 @@ public class BoqaBlendedExomiserAnalyser {
         List<TargetDisease.PhenotypeAndGene> targetDiseaseList) {
 
         // Now the counter is really only computing counts (though it needs HPO to do the induced HPOs)
-        Counter counter = new BlendedCounter(hpo, patientData.getObservedTerms());
+        Counter counter = new SetCounter(hpo, patientData.getObservedTerms());
         // TODO Equivalent in spirit to previous DiseaseData. Given some input, generate a representation of HPOA for
         //  diseases of interest. Here HPOA comes from TargetDisease, which should already inlcude the HPOs. We need a
         //  to create a DiseaseDataIngest that returns List<TargetDisease.Phenotype> to recover the previous pure BOQA

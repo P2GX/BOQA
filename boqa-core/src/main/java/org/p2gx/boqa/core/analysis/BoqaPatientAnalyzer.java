@@ -1,10 +1,10 @@
 package org.p2gx.boqa.core.analysis;
 
-import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public final class BoqaPatientAnalyzer {
      * For each HPOA-annotated disease, this method performs the following steps:
      * <ol>
      * <li>Compute {@link BoqaCounts} using the provided
-     * {@link org.p2gx.boqa.core.algorithm.BoqaSetCounter}</li>
+     * {@link SetCounter}</li>
      * <li>Calculate un-normalized log probability using
      * {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCounts)}</li>
      * </ol>
@@ -60,7 +60,7 @@ public final class BoqaPatientAnalyzer {
         return diseaseCandidateList
                 .parallelStream() // fast: computes counts + scores in parallel
                 .map( dc-> {
-                        BoqaCounts bc = counter.computeBoqaCountsFromDisease(
+                        BoqaCounts bc = counter.computeBoqaCounts(
                                 dc.observedHpoTermids());
                         double rawScore = computeUnnormalizedLogProbability(params, bc);
                         return new AlgorithmResult(bc,rawScore, dc);

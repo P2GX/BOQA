@@ -6,20 +6,19 @@ import java.util.Set;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
-import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BlendedCounter implements Counter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BlendedCounter.class);
+public class SetCounter implements Counter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SetCounter.class);
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
 
     private final OntologyTraverser ontologyTraverser;
     private final Ontology hpo;
     private final Set<TermId> patientLayer;
 
-    public BlendedCounter(
+    public SetCounter(
             Ontology hpo,
             Set<TermId> patientHpos
     ) {
@@ -28,21 +27,6 @@ public class BlendedCounter implements Counter {
         this.patientLayer =  ontologyTraverser.getObservedWithAncestors(patientHpos);
     }
 
-    /**
-     * COPIED FROM BoqaSetCounter. After testing we should make this a default in the interface!
-     * This method computes counts given a disease ID and a patient's observed HPO terms.
-     * These counts are related to true/false positives and true/false negatives, and are used later to compute the
-     * probability that a patient has the input disease.
-     *
-     * @param diseaseId   the unique OMIM ID of the disease whose counts are computed
-     * @param patientData the patient data containing observed HPO terms and patient ID
-     * @return a {@link BoqaCounts} record containing the four counts for this disease-patient pair
-     * @implNote Consider caching children of all ON nodes to improve offNodesCount calculation.
-     */
-    @Override
-    public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
-        return new BoqaCounts(1, 1, 1, 1);
-    }
 
 
     private boolean isPhenotypicFeature(TermId tid) {
@@ -60,7 +44,7 @@ public class BlendedCounter implements Counter {
      * @return a {@link BoqaCounts} record containing the four counts for this disease-patient pair
      * @implNote Consider caching children of all ON nodes to improve offNodesCount calculation.
      */
-    public BoqaCounts computeBoqaCountsFromDisease(
+    public BoqaCounts computeBoqaCounts(
              Set<TermId> diseaseObservedHpoIds
      ) {
         Set<TermId> diseaseLayer = ontologyTraverser.getObservedWithAncestors(diseaseObservedHpoIds);

@@ -28,7 +28,7 @@ import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeBoqaResults
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class BoqaSetCounterTest {
+class SetCounterTest {
 
     private DiseaseData diseaseData;
     private List<CandidateDisease> diseaseCandidateList;
@@ -36,7 +36,7 @@ class BoqaSetCounterTest {
 
     @BeforeAll
     void setup() throws IOException {
-        try (InputStream annotationStream = new GZIPInputStream(BoqaSetCounterTest.class
+        try (InputStream annotationStream = new GZIPInputStream(SetCounterTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz"))) {
             this.diseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(annotationStream);
             List<TargetDisease.PhenotypeOnly> targetDiseaseList = diseaseData.getDiseaseIds().stream()
@@ -102,7 +102,7 @@ class BoqaSetCounterTest {
                 fnExp
         );
 
-        URL resourceUrl = BoqaSetCounterTest.class
+        URL resourceUrl = SetCounterTest.class
                 .getResource("/org/p2gx/boqa/core/phenopackets/" + jsonFile);
         if (resourceUrl == null) {
             throw new IOException("Resource not found: " + jsonFile);
@@ -114,7 +114,7 @@ class BoqaSetCounterTest {
                 .filter(d -> Objects.equals(d.diseaseId(), Set.of(diagnosedDiseaseId)))
                 .toList();
         PhenopacketData patient = new PhenopacketData(ppkt, hpo);
-        Counter counter = new BlendedCounter(hpo, patient.getObservedTerms());
+        Counter counter = new SetCounter(hpo, patient.getObservedTerms());
 
         List<CandidateResult> candidateResults = computeBoqaResults(patient, counter, limit, params, diagnosedCandidate);
         assertEquals(referenceBoqaCounts, candidateResults.getFirst().counts());

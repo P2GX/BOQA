@@ -11,9 +11,8 @@ import org.p2gx.boqa.core.TestBase;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import org.p2gx.boqa.core.algorithm.BlendedCounter;
+import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
-import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
@@ -108,7 +107,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Prepare arguments for 'computeBoqaResults'
         PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
-        Counter counter = new BlendedCounter(hpo,patientData.getObservedTerms() );
+        Counter counter = new SetCounter(hpo,patientData.getObservedTerms() );
 
         int limit = counter.getDiseaseIds().size();
         double alpha = 0.01;

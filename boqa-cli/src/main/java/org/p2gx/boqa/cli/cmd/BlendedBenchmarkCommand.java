@@ -13,7 +13,7 @@ import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.Writer;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
+import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.analysis.CandidateResult;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
@@ -171,9 +171,6 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             LOGGER.info("Number of diseases diseases in BlendedDiseaseData: " + blendedDiseaseData.size());
             LOGGER.info("Creating BlendedDiseaseData object ...");
 
-            // Initialize Counter
-            Counter counter = new BoqaSetCounter(blendedDiseaseData, hpo);
-            LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", blendedDiseaseData.size());
 
             Path jsonFilePath;
             if (phenopacketFile.toString().endsWith(".txt")) {
@@ -185,6 +182,10 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             }
 
             PatientData ppkt = new PhenopacketData(jsonFilePath, hpo);
+            // Initialize Counter
+            Counter counter = new SetCounter(hpo, ppkt.getObservedTerms());
+            LOGGER.debug("Initialized Counter with {} diseases.", blendedDiseaseData.size());
+
             List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
                     ppkt, counter, limit, params,  diseaseCandidateList);
             patientAnalysisResults.add(

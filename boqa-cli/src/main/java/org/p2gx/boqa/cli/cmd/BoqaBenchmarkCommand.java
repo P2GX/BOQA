@@ -8,7 +8,7 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.*;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
+import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.analysis.CandidateResult;
@@ -178,10 +178,6 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
         LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
 
-        // Initialize Counter
-        Counter counter = new BoqaSetCounter(diseaseData, hpo);
-        LOGGER.debug("Initialized BoqaSetCounter with {} diseases.", diseaseData.size());
-
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();
 
@@ -196,6 +192,11 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     .parallel()
                     .map(singleFile -> {
                         PatientData ppkt = new PhenopacketData(singleFile, hpo);
+                        // TODO test how long this takes, we are recomputing disease layers, but we also have a cache in ontology traverser...
+                        // Initialize Counter
+                        Counter counter = new SetCounter(hpo, ppkt.getObservedTerms());
+                        LOGGER.debug("Initialized Counter with {} diseases.", diseaseData.size());
+
                         List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
                                 ppkt, counter, limit, params,  diseaseCandidateList);
                         PatientAnalysisResult patientAnalysisResult = new PatientAnalysisResult(
