@@ -38,6 +38,11 @@ public interface PatientData {
 
     /** The Exomiser provides us with a List of HPO identifiers as Strings. */
     static PatientData fromObservedHpoTermList(List<String> observed) {
+        // TODO we should use something like the following to make sure HPO IDs are the primary ones, otherwise it will crash
+        //  OntologyTraverser traverser = new OntologyTraverser(hpo);
+        //        this.observedHpoIds = observed.stream()
+        //                .map(traverser::getPrimaryTermId)
+        //                .filter(Objects::nonNull) // If old HPO is used without a term, avoids the program crashing
         String randomId = java.util.UUID.randomUUID().toString();
         Set<TermId> observedTidSet = observed.stream()
             .map(TermId::of)
