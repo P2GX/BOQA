@@ -4,8 +4,6 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.analysis.CandidateResult;
-import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
-import org.p2gx.boqa.core.analysis.BoqaResult;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
 import org.p2gx.boqa.core.diseases.TargetDisease;
@@ -33,8 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class BoqaSetCounterTest {
 
     private DiseaseData diseaseData;
-    List<CandidateDisease> diseaseCandidateList;
-    private Counter counter;
+    private List<CandidateDisease> diseaseCandidateList;
     private Ontology hpo;
 
     @BeforeAll
@@ -56,7 +53,6 @@ class BoqaSetCounterTest {
         ) {
             this.hpo = OntologyLoader.loadOntology(ontologyStream);
         }
-        this.counter = new BoqaSetCounter(diseaseData, hpo);
     }
 
     @Tag("expensive_test")
@@ -99,7 +95,7 @@ class BoqaSetCounterTest {
             int fpExp,
             int tpExp
     ) throws URISyntaxException, IOException {
-        BoqaCountsNew referenceBoqaCounts = new BoqaCountsNew(
+        BoqaCounts referenceBoqaCounts = new BoqaCounts(
                 tpExp,
                 fpExp,
                 tnExp,
@@ -117,8 +113,10 @@ class BoqaSetCounterTest {
         List<CandidateDisease> diagnosedCandidate = diseaseCandidateList.stream()
                 .filter(d -> Objects.equals(d.diseaseId(), Set.of(diagnosedDiseaseId)))
                 .toList();
+        PhenopacketData patient = new PhenopacketData(ppkt, hpo);
+        Counter counter = new BlendedCounter(hpo, patient.getObservedTerms());
 
-        List<CandidateResult> candidateResults = computeBoqaResults(new PhenopacketData(ppkt, hpo), counter, limit, params, diagnosedCandidate);
+        List<CandidateResult> candidateResults = computeBoqaResults(patient, counter, limit, params, diagnosedCandidate);
         assertEquals(referenceBoqaCounts, candidateResults.getFirst().counts());
     }
 }

@@ -1,6 +1,6 @@
 package org.p2gx.boqa.core.analysis;
 
-import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
+import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 
 /**
@@ -23,7 +23,7 @@ import org.p2gx.boqa.core.diseases.CandidateDisease;
  *                  indicate greater diagnostic likelihood.
  *
  */
-public record AlgorithmResult(BoqaCountsNew counts, double boqaScore, CandidateDisease candidate) implements Comparable<AlgorithmResult> {
+public record AlgorithmResult(BoqaCounts counts, double boqaScore, CandidateDisease candidate) implements Comparable<AlgorithmResult> {
     /**
      * Compares BoqaResults by score in descending order (highest score first).
      *

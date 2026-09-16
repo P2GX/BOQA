@@ -17,13 +17,15 @@ public class BlendedCounter implements Counter {
 
     private final OntologyTraverser ontologyTraverser;
     private final Ontology hpo;
-
+    private final Set<TermId> patientLayer;
 
     public BlendedCounter(
-        Ontology hpo
+            Ontology hpo,
+            Set<TermId> patientHpos
     ) {
         this.ontologyTraverser = new OntologyTraverser(hpo);
         this.hpo = hpo;
+        this.patientLayer =  ontologyTraverser.getObservedWithAncestors(patientHpos);
     }
 
     /**
@@ -39,7 +41,7 @@ public class BlendedCounter implements Counter {
      */
     @Override
     public BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData) {
-        return new BoqaCounts("", "", 1, 1, 1, 1);
+        return new BoqaCounts(1, 1, 1, 1);
     }
 
 
@@ -55,16 +57,12 @@ public class BlendedCounter implements Counter {
      * probability that a patient has the input disease.
      *
      * @param diseaseObservedHpoIds
-     * @param observedPatientHpoIds
      * @return a {@link BoqaCounts} record containing the four counts for this disease-patient pair
      * @implNote Consider caching children of all ON nodes to improve offNodesCount calculation.
      */
-    @Override
-    public BoqaCountsNew computeBoqaCountsFromDisease(
-            Set<TermId> diseaseObservedHpoIds,
-            Set<TermId> observedPatientHpoIds
-    ) {
-        Set<TermId> patientLayer = ontologyTraverser.getObservedWithAncestors(observedPatientHpoIds);
+    public BoqaCounts computeBoqaCountsFromDisease(
+             Set<TermId> diseaseObservedHpoIds
+     ) {
         Set<TermId> diseaseLayer = ontologyTraverser.getObservedWithAncestors(diseaseObservedHpoIds);
 
         // TP
@@ -109,7 +107,7 @@ public class BlendedCounter implements Counter {
         }
         LOGGER.debug("True positives: {}, False positives: {}, (BOQA) True negatives: {}, (BOQA) False negatives: {}", truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
 
-        return new BoqaCountsNew(truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
+        return new BoqaCounts(truePositives.size(), falsePositives.size(), offNodesCount, betaCounts);
     }
 
     @Override

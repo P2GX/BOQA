@@ -1,9 +1,10 @@
 package org.p2gx.boqa.core.analysis;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
+import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.slf4j.Logger;
@@ -36,10 +37,10 @@ public final class BoqaPatientAnalyzer {
      * <p>
      * For each HPOA-annotated disease, this method performs the following steps:
      * <ol>
-     * <li>Compute {@link BoqaCountsNew} using the provided
+     * <li>Compute {@link BoqaCounts} using the provided
      * {@link org.p2gx.boqa.core.algorithm.BoqaSetCounter}</li>
      * <li>Calculate un-normalized log probability using
-     * {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCountsNew)}</li>
+     * {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCounts)}</li>
      * </ol>
      *
      * @param patientData Query data (symptoms/features observed in a patient)
@@ -59,8 +60,8 @@ public final class BoqaPatientAnalyzer {
         return diseaseCandidateList
                 .parallelStream() // fast: computes counts + scores in parallel
                 .map( dc-> {
-                        BoqaCountsNew bc = counter.computeBoqaCountsFromDisease(
-                                dc.observedHpoTermids(), patientData.getObservedTerms());
+                        BoqaCounts bc = counter.computeBoqaCountsFromDisease(
+                                dc.observedHpoTermids());
                         double rawScore = computeUnnormalizedLogProbability(params, bc);
                         return new AlgorithmResult(bc,rawScore, dc);
                     })
@@ -106,7 +107,7 @@ public final class BoqaPatientAnalyzer {
      */
     public static List<CandidateResult> computeBoqaResults(
             PatientData patientData, 
-            Counter counter, 
+            Counter counter,
             int resultsLimit, 
             AlgorithmParameters params,
             List<CandidateDisease> diseaseCandidateList) {
@@ -197,10 +198,10 @@ public final class BoqaPatientAnalyzer {
      * </p>
      * 
      * @param params alpha, beta, log(alpha), log(beta) etc.
-     * @param counts The {@link BoqaCountsNew} for a query and a disease.
+     * @param counts The {@link BoqaCounts} for a query and a disease.
      * @return The un-normalized BOQA log probability score.
      */
-    static double computeUnnormalizedLogProbability(AlgorithmParameters params, BoqaCountsNew counts) {
+    static double computeUnnormalizedLogProbability(AlgorithmParameters params, BoqaCounts counts) {
         return counts.fpBoqaCount() * params.getLogAlpha() +
                 counts.fnBoqaCount() * params.getLogBeta() +
                 counts.tnBoqaCount() * params.getLogOneMinusAlpha() +
@@ -217,10 +218,10 @@ public final class BoqaPatientAnalyzer {
      * 
      * @param alpha  False positive rate parameter.
      * @param beta   False negative rate parameter.
-     * @param counts The {@link BoqaCountsNew} for a disease.
+     * @param counts The {@link BoqaCounts} for a disease.
      * @return The un-normalized probability score.
      */
-    static double computeUnnormalizedProbability(double alpha, double beta, BoqaCountsNew counts) {
+    static double computeUnnormalizedProbability(double alpha, double beta, BoqaCounts counts) {
         return Math.pow(alpha, counts.fpBoqaCount()) *
                 Math.pow(beta, counts.fnBoqaCount()) *
                 Math.pow(1 - alpha, counts.tnBoqaCount()) *

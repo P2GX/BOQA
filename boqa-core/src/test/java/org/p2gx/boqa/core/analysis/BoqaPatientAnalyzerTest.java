@@ -2,31 +2,45 @@ package org.p2gx.boqa.core.analysis;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.TestBase;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.p2gx.boqa.core.algorithm.BlendedCounter;
+import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.algorithm.BoqaSetCounter;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.patient.QueryDataFromString;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.*;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class BoqaPatientAnalyzerTest extends TestBase {
 
-    private static Counter counter;
+    private List<CandidateDisease> diseaseCandidateList;
 
     @BeforeAll
-    static void setup() throws IOException {
+    void setup() throws IOException {
         DiseaseData diseaseData = DiseaseDataPhenolIngest.of(hpo(), hpoDiseases());
-        counter = new BoqaSetCounter(diseaseData, hpo());
+        List<TargetDisease.PhenotypeOnly> targetDiseaseList = diseaseData.getDiseaseIds().stream()
+                .map(d -> new TargetDisease.PhenotypeOnly(d,"LABEL",
+                        diseaseData.getObservedDiseaseFeatures(d).stream()
+                                .map(TermId::of).collect(Collectors.toSet())
+                )).toList();
+        // TODO only single diseases ok?
+       this.diseaseCandidateList = CandidateDisease.createSingleDiseaseCandidates(targetDiseaseList);
+
     }
 
     /**
@@ -64,7 +78,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
             double expectedScore
     ){
         // Initialize BoqaCounts
-        BoqaCounts counts = new BoqaCounts("idIsUnimportant", "labelIsUnimportant", count1mb, countA, count1ma, countB);
+        BoqaCounts counts = new BoqaCounts(count1mb, countA, count1ma, countB);
         double actualScore = computeUnnormalizedProbability(alpha, beta, counts);
 
         // Assert with small delta for floating-point comparison
@@ -72,7 +86,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
     }
 
     /**
-     * Test for {@link  BoqaPatientAnalyzer#computeBoqaResults(PatientData, Counter, int, AlgorithmParameters)}.
+     * Test for {@link  BoqaPatientAnalyzer#computeBoqaResults(PatientData, Counter, int, AlgorithmParameters, List<CandidateDisease>)} (PatientData, Counter, int, AlgorithmParameters,CandidateDisease)}.
      * <p>
      * This test validates that the calculation of the normalized BOQA probabilities works as expected.
      * </p>
@@ -80,7 +94,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
      * <p>
      * <ol>
      *   <li>First, the BoqaResults for all annotated diseases are calculated for
-     *   some valid input query HPO terms and parameters using {@link  BoqaPatientAnalyzer#computeBoqaResults(PatientData, Counter, int, AlgorithmParameters)}.
+     *   some valid input query HPO terms and parameters using {@link  BoqaPatientAnalyzer#computeBoqaResults(PatientData, Counter, int, AlgorithmParameters, List<CandidateDisease>)}
      *   </li>
      *   <li>Each BoqaResult contains both the normalized score and the underlying BOQA counts.
      *   The counts are used to calculate the normalized probabilities in the conventional way,i.e.,
@@ -94,17 +108,19 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Prepare arguments for 'computeBoqaResults'
         PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
+        Counter counter = new BlendedCounter(hpo,patientData.getObservedTerms() );
+
         int limit = counter.getDiseaseIds().size();
         double alpha = 0.01;
         double beta = 0.9;
         AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
 
         // Run 'computeBoqaResults'
-        PatientAnalysisResult patientAnalysisResult = BoqaPatientAnalyzer.computeBoqaResults(
-                patientData, counter, limit, params);
+        List<CandidateResult> patientAnalysisResult = BoqaPatientAnalyzer.computeBoqaResults(
+                patientData, counter, limit, params, diseaseCandidateList);
 
         // Recompute un-normalized probabilities in the conventional way
-        List<Double> rawProbs = patientAnalysisResult.boqaResults().stream()
+        List<Double> rawProbs = patientAnalysisResult.stream()
                 .map(result -> computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), result.counts()))
                 .toList();
 
@@ -112,9 +128,9 @@ class BoqaPatientAnalyzerTest extends TestBase {
         double rawProbsSum = rawProbs.stream().mapToDouble(Double::doubleValue).sum();
 
         // Compare normalized probabilities from BoqaResults with those recalculated from counts
-        patientAnalysisResult.boqaResults().forEach(br-> {
+        patientAnalysisResult.forEach(br-> {
             double expectedNormProb = computeUnnormalizedProbability(params.getAlpha(), params.getBeta(), br.counts()) / rawProbsSum;
-            double actualNormProb = br.boqaScore();
+            double actualNormProb = br.score();
             assertEquals(expectedNormProb, actualNormProb, 1e-9);
         });
     }

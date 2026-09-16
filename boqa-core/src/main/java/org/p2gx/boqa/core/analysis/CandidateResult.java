@@ -2,7 +2,7 @@ package org.p2gx.boqa.core.analysis;
 
 import java.util.List;
 
-import org.p2gx.boqa.core.algorithm.BoqaCountsNew;
+import org.p2gx.boqa.core.algorithm.BoqaCounts;
 
 /**
  * The sealed result type. This guarantees that your HTML generator 
@@ -19,7 +19,7 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
         return false;
     }
     double score();
-    BoqaCountsNew counts();
+    BoqaCounts counts();
 
 //    default double score() {
 //        return finalDiseaseModel().score();
@@ -65,7 +65,7 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
             return component.boqaScore();
         }
         @Override
-        public BoqaCountsNew counts() {
+        public BoqaCounts counts() {
             return component.counts();
         }
     }
@@ -83,7 +83,7 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
 //            }
 //        }
         @Override
-        public BoqaCountsNew counts() {
+        public BoqaCounts counts() {
             return blendedDisease.counts();
         }
         @Override
