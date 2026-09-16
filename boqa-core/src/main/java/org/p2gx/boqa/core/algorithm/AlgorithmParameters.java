@@ -39,6 +39,7 @@ public final class AlgorithmParameters {
      * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1)
      */
     public static AlgorithmParameters create(Double alpha, Double beta) {
+        //TODO make these non boxed Doubles, namely doubles, and have commands using these handle the rest
         double a = (alpha != null) ? alpha : DEFAULT_ALPHA;
         double b = (beta != null) ? beta : DEFAULT_BETA;
         // Validate alpha

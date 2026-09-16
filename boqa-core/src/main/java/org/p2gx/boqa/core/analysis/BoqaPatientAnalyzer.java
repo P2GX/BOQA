@@ -43,19 +43,18 @@ public final class BoqaPatientAnalyzer {
      * {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCounts)}</li>
      * </ol>
      *
-     * @param patientData Query data (symptoms/features observed in a patient)
      * @param counter     The counter object that computes BoqaCounts for each
      *                    HPOA-annotated disease
      * @return A {@link PatientAnalysisResult} containing the patient data along with
      *         counts and raw log scores for each HPOA-annotated disease.
      */
     public static  List<AlgorithmResult> computeBoqaResultsRawLog(
-            PatientData patientData, Counter counter, List<CandidateDisease> diseaseCandidateList) {
-        return computeBoqaResultsRawLog(patientData, counter, diseaseCandidateList, AlgorithmParameters.defaultParams());
+            Counter counter, List<CandidateDisease> diseaseCandidateList) {
+        return computeBoqaResultsRawLog(counter, diseaseCandidateList, AlgorithmParameters.defaultParams());
     }
 
     public static List<AlgorithmResult> computeBoqaResultsRawLog(
-            PatientData patientData, Counter counter, List<CandidateDisease> diseaseCandidateList,
+            Counter counter, List<CandidateDisease> diseaseCandidateList,
             AlgorithmParameters params) {
         return diseaseCandidateList
                 .parallelStream() // fast: computes counts + scores in parallel
@@ -65,7 +64,7 @@ public final class BoqaPatientAnalyzer {
                         double rawScore = computeUnnormalizedLogProbability(params, bc);
                         return new AlgorithmResult(bc,rawScore, dc);
                     })
-                .toList();
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -91,7 +90,8 @@ public final class BoqaPatientAnalyzer {
      * This method performs the complete BOQA analysis pipeline:
      * <ol>
      * <li>Calculate un-normalized probabilities using
-     * {@link #computeBoqaResultsRawLog(PatientData, Counter, List< CandidateDisease >, AlgorithmParameters)}</li>
+     * {@link #computeBoqaResultsRawLog(Counter, List, AlgorithmParameters)
+     *  computeBoqaResultsRawLog(Counter, List&lt;CandidateDisease&gt;, AlgorithmParameters)}}</li>
      * <li>Normalize the probabilities so that they sum up to 1.0 across all
      * diseases</li>
      * <li>Sort results by score (descending) and limit to top results</li>
@@ -115,7 +115,7 @@ public final class BoqaPatientAnalyzer {
         // Get AlgorithmResult (which also contain CandidateDisease now) with raw log scores
         List<AlgorithmResult> rawLogBoqaResults =
                 computeBoqaResultsRawLog(
-                        patientData, counter, diseaseCandidateList, params);
+                        counter, diseaseCandidateList, params);
 
         // Sort by raw log score
         rawLogBoqaResults.sort(Comparator.comparingDouble(AlgorithmResult::boqaScore).reversed());

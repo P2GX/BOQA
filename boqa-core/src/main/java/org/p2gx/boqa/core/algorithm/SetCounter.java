@@ -17,7 +17,7 @@ public class SetCounter implements Counter {
     private final OntologyTraverser ontologyTraverser;
     private final Ontology hpo;
     private final Set<TermId> patientLayer;
-
+    //TODO during refactoring some useful stuff was lost here, recreate it
     public SetCounter(
             Ontology hpo,
             Set<TermId> patientHpos
