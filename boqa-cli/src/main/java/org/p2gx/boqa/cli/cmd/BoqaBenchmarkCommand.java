@@ -174,9 +174,14 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                 )).toList();
 
         List<CandidateDisease> diseaseCandidateList = CandidateDisease.createSingleDiseaseCandidates(targetDiseaseList);
-
-        AlgorithmParameters params = AlgorithmParameters.create(alpha, beta);
-        LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
+        AlgorithmParameters params;
+        if (alpha == null || beta == null) {
+            params = AlgorithmParameters.defaultParams();
+            LOGGER.info("alpha or beta was null, using defaults alpha={}, beta={}", params.getAlpha(), params.getBeta());
+        } else {
+            params = AlgorithmParameters.create(alpha, beta);
+            LOGGER.info("Using alpha={}, beta={}", params.getAlpha(), params.getBeta());
+        }
 
         int limit = (resultsLimit != null) ? resultsLimit : Integer.MAX_VALUE;
         List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();

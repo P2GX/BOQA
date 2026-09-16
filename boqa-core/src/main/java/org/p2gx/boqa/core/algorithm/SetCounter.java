@@ -2,7 +2,9 @@ package org.p2gx.boqa.core.algorithm;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.monarchinitiative.phenol.graph.OntologyGraph;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
@@ -13,29 +15,31 @@ import org.slf4j.LoggerFactory;
 public class SetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SetCounter.class);
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
-
+    private final Set<TermId> phenotypicAbnormalities;
     private final OntologyTraverser ontologyTraverser;
     private final Ontology hpo;
     private final Set<TermId> patientLayer;
-    //TODO during refactoring some useful stuff was lost here, recreate it
+
     public SetCounter(
             Ontology hpo,
             Set<TermId> patientHpos
     ) {
         this.ontologyTraverser = new OntologyTraverser(hpo);
+        OntologyGraph<TermId> hpoGraph = ontologyTraverser.getHpoGraph();
+        this.phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
         this.hpo = hpo;
-        this.patientLayer =  ontologyTraverser.getObservedWithAncestors(patientHpos);
+        // TODO substitute filter with isPhenotypicFeature by PNR after testing it works
+        this.patientLayer =  ontologyTraverser.getObservedWithAncestors(
+                patientHpos.stream()
+                .filter(phenotypicAbnormalities::contains)
+                .collect(Collectors.toSet()));
     }
-
-
 
     private boolean isPhenotypicFeature(TermId tid) {
         return this.hpo.graph().existsPath(tid, PHENOTYPIC_ABNORMALITY);
     }
 
-
      /**
-     * COPIED FROM BoqaSetCounter. After testing we should make this a default in the interface!
      * This method computes counts given a disease ID and a patient's observed HPO terms.
      * These counts are related to true/false positives and true/false negatives, and are used later to compute the
      * probability that a patient has the input disease.
@@ -47,7 +51,10 @@ public class SetCounter implements Counter {
     public BoqaCounts computeBoqaCounts(
              Set<TermId> diseaseObservedHpoIds
      ) {
-        Set<TermId> diseaseLayer = ontologyTraverser.getObservedWithAncestors(diseaseObservedHpoIds);
+        Set<TermId> diseaseLayer = ontologyTraverser.getObservedWithAncestors(
+                diseaseObservedHpoIds.stream()
+                .filter(phenotypicAbnormalities::contains)
+                .collect(Collectors.toSet()));
 
         // TP
         Set<TermId> truePositives = new HashSet<>(diseaseLayer);
