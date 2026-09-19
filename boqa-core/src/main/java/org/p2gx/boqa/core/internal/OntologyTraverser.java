@@ -59,10 +59,11 @@ public class OntologyTraverser {
     private static final Logger LOGGER = LoggerFactory.getLogger(OntologyTraverser.class);
     private static final Set<TermId> LOGGED_REPLACEMENTS = ConcurrentHashMap.newKeySet();
     private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
-
+    private final Set<TermId> phenotypicAbnormalities;
     private final Ontology hpo;
     private final OntologyGraph<TermId> hpoGraph;
-    private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine.newBuilder().maximumSize(500).build();
+    private final Cache<TermId, Collection<TermId>> hpoAncestorsCache = Caffeine
+            .newBuilder().maximumSize(20_000).recordStats().build();
 
     /**
      *
@@ -73,6 +74,7 @@ public class OntologyTraverser {
     public OntologyTraverser(Ontology hpo) {
         this.hpo = hpo;
         this.hpoGraph = hpo.graph();
+        this.phenotypicAbnormalities = this.hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY);
     }
 
     public OntologyGraph<TermId> getHpoGraph() {
@@ -99,6 +101,9 @@ public class OntologyTraverser {
      */
     public Set<TermId> getObservedWithAncestors(Set<TermId> hpoTerms) {
         Set<TermId> initializedLayer = new HashSet<>();
+        hpoTerms = hpoTerms.stream()
+                .filter(phenotypicAbnormalities::contains)
+                .collect(Collectors.toSet());
         hpoTerms.forEach(t -> {
             // this can be expensive, so use a light cache
             Collection<TermId> ancestorTermIds = hpoAncestorsCache.get(t,
@@ -153,7 +158,15 @@ public class OntologyTraverser {
         parents.removeAll(activeNodes);
         return parents.isEmpty();
     }
-
+    public void logAncestorCacheStats() {
+        LOGGER.info(
+                "Ancestor cache: size={}, hitRate={}, hits={}, misses={}, evictions={}",
+                hpoAncestorsCache.estimatedSize(),
+                hpoAncestorsCache.stats().hitRate(),
+                hpoAncestorsCache.stats().hitCount(),
+                hpoAncestorsCache.stats().missCount(),
+                hpoAncestorsCache.stats().evictionCount());
+    }
     /**
      * @todo this is a stub, could not find a way of getting it to work in DefaultDiseaseData withouth refactoring everything
      * Keeping the filter in BoqaSetCounter's constructor, for now.

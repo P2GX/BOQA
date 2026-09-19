@@ -106,7 +106,7 @@ public final class BoqaPatientAnalyzer {
      *         <p>
      */
     public static List<CandidateResult> computeBoqaResults(
-            PatientData patientData, 
+            PatientData patientData,
             Counter counter,
             int resultsLimit, 
             AlgorithmParameters params,
@@ -169,7 +169,6 @@ public final class BoqaPatientAnalyzer {
 //                result.boqaScore()
 //        );
 //    }
-    // TODO actually make sure BlendedResults have also counts and score of the blended disease
     private static CandidateResult toCandidateResult(
             AlgorithmResult result,
             Map<String, AlgorithmResult> singleResultsById) {

@@ -21,6 +21,7 @@ import org.p2gx.boqa.core.diseases.BlendedDiseaseData;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
+import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.p2gx.boqa.core.genes.DiseaseGeneAssociations;
@@ -134,6 +135,8 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         BiPredicate<String, String> mayBlendAnchors =
                 BlendedDiseaseData.geneDisjointBlend(geneAssociations.geneIdsByDisease());
 
+        OntologyTraverser ontologyTraverser = new OntologyTraverser(hpo);
+
         for(int i=0; i<numberOfIterations; i++) {
             List<String> finalAnchorGenes;
             if (anchorGenes.size() > 1) {
@@ -183,7 +186,8 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
             PatientData ppkt = new PhenopacketData(jsonFilePath, hpo);
             // Initialize Counter
-            Counter counter = new SetCounter(hpo, ppkt.getObservedTerms());
+
+            Counter counter = new SetCounter(ontologyTraverser, ppkt.getObservedTerms());
             LOGGER.debug("Initialized Counter with {} diseases.", blendedDiseaseData.size());
 
             List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(

@@ -14,29 +14,16 @@ import org.slf4j.LoggerFactory;
 
 public class SetCounter implements Counter {
     private static final Logger LOGGER = LoggerFactory.getLogger(SetCounter.class);
-    private static final TermId PHENOTYPIC_ABNORMALITY = TermId.of("HP:0000118");
-    private final Set<TermId> phenotypicAbnormalities;
     private final OntologyTraverser ontologyTraverser;
-    private final Ontology hpo;
     private final Set<TermId> patientLayer;
 
     public SetCounter(
-            Ontology hpo,
+            OntologyTraverser ontologyTraverser,
             Set<TermId> patientHpos
     ) {
-        this.ontologyTraverser = new OntologyTraverser(hpo);
-        OntologyGraph<TermId> hpoGraph = ontologyTraverser.getHpoGraph();
-        this.phenotypicAbnormalities = Set.copyOf(hpoGraph.getDescendantSet(PHENOTYPIC_ABNORMALITY));
-        this.hpo = hpo;
+        this.ontologyTraverser = ontologyTraverser;
         // TODO substitute filter with isPhenotypicFeature by PNR after testing it works
-        this.patientLayer =  ontologyTraverser.getObservedWithAncestors(
-                patientHpos.stream()
-                .filter(phenotypicAbnormalities::contains)
-                .collect(Collectors.toSet()));
-    }
-
-    private boolean isPhenotypicFeature(TermId tid) {
-        return this.hpo.graph().existsPath(tid, PHENOTYPIC_ABNORMALITY);
+        this.patientLayer =  ontologyTraverser.getObservedWithAncestors(patientHpos);
     }
 
      /**
@@ -52,9 +39,7 @@ public class SetCounter implements Counter {
              Set<TermId> diseaseObservedHpoIds
      ) {
         Set<TermId> diseaseLayer = ontologyTraverser.getObservedWithAncestors(
-                diseaseObservedHpoIds.stream()
-                .filter(phenotypicAbnormalities::contains)
-                .collect(Collectors.toSet()));
+                diseaseObservedHpoIds);
 
         // TP
         Set<TermId> truePositives = new HashSet<>(diseaseLayer);

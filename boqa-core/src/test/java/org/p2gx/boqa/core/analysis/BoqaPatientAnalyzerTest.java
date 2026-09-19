@@ -16,6 +16,7 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
+import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.p2gx.boqa.core.patient.QueryDataFromString;
 import java.io.IOException;
 import java.util.List;
@@ -107,7 +108,9 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Prepare arguments for 'computeBoqaResults'
         PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
-        Counter counter = new SetCounter(hpo,patientData.getObservedTerms() );
+        OntologyTraverser ontologyTraverser = new OntologyTraverser(hpo);
+
+        Counter counter = new SetCounter(ontologyTraverser, patientData.getObservedTerms() );
 
         int limit = counter.getDiseaseIds().size();
         double alpha = 0.01;

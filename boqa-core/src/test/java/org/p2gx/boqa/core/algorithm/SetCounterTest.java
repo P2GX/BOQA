@@ -7,6 +7,7 @@ import org.p2gx.boqa.core.analysis.CandidateResult;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataParser;
 import org.p2gx.boqa.core.diseases.TargetDisease;
+import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.p2gx.boqa.core.internal.OntologyTraverserTest;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
@@ -114,7 +115,8 @@ class SetCounterTest {
                 .filter(d -> Objects.equals(d.diseaseId(), Set.of(diagnosedDiseaseId)))
                 .toList();
         PhenopacketData patient = new PhenopacketData(ppkt, hpo);
-        Counter counter = new SetCounter(hpo, patient.getObservedTerms());
+        OntologyTraverser ontologyTraverser = new OntologyTraverser(hpo);
+        Counter counter = new SetCounter(ontologyTraverser, patient.getObservedTerms());
 
         List<CandidateResult> candidateResults = computeBoqaResults(patient, counter, limit, params, diagnosedCandidate);
         assertEquals(referenceBoqaCounts, candidateResults.getFirst().counts());
