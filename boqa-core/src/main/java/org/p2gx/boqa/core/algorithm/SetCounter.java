@@ -2,13 +2,9 @@ package org.p2gx.boqa.core.algorithm;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import org.monarchinitiative.phenol.graph.OntologyGraph;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.Counter;
-import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

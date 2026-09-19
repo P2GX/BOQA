@@ -7,11 +7,8 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
-import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BoqaCounts;
-import org.p2gx.boqa.core.algorithm.SetCounter;
+import org.p2gx.boqa.core.algorithm.*;
 import org.p2gx.boqa.core.diseases.*;
-import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,8 +59,8 @@ public class BoqaBlendedExomiserAnalyser {
         List<TargetDisease.PhenotypeAndGene> targetDiseaseList) {
 
         // Now the counter is really only computing counts (though it needs HPO to do the induced HPOs)
-        OntologyTraverser ontologyTraverser = new OntologyTraverser(hpo);
-        Counter counter = new SetCounter(ontologyTraverser, patientData.getObservedTerms());
+        BoqaContext context = new BoqaContext(hpo);
+        Counter counter = context.createCounter(patientData.getObservedTerms());
         List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
 
         //TODO fix resultsLimit

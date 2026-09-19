@@ -1,4 +1,4 @@
-package org.p2gx.boqa.core.internal;
+package org.p2gx.boqa.core.algorithm;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

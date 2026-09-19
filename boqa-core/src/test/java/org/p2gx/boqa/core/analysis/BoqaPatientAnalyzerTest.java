@@ -8,15 +8,12 @@ import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.TestBase;
-import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
+import org.p2gx.boqa.core.algorithm.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvFileSource;
-import org.p2gx.boqa.core.algorithm.SetCounter;
-import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
-import org.p2gx.boqa.core.internal.OntologyTraverser;
 import org.p2gx.boqa.core.patient.QueryDataFromString;
 import java.io.IOException;
 import java.util.List;
@@ -108,9 +105,8 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Prepare arguments for 'computeBoqaResults'
         PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
-        OntologyTraverser ontologyTraverser = new OntologyTraverser(hpo);
-
-        Counter counter = new SetCounter(ontologyTraverser, patientData.getObservedTerms() );
+        BoqaContext context = new BoqaContext(hpo);
+        Counter counter = context.createCounter(patientData.getObservedTerms() );
 
         int limit = counter.getDiseaseIds().size();
         double alpha = 0.01;

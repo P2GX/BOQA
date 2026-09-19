@@ -8,6 +8,7 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.*;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
+import org.p2gx.boqa.core.algorithm.BoqaContext;
 import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
@@ -15,7 +16,7 @@ import org.p2gx.boqa.core.analysis.CandidateResult;
 import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.DiseaseDataPhenolIngest;
 import org.p2gx.boqa.core.diseases.TargetDisease;
-import org.p2gx.boqa.core.internal.OntologyTraverser;
+import org.p2gx.boqa.core.algorithm.OntologyTraverser;
 import org.p2gx.boqa.core.output.JsonResultWriter;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.monarchinitiative.phenol.io.OntologyLoader;
@@ -188,8 +189,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();
 
         AtomicInteger fileCount = new AtomicInteger(0);
-
-        OntologyTraverser ontologyTraverser = new OntologyTraverser(hpo);
+        BoqaContext context = new BoqaContext(hpo);
 
         LOGGER.info("Beginning BOQA analysis for phenopackets...");
         LOGGER.info("Results limit set to {}", limit);
@@ -202,7 +202,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                         PatientData ppkt = new PhenopacketData(singleFile, hpo);
                         // TODO test how long this takes, we are recomputing disease layers, but we also have a cache in ontology traverser...
                         // Initialize Counter
-                        Counter counter = new SetCounter(ontologyTraverser, ppkt.getObservedTerms());
+                        Counter counter = context.createCounter(ppkt.getObservedTerms());
                         LOGGER.debug("Initialized Counter with {} diseases.", diseaseData.size());
 
                         List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
@@ -221,9 +221,6 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             LOGGER.warn("Could not read phenopacket list from {}", phenopacketFile, e);
         }
         LOGGER.info("Finished processing {} phenopackets.", fileCount.get());
-
-        ontologyTraverser.logAncestorCacheStats();
-
         LOGGER.info("Writing results to {}", outPath);
         String cliArgs = String.join(" ", spec.commandLine().getParseResult().originalArgs());
         Writer writer = new JsonResultWriter();
