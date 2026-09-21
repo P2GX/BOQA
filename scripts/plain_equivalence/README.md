@@ -86,6 +86,13 @@ Two things the runs turned up, both filed as issues: the refactored command
 cannot run without `-L`, and it recomputes every disease layer for every
 patient instead of once.
 
+Run twice, the two versions behave differently: the pre-refactoring jar
+produces a different result for all 100 patients on a second run, while the
+refactored one repeats itself exactly. Only tied scores move, so the ranked
+score sequence is identical either way; what changes is which of the tied
+diseases survives the `-L` cut. Any comparison at the cut is therefore between
+two moving targets on the old side.
+
 ### PR #61 (`873c3e0`), same sample
 
 | | before | after | PR #61 |
