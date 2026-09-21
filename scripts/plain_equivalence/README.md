@@ -45,7 +45,9 @@ python3 scripts/plain_equivalence/select_sample.py \
 ## The runs
 
 `run_plain.sh` fixes every option except the jar, and records the wall-clock
-time and the CLI's own output next to the results.
+time and the CLI's own output next to the results. It finds its inputs relative
+to the repository rather than to the working directory, so it can be called from
+anywhere; the output path is taken as given.
 
 ```bash
 scripts/plain_equivalence/run_plain.sh \
