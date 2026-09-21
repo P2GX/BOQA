@@ -58,3 +58,28 @@ scripts/plain_equivalence/run_plain.sh \
 ```
 
 Results land in `results/`, which is not tracked.
+
+## What the first comparison found (2026-09-21)
+
+Sample of 100 phenopackets from `latest_20260504`, 85 gene cohorts, `-L 100`,
+both runs back to back on the same machine. Each run reports 100 x 100 =
+10,000 entries; 9,936 of those pairs appear in both runs, the other 64 per
+side being diseases tied at the score the limit cuts through.
+
+| | before (`c89782b`) | after (`34e63e6`) |
+|---|---|---|
+| counts and scores | identical for the 9,936 pairs both runs report |
+| ranking | identical: every score holds the same diseases |
+| diagnosis in top 1 | 50 | 50 |
+| loading | ~1 s | ~1 s |
+| scoring 100 phenopackets | 6 s | 36 s |
+| output | 2.6 MB | 12.3 MB |
+
+The scoring is unchanged. A naive comparison reports 3,402 differing ranks and
+38 patients with different disease sets; all of them are reorderings within
+groups of equal scores, which have no defined order in either version, plus the
+arbitrary cut among diseases tied at the score `-L` truncates.
+
+Two things the runs turned up, both filed as issues: the refactored command
+cannot run without `-L`, and it recomputes every disease layer for every
+patient instead of once.
