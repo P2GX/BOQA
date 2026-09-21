@@ -83,3 +83,15 @@ arbitrary cut among diseases tied at the score `-L` truncates.
 Two things the runs turned up, both filed as issues: the refactored command
 cannot run without `-L`, and it recomputes every disease layer for every
 patient instead of once.
+
+### PR #61 (`873c3e0`), same sample
+
+| | before | after | PR #61 |
+|---|---|---|---|
+| scoring 100 phenopackets | 6 s | 36 s | 9 s |
+| output | 2.6 MB | 12.3 MB | 12.3 MB |
+
+Against `after` the results payload is identical, metadata aside — so dropping
+the `HP:0000118` filter, which PR #61 does, changes nothing across 8,614
+diseases and 100 patients. Against `before` the counts and scores are identical
+and the ranking differs only within tied scores, as above.
