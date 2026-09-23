@@ -7,8 +7,7 @@ import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.p2gx.boqa.core.Counter;
 import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
-import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.SetCounter;
+import org.p2gx.boqa.core.algorithm.*;
 import org.p2gx.boqa.core.diseases.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +29,6 @@ public class BoqaBlendedExomiserAnalyser {
      * @param hpo      the HPO ontology
      * @param diseases the phenol disease-phenotype annotations; converted internally into the
      *                 plain {@link DiseaseData} used for scoring
-     * @param params   BOQA algorithm parameters (alpha, beta)
      */
     public BoqaBlendedExomiserAnalyser(Ontology hpo, HpoDiseases diseases) {
         this.hpo = hpo;
@@ -47,13 +45,12 @@ public class BoqaBlendedExomiserAnalyser {
      * <p>For each HPOA-annotated disease, this method performs the following steps:
      * <ol>
      *   <li>Compute {@link BoqaCounts} using the provided
-     *   {@link org.p2gx.boqa.core.algorithm.BoqaSetCounter}</li>
-     *   <li>Calculate un-normalized log probability using
-     *   {@link #computeUnnormalizedLogProbability(AlgorithmParameters, BoqaCounts)}</li>
+     *   {@link org.p2gx.boqa.core.algorithm.SetCounter}</li>
+     *   <li>Calculate log probability using
+     *   TODO
      * </ol>
      *
      * @param patientData  Query data (symptoms/features observed in a patient)
-     * @param counter      The counter object that computes BoqaCounts for each HPOA-annotated disease
      * @return A {@link PatientAnalysisResult} containing the patient data along with
      * counts and raw log scores for each HPOA-annotated disease.
      */
@@ -62,18 +59,10 @@ public class BoqaBlendedExomiserAnalyser {
         List<TargetDisease.PhenotypeAndGene> targetDiseaseList) {
 
         // Now the counter is really only computing counts (though it needs HPO to do the induced HPOs)
-        Counter counter = new SetCounter(hpo, patientData.getObservedTerms());
-        // TODO Equivalent in spirit to previous DiseaseData. Given some input, generate a representation of HPOA for
-        //  diseases of interest. Here HPOA comes from TargetDisease, which should already inlcude the HPOs. We need a
-        //  to create a DiseaseDataIngest that returns List<TargetDisease.Phenotype> to recover the previous pure BOQA
+        BoqaCounterFactory context = new BoqaCounterFactory(hpo);
+        Counter counter = context.createCounter(patientData.getObservedTerms());
         List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
 
-        // At this point our design, which PNR liked, pretty much had one "action" happening, namely:
-        // BoqaAnalysisResult result = BoqaPatientAnalyzer.computeBoqaResults(
-        //                                ppkt, counter, limit, params)
-        // In this way, all of the internals of the anlaysis happen in the core module, and not in this Exomiser
-        // specific Analyser class. The class BoqaAnalysisResult holds results for all diseases, maybe this needs to
-        // be reworked
         //TODO fix resultsLimit
         int resultsLimit = 100000;
         return BoqaPatientAnalyzer.computeBoqaResults(
