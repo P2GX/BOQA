@@ -13,7 +13,7 @@ import org.p2gx.boqa.core.DiseaseData;
 import org.p2gx.boqa.core.PatientData;
 import org.p2gx.boqa.core.Writer;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BoqaContext;
+import org.p2gx.boqa.core.algorithm.BoqaCounterFactory;
 import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
 import org.p2gx.boqa.core.analysis.CandidateResult;
@@ -136,7 +136,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         BiPredicate<String, String> mayBlendAnchors =
                 BlendedDiseaseData.geneDisjointBlend(geneAssociations.geneIdsByDisease());
 
-        BoqaContext context = new BoqaContext(hpo);
+        BoqaCounterFactory context = new BoqaCounterFactory(hpo);
 
         for(int i=0; i<numberOfIterations; i++) {
             List<String> finalAnchorGenes;

@@ -59,7 +59,7 @@ public class BoqaBlendedExomiserAnalyser {
         List<TargetDisease.PhenotypeAndGene> targetDiseaseList) {
 
         // Now the counter is really only computing counts (though it needs HPO to do the induced HPOs)
-        BoqaContext context = new BoqaContext(hpo);
+        BoqaCounterFactory context = new BoqaCounterFactory(hpo);
         Counter counter = context.createCounter(patientData.getObservedTerms());
         List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
 

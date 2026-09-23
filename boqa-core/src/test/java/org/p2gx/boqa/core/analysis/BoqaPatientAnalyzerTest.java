@@ -105,7 +105,7 @@ class BoqaPatientAnalyzerTest extends TestBase {
 
         // Prepare arguments for 'computeBoqaResults'
         PatientData patientData = new QueryDataFromString("HP:0000478,HP:0000598", "");
-        BoqaContext context = new BoqaContext(hpo);
+        BoqaCounterFactory context = new BoqaCounterFactory(hpo);
         Counter counter = context.createCounter(patientData.getObservedTerms() );
 
         int limit = counter.getDiseaseIds().size();

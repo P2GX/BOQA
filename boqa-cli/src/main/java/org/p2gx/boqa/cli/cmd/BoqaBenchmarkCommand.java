@@ -8,7 +8,7 @@ import org.monarchinitiative.phenol.annotations.io.hpo.HpoDiseaseLoaders;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.*;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
-import org.p2gx.boqa.core.algorithm.BoqaContext;
+import org.p2gx.boqa.core.algorithm.BoqaCounterFactory;
 import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
@@ -189,7 +189,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();
 
         AtomicInteger fileCount = new AtomicInteger(0);
-        BoqaContext context = new BoqaContext(hpo);
+        BoqaCounterFactory context = new BoqaCounterFactory(hpo);
 
         LOGGER.info("Beginning BOQA analysis for phenopackets...");
         LOGGER.info("Results limit set to {}", limit);

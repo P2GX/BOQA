@@ -6,12 +6,12 @@ import org.p2gx.boqa.core.Counter;
 
 import java.util.Set;
 
-public class BoqaContext {
+public class BoqaCounterFactory {
 
     private final Ontology hpo;
     private final OntologyTraverser ontologyTraverser;
 
-    public BoqaContext(Ontology hpo) {
+    public BoqaCounterFactory(Ontology hpo) {
         this.hpo = hpo;
         this.ontologyTraverser = new OntologyTraverser(hpo);
     }

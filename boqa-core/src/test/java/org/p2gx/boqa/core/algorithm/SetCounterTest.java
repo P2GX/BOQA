@@ -113,7 +113,7 @@ class SetCounterTest {
                 .filter(d -> Objects.equals(d.diseaseId(), Set.of(diagnosedDiseaseId)))
                 .toList();
         PhenopacketData patient = new PhenopacketData(ppkt, hpo);
-        BoqaContext context = new BoqaContext(hpo);
+        BoqaCounterFactory context = new BoqaCounterFactory(hpo);
         Counter counter = context.createCounter(patient.getObservedTerms());
 
         List<CandidateResult> candidateResults = computeBoqaResults(patient, counter, limit, params, diagnosedCandidate);
