@@ -9,20 +9,38 @@ set -uo pipefail
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd "$SCRIPT_DIR/../.." && pwd)
 
-if [ $# -lt 2 ]; then
-    echo "usage: $0 <boqa-cli.jar> <output.json> [extra CLI args...]" >&2
+if [ $# -lt 3 ]; then
+    echo "usage: $0 <boqa-cli.jar> <output.json> <phenopacket_list> [--force] [extra CLI args...]" >&2
     exit 2
 fi
 
 JAR="$1"
 OUT="$2"
-shift 2
+PHENOPACKET_LIST="$3"
+shift 3
+
+# Pull --force out of the extra args so it never reaches the java command
+FORCE=0
+EXTRA_ARGS=()
+for arg in "$@"; do
+    if [ "$arg" = "--force" ]; then
+        FORCE=1
+    else
+        EXTRA_ARGS+=("$arg")
+    fi
+done
+set -- "${EXTRA_ARGS[@]+"${EXTRA_ARGS[@]}"}"
 
 HPO_DATA="${HPO_DATA:-$REPO_ROOT/data/human-phenotype-ontology/v2026-02-16}"
-PHENOPACKET_LIST="${PHENOPACKET_LIST:-$REPO_ROOT/results/issue53/sample_100.txt}"
 
 mkdir -p "$(dirname "$OUT")"
 LOG="${OUT%.json}.log"
+
+# Refuse to silently clobber a previous run's results; --force opts in
+if [ "$FORCE" -ne 1 ] && { [ -e "$OUT" ] || [ -e "$LOG" ]; }; then
+    echo "$0: $OUT or $LOG already exists - refusing to overwrite; pass --force to overwrite" >&2
+    exit 1
+fi
 
 # Refuse to race another run writing the same output: mkdir is atomic, so only
 # one concurrent invocation can claim the lock directory

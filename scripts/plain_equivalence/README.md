@@ -110,23 +110,34 @@ python3 scripts/plain_equivalence/select_sample.py \
 ## The runs
 
 This is where each version actually runs, producing the output files the next
-step compares. `run_plain.sh` fixes every option except the jar, and records
-the wall-clock time and the CLI's own output next to the results. It finds its
-inputs relative to the repository rather than to the working directory, so it
-can be called from anywhere; the output path is taken as given.
+step compares. `run_plain.sh` takes the jar and the phenopacket sample as
+explicit, required arguments — the sample can't be silently defaulted to the
+wrong one — and fixes everything else (ontology and annotations), recording
+the wall-clock time and the CLI's own output next to the results. It finds
+its fixed inputs relative to the repository rather than to the working
+directory, so it can be called from anywhere; the output path is taken as
+given. If that output (or its `.log`) already exists, the script refuses to
+run rather than silently overwrite a previous run's results; pass `--force`
+to overwrite on purpose.
 
 ```bash
 scripts/plain_equivalence/run_plain.sh \
     ../boqa-worktrees/before_sealed_refactoring/boqa-cli/target/boqa-cli-0.1.0.jar \
-    results/issue53/before.json -L 100
+    results/issue53/before.json \
+    results/issue53/sample_100.txt \
+    -L 100
 
 scripts/plain_equivalence/run_plain.sh \
     ../boqa-worktrees/after_sealed_refactoring/boqa-cli/target/boqa-cli-0.2.4.jar \
-    results/issue53/after.json -L 100
+    results/issue53/after.json \
+    results/issue53/sample_100.txt \
+    -L 100
 
 scripts/plain_equivalence/run_plain.sh \
     ../boqa-worktrees/pr61_fast_benchmarking/boqa-cli/target/boqa-cli-0.2.5.jar \
-    results/issue53/pr61.json -L 100
+    results/issue53/pr61.json \
+    results/issue53/sample_100.txt \
+    -L 100
 ```
 
 `-L` is mandatory here, not just a comparison choice: this harness's first finding was that
