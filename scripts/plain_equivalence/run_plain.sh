@@ -18,11 +18,20 @@ JAR="$1"
 OUT="$2"
 shift 2
 
-HPO_DATA="${HPO_DATA:-$REPO_ROOT/data/human-phenotype-ontology/latest_20260504}"
+HPO_DATA="${HPO_DATA:-$REPO_ROOT/data/human-phenotype-ontology/v2026-02-16}"
 PHENOPACKET_LIST="${PHENOPACKET_LIST:-$REPO_ROOT/results/issue53/sample_100.txt}"
 
 mkdir -p "$(dirname "$OUT")"
 LOG="${OUT%.json}.log"
+
+# Refuse to race another run writing the same output: mkdir is atomic, so only
+# one concurrent invocation can claim the lock directory
+LOCK="${OUT%.json}.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+    echo "$0: another run already holds $LOCK (writing $OUT?) - refusing to race it" >&2
+    exit 1
+fi
+trap 'rmdir "$LOCK"' EXIT
 
 start=$(date +%s)
 java -jar "$JAR" plain \

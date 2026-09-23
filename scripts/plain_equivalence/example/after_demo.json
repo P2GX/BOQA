@@ -1,0 +1,12 @@
+{
+  "results": [
+    {
+      "patientData": {"id": "DEMO_1", "diagnosis": [{"id": "OMIM:100"}]},
+      "boqaResults": [
+        {"component": {"boqaScore": -5.5, "candidate": {"disease": {"diseaseId": "OMIM:100"}}, "counts": {"tpBoqaCount": 3, "fpBoqaCount": 0, "tnBoqaCount": 10, "fnBoqaCount": 1}}},
+        {"component": {"boqaScore": -6.0, "candidate": {"disease": {"diseaseId": "OMIM:300"}}, "counts": {"tpBoqaCount": 2, "fpBoqaCount": 1, "tnBoqaCount": 9, "fnBoqaCount": 2}}},
+        {"component": {"boqaScore": -6.0, "candidate": {"disease": {"diseaseId": "OMIM:200"}}, "counts": {"tpBoqaCount": 2, "fpBoqaCount": 1, "tnBoqaCount": 9, "fnBoqaCount": 2}}}
+      ]
+    }
+  ]
+}
