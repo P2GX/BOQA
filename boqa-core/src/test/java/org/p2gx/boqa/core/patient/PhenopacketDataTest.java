@@ -7,8 +7,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.p2gx.boqa.core.internal.OntologyTraverser;
-import org.p2gx.boqa.core.internal.OntologyTraverserTest;
+import org.p2gx.boqa.core.algorithm.OntologyTraverser;
+import org.p2gx.boqa.core.algorithm.OntologyTraverserTest;
 
 import java.io.IOException;
 import java.io.InputStream;

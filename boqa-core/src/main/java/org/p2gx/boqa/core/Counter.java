@@ -1,5 +1,6 @@
 package org.p2gx.boqa.core;
 
+import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
 
 import java.util.Set;
@@ -17,14 +18,11 @@ import java.util.Set;
  */
 public interface Counter {
 
-    /**
-     * Given a patient's observed HPOs, returns a BoqaCounts object representing
-     * the exponents of alpha, beta, 1-alpha, 1-beta
-     */
-    BoqaCounts computeBoqaCounts(String diseaseId, PatientData patientData);
 
     /**
      * Return a set with all disease IDs.
      */
     Set<String> getDiseaseIds();
+
+    BoqaCounts computeBoqaCounts(Set<TermId> diseaseObservedTerms);
 }
