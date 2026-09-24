@@ -4,9 +4,11 @@ Harness for issue #53. It runs the `plain` benchmark twice — once on the last
 state before the #47/#50 refactoring, once on the refactored state — over
 identical inputs, so that any difference in the results comes from the code.
 
-This README and the scripts it calls live on `ph/issue-53-plain-equivalence`.
-Run every command below from a checkout of that branch, at the repository
-root — except inside a `../boqa-worktrees/...` worktree, where noted.
+This README and the scripts it calls live on `ph/issue-53-blended-equivalence`.
+The original plain-only version, under `scripts/plain_equivalence/`, stays
+unchanged on `ph/issue-53-plain-equivalence`. Run every command below from a
+checkout of `ph/issue-53-blended-equivalence`, at the repository root — except
+inside a `../boqa-worktrees/...` worktree, where noted.
 
 ## The two versions, plus PR #61
 
@@ -101,7 +103,7 @@ a sample confident enough to act on; the full 9,588 files remain the fallback
 if this sample ever turned up a difference worth chasing further.
 
 ```bash
-python3 scripts/plain_equivalence/select_sample.py \
+python3 scripts/cli_equivalence/select_sample.py \
     --store data/phenopacket-store/0.1.26 \
     --count 100 \
     --out results/issue53/sample_100.txt
@@ -121,19 +123,19 @@ run rather than silently overwrite a previous run's results; pass `--force`
 to overwrite on purpose.
 
 ```bash
-scripts/plain_equivalence/run_plain.sh \
+scripts/cli_equivalence/run_plain.sh \
     ../boqa-worktrees/before_sealed_refactoring/boqa-cli/target/boqa-cli-0.1.0.jar \
     results/issue53/before.json \
     results/issue53/sample_100.txt \
     -L 100
 
-scripts/plain_equivalence/run_plain.sh \
+scripts/cli_equivalence/run_plain.sh \
     ../boqa-worktrees/after_sealed_refactoring/boqa-cli/target/boqa-cli-0.2.4.jar \
     results/issue53/after.json \
     results/issue53/sample_100.txt \
     -L 100
 
-scripts/plain_equivalence/run_plain.sh \
+scripts/cli_equivalence/run_plain.sh \
     ../boqa-worktrees/pr61_fast_benchmarking/boqa-cli/target/boqa-cli-0.2.5.jar \
     results/issue53/pr61.json \
     results/issue53/sample_100.txt \
@@ -172,7 +174,7 @@ positional diff would flag those as differences when nothing actually moved.
 
 ### A small worked example, before trusting either script on real data
 
-Two tiny fixtures under `scripts/plain_equivalence/example/` prove both the
+Two tiny fixtures under `scripts/cli_equivalence/example/` prove both the
 parsing and the diffing do the right thing — no real data needed. One
 patient, three diseases: `OMIM:100`'s score genuinely differs between the
 fixtures (`-5.0` vs `-5.5`); `OMIM:200` and `OMIM:300` are tied at `-6.0` in
@@ -180,8 +182,8 @@ both, just listed in swapped order, the kind of reordering `parallelStream`
 can introduce without meaning anything.
 
 ```bash
-python3 scripts/plain_equivalence/parse_results.py scripts/plain_equivalence/example/before_demo.json --out /tmp/before_demo.csv
-python3 scripts/plain_equivalence/parse_results.py scripts/plain_equivalence/example/after_demo.json  --out /tmp/after_demo.csv
+python3 scripts/cli_equivalence/parse_results.py scripts/cli_equivalence/example/before_demo.json --out /tmp/before_demo.csv
+python3 scripts/cli_equivalence/parse_results.py scripts/cli_equivalence/example/after_demo.json  --out /tmp/after_demo.csv
 ```
 
 `before_demo.json` uses the pre-refactoring shape (score and counts directly
@@ -208,7 +210,7 @@ the two things the fixtures were built to differ by. That is the proof the
 shape-normalization itself is correct, before any diffing logic runs at all.
 
 ```bash
-python3 scripts/plain_equivalence/compare_runs.py /tmp/before_demo.csv /tmp/after_demo.csv
+python3 scripts/cli_equivalence/compare_runs.py /tmp/before_demo.csv /tmp/after_demo.csv
 ```
 
 The output:
@@ -235,17 +237,17 @@ order."
 ### Running it on the real data
 
 ```bash
-python3 scripts/plain_equivalence/parse_results.py results/issue53/before.json --out results/issue53/before.csv
-python3 scripts/plain_equivalence/parse_results.py results/issue53/after.json  --out results/issue53/after.csv
-python3 scripts/plain_equivalence/parse_results.py results/issue53/pr61.json   --out results/issue53/pr61.csv
+python3 scripts/cli_equivalence/parse_results.py results/issue53/before.json --out results/issue53/before.csv
+python3 scripts/cli_equivalence/parse_results.py results/issue53/after.json  --out results/issue53/after.csv
+python3 scripts/cli_equivalence/parse_results.py results/issue53/pr61.json   --out results/issue53/pr61.csv
 ```
 
 Each CSV comes out to 10,000 rows: 100 phenopackets times the `-L 100` cap on
 diseases reported per patient.
 
 ```bash
-python3 scripts/plain_equivalence/compare_runs.py results/issue53/before.csv results/issue53/after.csv
-python3 scripts/plain_equivalence/compare_runs.py results/issue53/after.csv  results/issue53/pr61.csv
+python3 scripts/cli_equivalence/compare_runs.py results/issue53/before.csv results/issue53/after.csv
+python3 scripts/cli_equivalence/compare_runs.py results/issue53/after.csv  results/issue53/pr61.csv
 ```
 
 The first call answers issue #53 directly: it reports zero score and count
