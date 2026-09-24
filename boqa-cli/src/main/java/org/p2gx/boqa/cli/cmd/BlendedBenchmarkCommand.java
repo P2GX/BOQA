@@ -195,7 +195,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                     ppkt, counter, limit, params,  diseaseCandidateList);
             patientAnalysisResults.add(
                     new PatientAnalysisResult(
-                            ppkt, candidateResults.stream().limit(resultsLimit).toList())
+                            ppkt, candidateResults.stream().limit(limit).toList())
             );
             int count = fileCount.incrementAndGet();
             if (count % 10 == 0) {
