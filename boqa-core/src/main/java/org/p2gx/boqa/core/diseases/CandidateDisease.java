@@ -4,6 +4,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -98,7 +99,7 @@ public sealed interface CandidateDisease permits CandidateDisease.SingleDisease,
     }
 
     static List<CandidateDisease> createCandidateDiseases(List<TargetDisease.PhenotypeAndGene> targetDiseases) {
-        List<CandidateDisease> candidates = createSingleDiseaseCandidates(targetDiseases);
+        List<CandidateDisease> candidates = new ArrayList<>(createSingleDiseaseCandidates(targetDiseases));
 
         List<Set<TargetDisease.PhenotypeAndGene>> diseaseNplet = makeAllowedCombinations(targetDiseases);
         // Create candidate disease pairs except if a disease pair has the same gene
