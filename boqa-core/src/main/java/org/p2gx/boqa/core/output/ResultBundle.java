@@ -1,22 +1,22 @@
 package org.p2gx.boqa.core.output;
-import org.p2gx.boqa.core.analysis.BoqaAnalysisResult;
+import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 
 import java.util.List;
 
 public class ResultBundle {
     private final Metadata metadata;
-    private final List<BoqaAnalysisResult> results;
+    private final List<PatientAnalysisResult> results;
 
-    public ResultBundle(Metadata metadata, List<BoqaAnalysisResult> boqaAnalysisResults) {
+    public ResultBundle(Metadata metadata, List<PatientAnalysisResult> patientAnalysisResults) {
         this.metadata = metadata;
-        this.results = boqaAnalysisResults;
+        this.results = patientAnalysisResults;
     }
 
     public Metadata getMetadata() {
         return metadata;
     }
 
-    public List<BoqaAnalysisResult> getResults() {
+    public List<PatientAnalysisResult> getResults() {
         return results;
     }
 }

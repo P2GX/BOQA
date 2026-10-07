@@ -1,8 +1,8 @@
 package org.p2gx.boqa.core.analysis;
 
-import org.p2gx.boqa.core.algorithm.BoqaCounts;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.p2gx.boqa.core.algorithm.BoqaCounts;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,7 +15,7 @@ class BoqaResultTest {
 
     @BeforeAll
     static void initAll() {
-        bc = new BoqaCounts("OMIM:123456", "disease", 1, 2, 3, 4);
+        bc = new BoqaCounts( 1, 2, 3, 4);
     }
     @Test
     void testNanHandling() {
