@@ -17,30 +17,30 @@ its `parse_results.py` / `compare_runs.py`.
 | Role | Commit | What it is | Worktree |
 |---|---|---|---|
 | before | `c89782b` | `develop` tip, the merge of PR #45 | `before_sealed_refactoring` |
-| after | `2642b11` | `bboqa` tip, the merge of PR #61 | `bboqa_head` |
-| after + fixes | `6fe826f` | `ph/blended-cli-fixes`: `2642b11` plus two fixes | `blended_cli_fixes` |
+| after | `2642b11` | merge of PR #61, the `bboqa` tip until PR #69 | `bboqa_pr61` |
+| after + fixes | `6fe826f` | PR #69 (`ph/blended-cli-fixes`): `2642b11` plus two fixes | `blended_cli_fixes` |
 
 The `before` worktree and jar are the ones from `README_plain.md`. The other two
 are created the same way, detached at their commit:
 
 ```bash
-# Make the fix branch's commits reachable locally
-git fetch origin bboqa ph/blended-cli-fixes
+# Fetch bboqa, which contains the two fixes since #69 was merged
+git fetch origin bboqa
 
 # One worktree per build
-git worktree add --detach ../boqa-worktrees/bboqa_head        2642b11
+git worktree add --detach ../boqa-worktrees/bboqa_pr61        2642b11
 git worktree add --detach ../boqa-worktrees/blended_cli_fixes 6fe826f
 
 # Build the CLI jar in each one
-(cd ../boqa-worktrees/bboqa_head        && ./mvnw -pl boqa-cli,boqa-core -am -B --quiet -Prelease package)
+(cd ../boqa-worktrees/bboqa_pr61        && ./mvnw -pl boqa-cli,boqa-core -am -B --quiet -Prelease package)
 (cd ../boqa-worktrees/blended_cli_fixes && ./mvnw -pl boqa-cli,boqa-core -am -B --quiet -Prelease package)
 
 ls -l ../boqa-worktrees/before_sealed_refactoring/boqa-cli/target/boqa-cli-0.1.0.jar
-ls -l ../boqa-worktrees/bboqa_head/boqa-cli/target/boqa-cli-0.2.5.jar
+ls -l ../boqa-worktrees/bboqa_pr61/boqa-cli/target/boqa-cli-0.2.5.jar
 ls -l ../boqa-worktrees/blended_cli_fixes/boqa-cli/target/boqa-cli-0.2.5.jar
 ```
 
-The two fixes, both on `ph/blended-cli-fixes`:
+The two fixes, merged into `bboqa` with PR #69:
 
 - `760291e`: `blended` threw a `NullPointerException` whenever `-L` was left
   out, the same bug #62 reported for `plain`.
@@ -119,7 +119,7 @@ scripts/cli_equivalence/run_blended.sh \
     results/blended/sample_mgd.tsv
 
 scripts/cli_equivalence/run_blended.sh \
-    ../boqa-worktrees/bboqa_head/boqa-cli/target/boqa-cli-0.2.5.jar \
+    ../boqa-worktrees/bboqa_pr61/boqa-cli/target/boqa-cli-0.2.5.jar \
     results/blended/after \
     results/blended/sample_mgd.tsv
 
