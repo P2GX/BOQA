@@ -20,12 +20,12 @@ All three are local tags:
 | `after_sealed_refactoring` | `34e63e6` | PR #47 head on 2026-09-21, with #50 merged in |
 | `pr61_fast_benchmarking` | `873c3e0` | PR #61 head on 2026-09-21, a speed rewrite of the `after` path |
 
-The first two are ordinary local tags. The third points at a commit that only
-exists on a branch, so fetch it before tagging it:
+All three commits are on `bboqa` since PR #61 was merged, so fetch it before
+tagging them:
 
 ```bash
-# Make PR #61's commit reachable locally
-git fetch origin lc/fast_benchmarking
+# Fetch bboqa, which contains PR #61's commits since it was merged
+git fetch origin bboqa
 
 # Pin all three versions as local tags
 git tag before_sealed_refactoring c89782b
