@@ -17,7 +17,7 @@ import java.util.zip.GZIPInputStream;
 
 public class TestBase {
 
-    private static Ontology hpo = null;
+    protected static Ontology hpo = null;
     private static HpoDiseases hpoDiseases = null;
 
 

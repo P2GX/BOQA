@@ -2,7 +2,11 @@ package org.p2gx.boqa.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.monarchinitiative.phenol.ontology.data.TermId;
+import org.p2gx.boqa.core.patient.DefaultPatientData;
 
+import static java.util.stream.Collectors.toSet;
+
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -30,5 +34,19 @@ public interface PatientData {
     default Set<TermId> getExcludedTerms() {
         // If excluded terms are not used or not available
         return Set.of();
+    }
+
+    /** The Exomiser provides us with a List of HPO identifiers as Strings. */
+    static PatientData fromObservedHpoTermList(List<String> observed) {
+        // TODO we should use something like the following to make sure HPO IDs are the primary ones, otherwise it will crash
+        //  OntologyTraverser traverser = new OntologyTraverser(hpo);
+        //        this.observedHpoIds = observed.stream()
+        //                .map(traverser::getPrimaryTermId)
+        //                .filter(Objects::nonNull) // If old HPO is used without a term, avoids the program crashing
+        String randomId = java.util.UUID.randomUUID().toString();
+        Set<TermId> observedTidSet = observed.stream()
+            .map(TermId::of)
+            .collect(toSet());
+        return new DefaultPatientData(randomId, observedTidSet);
     }
 }

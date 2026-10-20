@@ -12,5 +12,5 @@ import java.util.List;
  *   each containing a {@link org.p2gx.boqa.core.algorithm.BoqaCounts} and its associated BOQA score.
  * </ul>
  **/
-public record BoqaAnalysisResult(PatientData patientData, List<BoqaResult> boqaResults) {
+public record PatientAnalysisResult(PatientData patientData, List<CandidateResult> boqaResults) {
 }

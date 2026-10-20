@@ -19,13 +19,13 @@ import java.util.zip.GZIPInputStream;
  * <p>
  * @author <a href="mailto:peter.hansen@bih-charite.de">Peter Hansen</a>
  */
-class DiseaseDataParseIngestTest {
+class PhenotypeOnlyDataParseIngestTest {
 
     private static DiseaseData testDiseaseData;
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(DiseaseDataParseIngestTest.class.
+        try (InputStream hpoa = new GZIPInputStream(Objects.requireNonNull(PhenotypeOnlyDataParseIngestTest.class.
                 getResourceAsStream("/org/p2gx/boqa/core/phenotype.v2025-05-06.hpoa.gz")))) {
             testDiseaseData = DiseaseDataParser.parseDiseaseDataFromHpoa(hpoa);
         }

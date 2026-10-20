@@ -20,6 +20,7 @@ import org.p2gx.boqa.core.algorithm.BoqaCounts;
  * @param counts    The BOQA counts for this disease.
  * @param boqaScore The normalized BOQA probability score (0.0 to 1.0), where higher values
  *                  indicate greater diagnostic likelihood.
+ *
  */
 public record BoqaResult(BoqaCounts counts, double boqaScore) implements Comparable<BoqaResult> {
     /**
