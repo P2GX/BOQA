@@ -1,4 +1,4 @@
-package org.p2gx.boqa.core.internal;
+package org.p2gx.boqa.core.algorithm;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;

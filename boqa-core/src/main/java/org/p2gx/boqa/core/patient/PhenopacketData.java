@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.p2gx.boqa.core.PatientData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.p2gx.boqa.core.internal.OntologyTraverser;
+import org.p2gx.boqa.core.algorithm.OntologyTraverser;
 import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.OntologyClass;
 import org.phenopackets.schema.v2.core.PhenotypicFeature;
