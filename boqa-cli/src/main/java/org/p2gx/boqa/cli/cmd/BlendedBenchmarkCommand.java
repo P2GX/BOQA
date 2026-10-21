@@ -92,6 +92,8 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
 
+        createOutputDirectory();
+
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations {} from file: {} ...", diseaseDatabases.toString(), phenotypeAnnotationFile);
         if (diseaseDatabases.contains("OMIM") && diseaseDatabases.contains("ORPHA")) {
