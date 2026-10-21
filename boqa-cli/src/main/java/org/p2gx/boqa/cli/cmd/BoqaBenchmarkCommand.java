@@ -28,7 +28,6 @@ import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
 
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -138,11 +137,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
 
-        try {
-            Files.createDirectory(outPath.getParent());
-        } catch (FileAlreadyExistsException e) {
-            LOGGER.info("Directory {} already exists, continuing...", e.getMessage());
-        }
+        createOutputDirectory();
 
         // Parse disease-HPO associations into DiseaseData object
         LOGGER.info("Importing disease phenotype associations {} from file: {} ...", diseaseDatabases.toString(), phenotypeAnnotationFile);
@@ -236,5 +231,19 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         );
         LOGGER.info("BOQA analysis completed successfully.");
         return 0;
+    }
+
+    /**
+     * Creates the folder of the output file, including all missing parent folders.
+     * A file name without a folder refers to the current folder.
+     */
+    protected void createOutputDirectory() throws IOException {
+        Path outputDirectory = outPath.toAbsolutePath().getParent();
+        if (Files.isDirectory(outputDirectory)) {
+            LOGGER.info("Output folder {} already exists, continuing...", outputDirectory);
+        } else {
+            Files.createDirectories(outputDirectory);
+            LOGGER.info("Created output folder {}", outputDirectory);
+        }
     }
 }
