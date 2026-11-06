@@ -14,16 +14,16 @@ All three are local tags:
 
 | Tag | Commit | What it is |
 |---|---|---|
-| `before_sealed_refactoring` | `c89782b` | `develop` tip, the merge of PR #45 |
+| `before_sealed_refactoring` | `c89782b` | before the refactoring, the merge of PR #45 |
 | `after_sealed_refactoring` | `34e63e6` | PR #47 head on 2026-09-21, with #50 merged in |
 | `pr61_fast_benchmarking` | `873c3e0` | PR #61 head on 2026-09-21, a speed rewrite of the `after` path |
 
-All three commits are on `bboqa` since PR #61 was merged, so fetch it before
-tagging them:
+All three commits are on `develop` since PR #47 merged the refactoring into
+it, so fetch it before tagging them:
 
 ```bash
-# Fetch bboqa, which contains PR #61's commits since it was merged
-git fetch origin bboqa
+# Fetch develop, which contains all three commits since PR #47 was merged
+git fetch origin develop
 
 # Pin all three versions as local tags
 git tag before_sealed_refactoring c89782b
