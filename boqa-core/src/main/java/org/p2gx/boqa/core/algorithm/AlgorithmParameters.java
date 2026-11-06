@@ -36,7 +36,8 @@ public final class AlgorithmParameters {
      * @param alpha the alpha parameter (false positive probability), or null for default
      * @param beta the beta parameter (false negative probability), or null for default
      * @return AlgorithmParameters instance
-     * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1)
+     * @throws IllegalArgumentException if alpha or beta is not in the range (0, 1),
+     *         or if alpha + beta >= 1
      */
     public static AlgorithmParameters create(double alpha, double beta) {
         // Validate alpha
@@ -50,6 +51,15 @@ public final class AlgorithmParameters {
         if (beta <= 0.0 || beta >= 1.0) {
             throw new IllegalArgumentException(
                     String.format("Beta must be in the range (0, 1), exclusive. Got: %f", beta)
+            );
+        }
+
+        // Validate alpha + beta
+        if (alpha + beta >= 1.0) {
+            throw new IllegalArgumentException(
+                    String.format("Alpha + beta must be less than 1. Got: %s + %s. "
+                            + "At 1, all diseases get the same score; above 1, the ranking is reversed "
+                            + "(see BOQA issue #27).", alpha, beta)
             );
         }
 
