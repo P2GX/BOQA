@@ -106,13 +106,13 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
 
     @CommandLine.Option(
             names={"-a","--alpha"},
-            description = "Float value such that 0<alpha<1 (default: ${DEFAULT-VALUE}).",
+            description = "Float value such that 0<alpha<1 and alpha+beta<1 (default: ${DEFAULT-VALUE}).",
             defaultValue = "5.241914347119568E-05")
     Double alpha;
 
     @CommandLine.Option(
             names={"-b","--beta"},
-            description = "Float value such that 0<beta<1 (default: ${DEFAULT-VALUE}).",
+            description = "Float value such that 0<beta<1 and alpha+beta<1 (default: ${DEFAULT-VALUE}).",
             defaultValue = "0.9")
     Double beta;
 
