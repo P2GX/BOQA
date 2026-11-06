@@ -16,7 +16,7 @@ its `parse_results.py` / `compare_runs.py`.
 
 | Role | Commit | What it is | Worktree |
 |---|---|---|---|
-| before | `c89782b` | `develop` tip, the merge of PR #45 | `before_sealed_refactoring` |
+| before | `c89782b` | before the refactoring, the merge of PR #45 | `before_sealed_refactoring` |
 | after | `2642b11` | merge of PR #61, the `bboqa` tip until PR #69 | `bboqa_pr61` |
 | after + fixes | `6fe826f` | PR #69 (`ph/blended-cli-fixes`): `2642b11` plus two fixes | `blended_cli_fixes` |
 
@@ -24,8 +24,8 @@ The `before` worktree and jar are the ones from `README_plain.md`. The other two
 are created the same way, detached at their commit:
 
 ```bash
-# Fetch bboqa, which contains the two fixes since #69 was merged
-git fetch origin bboqa
+# Fetch develop, which contains all three builds since PR #47 was merged
+git fetch origin develop
 
 # One worktree per build
 git worktree add --detach ../boqa-worktrees/bboqa_pr61        2642b11
