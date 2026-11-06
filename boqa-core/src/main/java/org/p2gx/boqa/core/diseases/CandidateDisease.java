@@ -1,5 +1,6 @@
 package org.p2gx.boqa.core.diseases;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,13 +35,14 @@ public sealed interface CandidateDisease permits CandidateDisease.SingleDisease,
     Set<String> diseaseId();
     Set<String> diseaseLabel();
     Set<TermId> observedHpoTermids();
-    
+    Set<TargetDisease> diseases();
    /**
      * A single Mendelian disease.
      */
     record SingleDisease(TargetDisease disease) implements CandidateDisease {
-        public TargetDisease finalDiagnosis() {
-            return disease;
+        @Override
+        public Set<TargetDisease> diseases() {
+            return Set.of(disease);
         }
 
         @Override
@@ -48,6 +50,8 @@ public sealed interface CandidateDisease permits CandidateDisease.SingleDisease,
 
         @Override
         public Set<String> diseaseLabel(){ return Set.of(disease.diseaseLabel());}
+
+        @JsonIgnore
         @Override
         public Set<TermId> observedHpoTermids() {
             return disease.observedHpoIds();
@@ -77,8 +81,8 @@ public sealed interface CandidateDisease permits CandidateDisease.SingleDisease,
         Set<String> geneSymbol() {
             return components.stream().map(TargetDisease.PhenotypeAndGene::geneSymbol).collect(Collectors.toSet());
         }
-
-        public Set<TargetDisease> finalDiagnosis() {
+        @Override
+        public Set<TargetDisease> diseases() {
             return components.stream()
                     .map(g -> (TargetDisease) g)
                     .collect(Collectors.toSet());

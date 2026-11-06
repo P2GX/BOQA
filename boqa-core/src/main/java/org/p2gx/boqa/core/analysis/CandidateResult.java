@@ -1,8 +1,12 @@
 package org.p2gx.boqa.core.analysis;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
+import org.p2gx.boqa.core.diseases.CandidateDisease;
+import org.p2gx.boqa.core.diseases.TargetDisease;
 
 /**
  * The sealed result type. This guarantees that your HTML generator 
@@ -20,14 +24,7 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
     }
     double score();
     BoqaCounts counts();
-
-//    default double score() {
-//        return finalDiseaseModel().score();
-//    }
-//
-//    default BoqaCountsNew counts() {
-//        return finalDiseaseModel().counts();
-//    }
+    Set<TargetDisease>  finalDiseases();
 
     /**
      * Compares BoqaResults by score in descending order (highest score first).
@@ -61,6 +58,8 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
      */
     record SingleResult(AlgorithmResult component) implements CandidateResult {
         @Override
+        public  Set<TargetDisease>  finalDiseases(){ return component.candidate().diseases();}
+        @Override
         public double score() {
             return component.boqaScore();
         }
@@ -82,6 +81,11 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
 //                throw new IllegalArgumentException("Blended results must have at least 2 components");
 //            }
 //        }
+
+        @Override
+        public Set<TargetDisease> finalDiseases() {
+            return blendedDisease.candidate().diseases();
+        }
         @Override
         public BoqaCounts counts() {
             return blendedDisease.counts();
