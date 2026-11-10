@@ -20,6 +20,10 @@ public class SetCounter implements Counter {
         this.ontologyTraverser = ontologyTraverser;
         // TODO substitute filter with isPhenotypicFeature by PNR after testing it works
         this.patientLayer =  ontologyTraverser.getObservedWithAncestors(patientHpos);
+        if (patientLayer.isEmpty()) {
+            throw new EmptyQueryException(
+                    "The query has no observed term below Phenotypic abnormality (HP:0000118)");
+        }
     }
 
      /**

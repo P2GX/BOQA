@@ -10,7 +10,9 @@ import org.p2gx.boqa.core.diseases.TargetDisease;
 import org.p2gx.boqa.core.patient.PhenopacketData;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvFileSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.monarchinitiative.phenol.io.OntologyLoader;
 import org.monarchinitiative.phenol.ontology.data.Ontology;
 
@@ -21,6 +23,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 import static org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer.computeBoqaResults;
@@ -118,5 +121,20 @@ class SetCounterTest {
 
         List<CandidateResult> candidateResults = computeBoqaResults(patient, counter, limit, params, diagnosedCandidate);
         assertEquals(referenceBoqaCounts, candidateResults.getFirst().counts());
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("queriesWithoutPhenotypicAbnormality")
+    void queryWithoutPhenotypicAbnormality_throws(String testName, Set<TermId> patientTerms) {
+        BoqaCounterFactory counterFactory = new BoqaCounterFactory(hpo);
+        assertThrows(EmptyQueryException.class, () -> counterFactory.createCounter(patientTerms));
+    }
+
+    private static Stream<Arguments> queriesWithoutPhenotypicAbnormality() {
+        return Stream.of(
+                Arguments.of("No terms", Set.of()),
+                // HP:0000005 Mode of inheritance is not below Phenotypic abnormality
+                Arguments.of("Only Mode of inheritance", Set.of(TermId.of("HP:0000005")))
+        );
     }
 }
