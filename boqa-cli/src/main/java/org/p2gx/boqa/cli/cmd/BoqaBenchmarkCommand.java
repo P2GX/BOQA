@@ -34,6 +34,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,11 +90,19 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
             description = "Input a text file with list of absolute paths to phenopackets.")
     Path phenopacketFile;
 
+    private Integer numOfThreads;
+
     @CommandLine.Option(
-            names={"-n","--num-of-processes"},
-            description ="Number of processes that will run in parallel (default: ${DEFAULT-VALUE}).",
-            defaultValue = "1")
-    private int numOfProcesses;
+            names={"-n","--num-of-threads"},
+            paramLabel = "<threads>",
+            description ="Number of threads used for scoring (default: all available cores).")
+    void setNumOfThreads(int numOfThreads) {
+        if (numOfThreads < 1) {
+            throw new CommandLine.ParameterException(spec.commandLine(),
+                    "Error: -n must be at least 1, got " + numOfThreads);
+        }
+        this.numOfThreads = numOfThreads;
+    }
 
     @CommandLine.Option(
             names = "--out",
@@ -191,7 +201,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         LOGGER.info("Results limit set to {}", limit);
         // For each line in the phenopacketFile compute counts (run the analysis) and add them to boqaAnalysisResults
         try (Stream<String> stream = Files.lines(phenopacketFile)) {
-            patientAnalysisResults = stream
+            patientAnalysisResults = runWithThreadLimit(() -> stream
                     .map(Path::of)
                     .parallel()
                     .map(singleFile -> {
@@ -220,7 +230,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                         }
                         return patientAnalysisResult;
                     })
-                    .toList();
+                    .toList());
         } catch (IOException e) {
             LOGGER.warn("Could not read phenopacket list from {}", phenopacketFile, e);
         }
@@ -253,6 +263,24 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
         } else {
             Files.createDirectories(outputDirectory);
             LOGGER.info("Created output folder {}", outputDirectory);
+        }
+    }
+
+    /**
+     * Runs the task in its own thread pool with the number of threads given by -n (default: all
+     * available cores). Parallel streams started inside the task, including nested ones, use this pool.
+     */
+    protected <T> T runWithThreadLimit(Callable<T> task) throws Exception {
+        int threadCount = (numOfThreads != null) ? numOfThreads : Runtime.getRuntime().availableProcessors();
+        LOGGER.info("Number of scoring threads: {}", threadCount);
+        try (ForkJoinPool pool = new ForkJoinPool(threadCount)) {
+            return pool.submit(task).get();
+        } catch (ExecutionException e) {
+            // Rethrow the task's own exception instead of the wrapper
+            if (e.getCause() instanceof Exception cause) {
+                throw cause;
+            }
+            throw e;
         }
     }
 }
