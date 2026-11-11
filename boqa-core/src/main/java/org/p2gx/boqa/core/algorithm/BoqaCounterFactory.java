@@ -16,6 +16,9 @@ public class BoqaCounterFactory {
         this.ontologyTraverser = new OntologyTraverser(hpo);
     }
 
+    /**
+     * @throws EmptyQueryException if none of the patient's terms is below Phenotypic abnormality
+     */
     public Counter createCounter(Set<TermId> patientHpos) {
         return new SetCounter(
                 ontologyTraverser,

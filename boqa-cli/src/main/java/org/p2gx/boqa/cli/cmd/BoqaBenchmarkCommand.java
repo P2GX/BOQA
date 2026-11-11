@@ -9,6 +9,7 @@ import org.monarchinitiative.phenol.ontology.data.TermId;
 import org.p2gx.boqa.core.*;
 import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.algorithm.BoqaCounterFactory;
+import org.p2gx.boqa.core.algorithm.EmptyQueryException;
 import org.p2gx.boqa.core.algorithm.SetCounter;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaPatientAnalyzer;
@@ -197,11 +198,19 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                         PatientData ppkt = new PhenopacketData(singleFile, hpo);
                         // TODO test how long this takes, we are recomputing disease layers, but we also have a cache in ontology traverser...
                         // Initialize Counter
-                        Counter counter = context.createCounter(ppkt.getObservedTerms());
-                        LOGGER.debug("Initialized Counter with {} diseases.", diseaseData.size());
+                        List<CandidateResult> candidateResults;
+                        try {
+                            Counter counter = context.createCounter(ppkt.getObservedTerms());
+                            LOGGER.debug("Initialized Counter with {} diseases.", diseaseData.size());
 
-                        List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
-                                ppkt, counter, limit, params,  diseaseCandidateList);
+                            candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
+                                    ppkt, counter, limit, params,  diseaseCandidateList);
+                        } catch (EmptyQueryException e) {
+                            // Report the phenopacket with an empty result list
+                            LOGGER.warn("Phenopacket {}: {}. It is reported with an empty result list.",
+                                    ppkt.getID(), e.getMessage());
+                            candidateResults = List.of();
+                        }
                         PatientAnalysisResult patientAnalysisResult = new PatientAnalysisResult(
                                 ppkt, candidateResults.stream().limit(limit).toList());
 

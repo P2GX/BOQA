@@ -53,6 +53,8 @@ public class BoqaBlendedExomiserAnalyser {
      * @param patientData  Query data (symptoms/features observed in a patient)
      * @return A {@link PatientAnalysisResult} containing the patient data along with
      * counts and raw log scores for each HPOA-annotated disease.
+     * @throws org.p2gx.boqa.core.algorithm.EmptyQueryException if none of the patient's terms is
+     * below Phenotypic abnormality
      */
     public List<CandidateResult> computeBlendedBoqaResults(
         PatientData patientData, 
