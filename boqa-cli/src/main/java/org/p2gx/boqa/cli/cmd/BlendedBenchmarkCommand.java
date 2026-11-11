@@ -193,8 +193,8 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             Counter counter = context.createCounter(ppkt.getObservedTerms());
             LOGGER.debug("Initialized Counter with {} diseases.", blendedDiseaseData.size());
 
-            List<CandidateResult> candidateResults = BoqaPatientAnalyzer.computeBoqaResults(
-                    ppkt, counter, limit, params,  diseaseCandidateList);
+            List<CandidateResult> candidateResults = runWithThreadLimit(() -> BoqaPatientAnalyzer.computeBoqaResults(
+                    ppkt, counter, limit, params,  diseaseCandidateList));
             patientAnalysisResults.add(
                     new PatientAnalysisResult(
                             ppkt, candidateResults.stream().limit(limit).toList())
