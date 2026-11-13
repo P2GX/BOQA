@@ -62,7 +62,7 @@ public final class BoqaPatientAnalyzer {
                         BoqaCounts bc = counter.computeBoqaCounts(
                                 dc.observedHpoTermids());
                         double rawScore = computeUnnormalizedLogProbability(params, bc);
-                        return new AlgorithmResult(bc,rawScore, dc);
+                        return new AlgorithmResult(rawScore, dc, bc);
                     })
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -135,14 +135,14 @@ public final class BoqaPatientAnalyzer {
         List<AlgorithmResult> allResults = new ArrayList<>();
         rawLogBoqaResults.forEach(r -> {
             double normProb = Math.exp(r.boqaScore() - maxLogP) / sum;
-            allResults.add(new AlgorithmResult(r.counts(), normProb, r.candidate()));
+            allResults.add(new AlgorithmResult(normProb, r.candidateDisease(), r.counts()));
         });
 
         // Use CandidateResult only now. Filter out blended and create map from single diseases to allResults
         Map<String, AlgorithmResult> singleResultsById = allResults.stream()
-                .filter(r -> r.candidate() instanceof CandidateDisease.SingleDisease)
+                .filter(r -> r.candidateDisease() instanceof CandidateDisease.SingleDisease)
                 .collect(Collectors.toMap(
-                        r -> ((CandidateDisease.SingleDisease) r.candidate())
+                        r -> ((CandidateDisease.SingleDisease) r.candidateDisease())
                                 .disease().diseaseId(),
                         Function.identity()
                 ));
@@ -161,10 +161,10 @@ public final class BoqaPatientAnalyzer {
 
 //    private static DiseaseComponent toDiseaseComponent(
 //            BoqaResultNew result,
-//            CandidateDiseaseNew.SingleDiseaseNew candidate) {
+//            CandidateDiseaseNew.SingleDiseaseNew candidateDisease) {
 //
 //        return new DiseaseComponent(
-//                candidate.disease(),
+//                candidateDisease.disease(),
 //                result.counts(),
 //                result.boqaScore()
 //        );
@@ -173,10 +173,10 @@ public final class BoqaPatientAnalyzer {
             AlgorithmResult result,
             Map<String, AlgorithmResult> singleResultsById) {
 
-        return switch (result.candidate()) {
+        return switch (result.candidateDisease()) {
             case CandidateDisease.SingleDisease ignored -> new CandidateResult.SingleResult(result);
             case CandidateDisease.BlendedDisease blended -> {
-                List<AlgorithmResult> components = blended.components().stream()
+                List<AlgorithmResult> components = blended.diseaseComponentsOfBlended().stream()
                         .map(TargetDisease.PhenotypeAndGene::diseaseId)
                         .map(singleResultsById::get)
                         .toList();

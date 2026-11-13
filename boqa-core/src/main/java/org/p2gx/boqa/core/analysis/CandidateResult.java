@@ -2,10 +2,8 @@ package org.p2gx.boqa.core.analysis;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.p2gx.boqa.core.algorithm.BoqaCounts;
-import org.p2gx.boqa.core.diseases.CandidateDisease;
 import org.p2gx.boqa.core.diseases.TargetDisease;
 
 /**
@@ -56,35 +54,35 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
     /**
      * Variant 1: Exactly one disease and one set of counts.
      */
-    record SingleResult(AlgorithmResult component) implements CandidateResult {
+    record SingleResult(AlgorithmResult singleDiseaseResult) implements CandidateResult {
         @Override
-        public  Set<TargetDisease>  finalDiseases(){ return component.candidate().diseases();}
+        public  Set<TargetDisease>  finalDiseases(){ return singleDiseaseResult.candidateDisease().diseases();}
         @Override
         public double score() {
-            return component.boqaScore();
+            return singleDiseaseResult.boqaScore();
         }
         @Override
         public BoqaCounts counts() {
-            return component.counts();
+            return singleDiseaseResult.counts();
         }
     }
 
     /**
-     * Variant 2: Multiple distinct components, plus the final melded result.
+     * Variant 2: Multiple distinct componentOfBlendedResult, plus the final melded result.
      */
     record BlendedResult(
-            List<AlgorithmResult> components,
+            List<AlgorithmResult> componentOfBlendedResult,
             AlgorithmResult blendedDisease
     ) implements CandidateResult {
 //        public Blended {
-//            if (components == null || components.size() < 2) {
-//                throw new IllegalArgumentException("Blended results must have at least 2 components");
+//            if (componentOfBlendedResult == null || componentOfBlendedResult.size() < 2) {
+//                throw new IllegalArgumentException("Blended results must have at least 2 componentOfBlendedResult");
 //            }
 //        }
 
         @Override
         public Set<TargetDisease> finalDiseases() {
-            return blendedDisease.candidate().diseases();
+            return blendedDisease.candidateDisease().diseases();
         }
         @Override
         public BoqaCounts counts() {
@@ -100,7 +98,7 @@ public sealed interface CandidateResult extends Comparable<CandidateResult>
         }
 
         private boolean naiveImprovement() {
-            double maxSingleScore = components().stream()
+            double maxSingleScore = componentOfBlendedResult().stream()
                 .mapToDouble(AlgorithmResult::boqaScore)
                 .max()
                 .orElse(0.0);
