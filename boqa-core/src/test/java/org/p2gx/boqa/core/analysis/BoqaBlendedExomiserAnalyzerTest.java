@@ -69,7 +69,7 @@ class BoqaBlendedExomiserAnalyzerTest {
                 .filter(BlendedResult::isBlended)
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Anchors on differing genes should produce a blended pair"));
-        assertEquals(Set.of(anchor1, anchor2), Set.copyOf(blended.components()));
+        assertEquals(Set.of(anchor1, anchor2), Set.copyOf(blended.diseaseComponentsOfBlended()));
         assertEquals(2, blended.componentCounts().size());
     }
 
@@ -102,15 +102,15 @@ class BoqaBlendedExomiserAnalyzerTest {
                 .filter(result -> !result.isBlended())
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("The anchor singletons should be scored too"));
-        // A single disease is its own component, and is scored on its own counts
-        assertEquals(single.components().getFirst().diseaseId(), single.blendedCounts().diseaseId());
+        // A single disease is its own singleDiseaseResult, and is scored on its own counts
+        assertEquals(single.diseaseComponentsOfBlended().getFirst().diseaseId(), single.blendedCounts().diseaseId());
         assertEquals(List.of(single.blendedCounts()), single.componentCounts());
     }
 
     @Test
     void patientMatchingOneAnchor_ranksItAtTop() {
-        // A patient whose phenotypes exactly match one candidate should rank that disease (or a
-        // blend containing it) highest, since blending in the other candidate only adds unmatched
+        // A patient whose phenotypes exactly match one candidateDisease should rank that disease (or a
+        // blend containing it) highest, since blending in the other candidateDisease only adds unmatched
         // features (false negatives) and lowers the score.
         TargetDisease matchedAnchor = anchorOnGene(FBN1);
         TargetDisease otherAnchor = anchorOnGene(OTHER_GENE);
@@ -120,8 +120,8 @@ class BoqaBlendedExomiserAnalyzerTest {
 
         assertFalse(results.isEmpty(), "Analysis should produce results");
         assertSortedByScoreDescending(results);
-        assertTrue(results.getFirst().components().contains(matchedAnchor),
-                "Top result should be the matched candidate or a blend containing it");
+        assertTrue(results.getFirst().diseaseComponentsOfBlended().contains(matchedAnchor),
+                "Top result should be the matched candidateDisease or a blend containing it");
     }
 
     @Test
@@ -176,7 +176,7 @@ class BoqaBlendedExomiserAnalyzerTest {
         }
     }
 
-    // Builds the candidate a gene puts forward: its annotated disease with the most observed
+    // Builds the candidateDisease a gene puts forward: its annotated disease with the most observed
     // features (the most discriminative one), as Exomiser would supply it.
     private static TargetDisease anchorOnGene(String geneId) {
         List<String> diseases = diseasesForGene(geneId);
