@@ -43,7 +43,7 @@
 //                BLENDED_COUNTS, 0.9);
 //        assertTrue(result.isBlended());
 //        // Both genes stay visible, so the caller can map the blend onto its per-gene results
-//        assertEquals(List.of(2200, 2639), result.components().stream().map(TargetDisease::geneId).toList());
+//        assertEquals(List.of(2200, 2639), result.diseaseComponentsOfBlended().stream().map(TargetDisease::geneId).toList());
 //    }
 //
 //    @Test
@@ -60,11 +60,11 @@
 //
 //    @Test
 //    void testComponentsAreDecoupledFromTheCallersLists() {
-//        List<TargetDisease> components = new ArrayList<>(List.of(MARFAN));
+//        List<TargetDisease> diseaseComponentsOfBlended = new ArrayList<>(List.of(MARFAN));
 //        List<BoqaCounts> componentCounts = new ArrayList<>(List.of(MARFAN_COUNTS));
-//        BlendedResult result = new BlendedResult(components, componentCounts, MARFAN_COUNTS, 0.75);
+//        BlendedResult result = new BlendedResult(diseaseComponentsOfBlended, componentCounts, MARFAN_COUNTS, 0.75);
 //
-//        components.add(GLUTARIC_ACIDURIA);
+//        diseaseComponentsOfBlended.add(GLUTARIC_ACIDURIA);
 //        componentCounts.add(GLUTARIC_ACIDURIA_COUNTS);
 //
 //        assertFalse(result.isBlended(), "A result must not change when the caller's list changes");

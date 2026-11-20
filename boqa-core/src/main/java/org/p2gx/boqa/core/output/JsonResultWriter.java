@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.github.luben.zstd.ZstdOutputStream;
 
 import org.p2gx.boqa.core.Writer;
+import org.p2gx.boqa.core.algorithm.AlgorithmParameters;
 import org.p2gx.boqa.core.analysis.PatientAnalysisResult;
 import org.p2gx.boqa.core.analysis.BoqaResult;
 
@@ -41,6 +42,54 @@ import java.util.regex.Pattern;
 public class JsonResultWriter implements Writer {
 
     private static final Pattern DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+
+    public void minimalisticWriteResults(List<PatientAnalysisResult> patientAnalysisResults,
+                                         Path outPath,
+                                         boolean compress) {
+        Metadata metadata = new Metadata(
+                Instant.now().toString(),
+                "UNKNOWN",
+                "UNKNOWN",
+                // TODO fix hardcoded version
+                //Map.of("phenopacketStoreVersion", "v0.1.24"),
+                Map.of("alpha", "UNKNOWN", "beta", "UNKNOWN"),
+                "cliArgs",
+                Map.of(
+                        "javaVersion", System.getProperty("java.version"),
+                        "os", System.getProperty("os.name"),
+                        "arch", System.getProperty("os.arch"),
+                        "boqaVersion", "UNKNOWN"
+                )
+        );
+        ResultBundle bundle = new ResultBundle(metadata, patientAnalysisResults);
+        ObjectMapper mapper = new ObjectMapper();
+
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        if (compress) {
+            try (
+                    OutputStream fileOut = Files.newOutputStream(outPath);
+                    ZstdOutputStream zstdOut = new ZstdOutputStream(fileOut)
+            ) {
+                mapper.writeValue(zstdOut, bundle);
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Could not write results to " + outPath,
+                        e
+                );
+            }
+        } else {
+            try (OutputStream out = Files.newOutputStream(outPath)) {
+                mapper.writeValue(out, bundle);
+            }
+            catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Could not write results to " + outPath,
+                        e
+                );
+            }
+        }
+
+    }
 
     @Override
     public void writeResults(List<PatientAnalysisResult> patientAnalysisResults,

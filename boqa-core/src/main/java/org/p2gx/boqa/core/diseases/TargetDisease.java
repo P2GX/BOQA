@@ -1,5 +1,6 @@
 package org.p2gx.boqa.core.diseases;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.monarchinitiative.phenol.ontology.data.TermId;
 
 import java.util.Objects;
@@ -13,6 +14,7 @@ public sealed interface TargetDisease permits TargetDisease.PhenotypeOnly, Targe
     
     String diseaseId();
     String diseaseLabel();
+    @JsonIgnore
     Set<TermId> observedHpoIds();
 
     /**

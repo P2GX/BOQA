@@ -56,7 +56,7 @@ public class Util {
         return boqaResults.stream()
                 .map(br -> {
                     double boqaExomiserScore = (br.boqaScore() + offset) / scale;
-                    return new AlgorithmResult(br.counts(), boqaExomiserScore, br.candidate());
+                    return new AlgorithmResult(boqaExomiserScore, br.candidateDisease(), br.counts());
                 })
                 .toList();
     }

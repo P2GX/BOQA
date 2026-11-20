@@ -149,7 +149,7 @@ public class BlendedDiseaseData implements DiseaseData {
      * or the two blended diseases (in pairing order) for a blended pair.
      *
      * @param diseaseId a disease ID returned by {@link #getDiseaseIds()}
-     * @return the component disease IDs, never empty
+     * @return the singleDiseaseResult disease IDs, never empty
      * @throws IllegalArgumentException if the disease ID is not part of this data
      */
     public List<String> componentsOf(String diseaseId) {
