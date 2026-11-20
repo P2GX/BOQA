@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -102,6 +103,9 @@ public class OntologyTraverser {
     public Set<TermId> getObservedWithAncestors(Set<TermId> hpoTerms) {
         Set<TermId> initializedLayer = new HashSet<>();
         hpoTerms = hpoTerms.stream()
+                // Replace outdated IDs with primary ones and drop unknown IDs
+                .map(this::getPrimaryTermId)
+                .filter(Objects::nonNull)
                 .filter(phenotypicAbnormalities::contains)
                 .collect(Collectors.toSet());
         hpoTerms.forEach(t -> {

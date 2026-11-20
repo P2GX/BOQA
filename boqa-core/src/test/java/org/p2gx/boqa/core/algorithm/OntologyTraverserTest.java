@@ -59,7 +59,14 @@ public class OntologyTraverserTest {
                         Set.of(TermId.of("HP:0001166"))),
                 Arguments.of("Two observed HPOs",
                         queryTermsFromTwo,
-                        Set.of(TermId.of("HP:0010787"),TermId.of("HP:0001635")))
+                        Set.of(TermId.of("HP:0010787"),TermId.of("HP:0001635"))),
+                // HP:0001505 is an outdated (alternative) ID of HP:0001166
+                Arguments.of("Outdated HPO ID",
+                        queryTermsFromOne,
+                        Set.of(TermId.of("HP:0001505"))),
+                Arguments.of("Unknown HPO ID",
+                        Set.of(),
+                        Set.of(TermId.of("HP:9999999")))
                 );
     }
 
