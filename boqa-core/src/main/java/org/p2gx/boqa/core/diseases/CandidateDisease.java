@@ -107,28 +107,29 @@ public sealed interface CandidateDisease permits CandidateDisease.SingleDisease,
 
         List<Set<TargetDisease.PhenotypeAndGene>> diseaseNplet = makeAllowedCombinations(targetDiseases);
         // Create candidateDisease disease pairs except if a disease pair has the same gene
-        diseaseNplet.forEach(pair -> {
-            if (hasDistinctGenes(pair)) {
-                candidates.add(new BlendedDisease(pair));
-            }
-        });
+        diseaseNplet.forEach(pair -> candidates.add(new BlendedDisease(pair)));
         return candidates;
     }
 
     static List<Set<TargetDisease.PhenotypeAndGene>> makeAllowedCombinations(List<TargetDisease.PhenotypeAndGene> targetDiseases){
         // Only paired combinations supported for now
+
         List<Set<TargetDisease.PhenotypeAndGene>> diseasePairs = IntStream.range(0, targetDiseases.size())
                 .boxed()
                 .flatMap(i -> IntStream.range(i + 1, targetDiseases.size())
-                        .mapToObj(j -> Set.of(targetDiseases.get(i), targetDiseases.get(j))))
+                        // ensure a disease is not paired with itself AND the genes differ
+                        .filter(j -> {
+                            var first = targetDiseases.get(i);
+                            var second = targetDiseases.get(j);
+
+                            return !first.diseaseId().equals(second.diseaseId())
+                                    && !first.geneId().equals(second.geneId());
+                        })
+                        .mapToObj(j -> Set.of(
+                                targetDiseases.get(i),
+                                targetDiseases.get(j))))
                 .toList();
         return diseasePairs;
     }
 
-    private static boolean hasDistinctGenes(Set<TargetDisease.PhenotypeAndGene> diseases) {
-        return diseases.stream()
-                .map(TargetDisease.PhenotypeAndGene::geneSymbol)
-                .distinct()
-                .count() == diseases.size();
-    }
 }

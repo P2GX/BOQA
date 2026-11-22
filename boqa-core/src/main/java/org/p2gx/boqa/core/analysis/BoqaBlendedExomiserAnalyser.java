@@ -12,6 +12,8 @@ import org.p2gx.boqa.core.diseases.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.p2gx.boqa.core.diseases.TargetDisease.distinctTargetDiseases;
+
 /**
  * Performs BOQA-blended analysis for a given query set of HPO terms (patient's data).
  * <p>
@@ -57,11 +59,11 @@ public class BoqaBlendedExomiserAnalyser {
     public List<CandidateResult> computeBlendedBoqaResults(
         PatientData patientData, 
         List<TargetDisease.PhenotypeAndGene> targetDiseaseList) {
-
+        List<TargetDisease.PhenotypeAndGene> distinctTargetDiseases = distinctTargetDiseases(targetDiseaseList);
         // Now the counter is really only computing counts (though it needs HPO to do the induced HPOs)
         BoqaCounterFactory context = new BoqaCounterFactory(hpo);
         Counter counter = context.createCounter(patientData.getObservedTerms());
-        List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases(targetDiseaseList);
+        List<CandidateDisease> diseaseCandidateList = CandidateDisease.createCandidateDiseases(distinctTargetDiseases);
 
         //TODO fix resultsLimit
         int resultsLimit = 100000;

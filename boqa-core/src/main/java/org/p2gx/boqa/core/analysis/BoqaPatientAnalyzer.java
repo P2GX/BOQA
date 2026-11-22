@@ -67,6 +67,8 @@ public final class BoqaPatientAnalyzer {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+
+
     /**
      * To do, consider making API a little more convenient and reduced code
      * duplication with above
@@ -139,15 +141,26 @@ public final class BoqaPatientAnalyzer {
         });
 
         // Use CandidateResult only now. Filter out blended and create map from single diseases to allResults
-        Map<String, AlgorithmResult> singleResultsById = allResults.stream()
-                .filter(r -> r.candidateDisease() instanceof CandidateDisease.SingleDisease)
-                .collect(Collectors.toMap(
-                        r -> ((CandidateDisease.SingleDisease) r.candidateDisease())
-                                .disease().diseaseId(),
-                        Function.identity()
-                ));
+        Map<TargetDisease.DiseaseGeneKey, AlgorithmResult> singleResultsByKey =
+                allResults.stream()
+                        .filter(r -> r.candidateDisease() instanceof CandidateDisease.SingleDisease single
+                                && single.disease() instanceof TargetDisease.PhenotypeAndGene)
+                        .collect(Collectors.toMap(
+                                r -> {
+                                    var single =
+                                            (CandidateDisease.SingleDisease) r.candidateDisease();
+                                    var disease =
+                                            (TargetDisease.PhenotypeAndGene) single.disease();
+
+                                    return new TargetDisease.DiseaseGeneKey(
+                                            disease.diseaseId(),
+                                            disease.geneId());
+                                },
+                                Function.identity()
+                        ));
+
         List<CandidateResult> candidateResults = allResults.stream()
-                .map(r -> toCandidateResult(r, singleResultsById))
+                .map(r -> toCandidateResult(r, singleResultsByKey))
                 .toList();
 
         return candidateResults.stream()
@@ -159,35 +172,31 @@ public final class BoqaPatientAnalyzer {
                 .toList();
     }
 
-//    private static DiseaseComponent toDiseaseComponent(
-//            BoqaResultNew result,
-//            CandidateDiseaseNew.SingleDiseaseNew candidateDisease) {
-//
-//        return new DiseaseComponent(
-//                candidateDisease.disease(),
-//                result.counts(),
-//                result.boqaScore()
-//        );
-//    }
-    private static CandidateResult toCandidateResult(
-            AlgorithmResult result,
-            Map<String, AlgorithmResult> singleResultsById) {
 
-        return switch (result.candidateDisease()) {
-            case CandidateDisease.SingleDisease ignored -> new CandidateResult.SingleResult(result);
-            case CandidateDisease.BlendedDisease blended -> {
-                List<AlgorithmResult> components = blended.diseaseComponentsOfBlended().stream()
-                        .map(TargetDisease.PhenotypeAndGene::diseaseId)
-                        .map(singleResultsById::get)
-                        .toList();
+private static CandidateResult toCandidateResult(
+        AlgorithmResult result,
+        Map<TargetDisease.DiseaseGeneKey, AlgorithmResult> singleResultsByKey) {
 
-                yield new CandidateResult.BlendedResult(
-                        components,
-                        result
-                );
-            }
-        };
-    }
+    return switch (result.candidateDisease()) {
+        case CandidateDisease.SingleDisease ignored ->
+                new CandidateResult.SingleResult(result);
+
+        case CandidateDisease.BlendedDisease blended -> {
+            List<AlgorithmResult> components =
+                    blended.diseaseComponentsOfBlended().stream()
+                            .map(disease -> new TargetDisease.DiseaseGeneKey(
+                                    disease.diseaseId(),
+                                    disease.geneId()))
+                            .map(singleResultsByKey::get)
+                            .toList();
+
+            yield new CandidateResult.BlendedResult(
+                    components,
+                    result
+            );
+        }
+    };
+}
 
     /**
      * Computes the un-normalized BOQA log probability for given BoqaCounts and
