@@ -30,6 +30,13 @@ public interface PatientData {
     // Returns a map of phenopacket ids and corresponding HPO terms
     @JsonIgnore
     Set<TermId> getObservedTerms();
+    /**
+     * Returns the excluded terms with the IDs as given in the input. Outdated or unknown IDs are
+     * not replaced here; pass these terms through
+     * {@link org.p2gx.boqa.core.algorithm.OntologyTraverser} before using them for scoring.
+     *
+     * @return the excluded terms, or an empty set if there are none
+     */
     @JsonIgnore
     default Set<TermId> getExcludedTerms() {
         // If excluded terms are not used or not available

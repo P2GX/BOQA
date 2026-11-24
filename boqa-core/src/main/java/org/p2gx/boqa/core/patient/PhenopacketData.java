@@ -1,10 +1,8 @@
 package org.p2gx.boqa.core.patient;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.p2gx.boqa.core.PatientData;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.p2gx.boqa.core.algorithm.OntologyTraverser;
 import org.phenopackets.schema.v2.Phenopacket;
 import org.phenopackets.schema.v2.core.OntologyClass;
 import org.phenopackets.schema.v2.core.PhenotypicFeature;
@@ -13,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -43,16 +40,13 @@ public class PhenopacketData implements PatientData {
     record DiseaseDTO(String id, String label) {}
 
     // Primary constructor
-    public PhenopacketData(Phenopacket phenopacket, Ontology hpo) {
+    public PhenopacketData(Phenopacket phenopacket) {
         this.ppktId = phenopacket.getId();
-        OntologyTraverser traverser = new OntologyTraverser(hpo);
         this.observedTerms =  phenopacket.getPhenotypicFeaturesList().stream()
                 .filter(Predicate.not(PhenotypicFeature::getExcluded))
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
                 .map(TermId::of)
-                .map(traverser::getPrimaryTermId)
-                .filter(Objects::nonNull) // If old HPO is used without a term, avoids the program crashing
                 .collect(Collectors.toSet());
         if (this.observedTerms.isEmpty()) {
             LOGGER.warn("Phenopacket {} has no observed phenotypic features!", phenopacket.getId());
@@ -61,16 +55,14 @@ public class PhenopacketData implements PatientData {
                 .map(PhenotypicFeature::getType)
                 .map(OntologyClass::getId)
                 .map(TermId::of)
-                .map(traverser::getPrimaryTermId)
-                .filter(Objects::nonNull) // If old HPO is used without a term, avoids the program crashing
                 .collect(Collectors.toSet());
         this.diseases = phenopacket.getDiseasesList().stream().map(d ->
                 new DiseaseDTO(d.getTerm().getId(), d.getTerm().getLabel())).toList();
     }
 
     // Convenience constructor (allow from file)
-    public PhenopacketData(Path phenopacketFile, Ontology hpo) {
-        this(PhenopacketReader.readPhenopacket(phenopacketFile), hpo);
+    public PhenopacketData(Path phenopacketFile) {
+        this(PhenopacketReader.readPhenopacket(phenopacketFile));
     }
 
     @JsonProperty("diagnosis")

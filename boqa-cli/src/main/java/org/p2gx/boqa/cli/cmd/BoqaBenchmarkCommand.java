@@ -205,7 +205,7 @@ public class BoqaBenchmarkCommand implements Callable<Integer>  {
                     .map(Path::of)
                     .parallel()
                     .map(singleFile -> {
-                        PatientData ppkt = new PhenopacketData(singleFile, hpo);
+                        PatientData ppkt = new PhenopacketData(singleFile);
                         // TODO test how long this takes, we are recomputing disease layers, but we also have a cache in ontology traverser...
                         // Initialize Counter
                         List<CandidateResult> candidateResults;
