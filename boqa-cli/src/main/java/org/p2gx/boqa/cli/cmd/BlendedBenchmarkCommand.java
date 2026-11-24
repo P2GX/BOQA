@@ -88,6 +88,14 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
         LOGGER.info("Anchor genes: " + anchorGenes);
 
+        // genes_to_disease.txt identifies genes only by NCBIGene ID, so other IDs can never be found
+        for (String geneId : anchorGenes) {
+            if (!geneId.matches("NCBIGene:\\d+")) {
+                throw new CommandLine.ParameterException(spec.commandLine(),
+                        "Error: -g expects NCBIGene IDs such as NCBIGene:5781, got " + geneId);
+            }
+        }
+
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
@@ -133,6 +141,21 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         AtomicInteger fileCount = new AtomicInteger(0);
         List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();
 
+        // Genes with at least one disease that is annotated in the selected databases
+        Set<String> usableGeneIds = geneAssociations.geneIdsForDiseases(diseaseData.getDiseaseIds());
+
+        // Warn about anchor genes that contribute no diseases
+        Set<String> knownGeneIds = geneAssociations.allGeneIds();
+        for (String geneId : anchorGenes) {
+            if (!knownGeneIds.contains(geneId)) {
+                LOGGER.warn("Anchor gene {} not found in {}, so it contributes no diseases",
+                        geneId, diseaseGeneFile);
+            } else if (!usableGeneIds.contains(geneId)) {
+                LOGGER.warn("Anchor gene {} has no disease annotated in the selected databases {}, " +
+                        "so it contributes no diseases", geneId, diseaseDatabases);
+            }
+        }
+
         // Two diseases may blend only if no single gene explains both. The anchors differ per
         // iteration, but the rule does not, so it is built once here.
         BiPredicate<String, String> mayBlendAnchors =
@@ -144,9 +167,9 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             List<String> finalAnchorGenes;
             if (anchorGenes.size() > 1) {
                 // Add randomly selected genes to the anchor gene list
-                Set<String> allGeneIds = new HashSet<>(geneAssociations.allGeneIds());
-                allGeneIds.removeAll(Set.copyOf(anchorGenes));
-                List<String> randomGenes = new ArrayList<>(allGeneIds);
+                Set<String> randomGenePool = new HashSet<>(usableGeneIds);
+                randomGenePool.removeAll(Set.copyOf(anchorGenes));
+                List<String> randomGenes = new ArrayList<>(randomGenePool);
                 Collections.shuffle(randomGenes);
                 finalAnchorGenes = new ArrayList<>(anchorGenes);
                 finalAnchorGenes.addAll(randomGenes.subList(0, Math.min(randomGeneCount, randomGenes.size())));

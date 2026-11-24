@@ -13,13 +13,13 @@ import java.util.zip.GZIPInputStream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PhenotypeOnlyPhenotypeAndGeneAssociationsTest {
+class DiseaseGeneAssociationsTest {
 
     private static DiseaseGeneAssociations geneAssociations;
 
     @BeforeAll
     static void setup() throws IOException {
-        try (InputStream stream = new GZIPInputStream(Objects.requireNonNull(PhenotypeOnlyPhenotypeAndGeneAssociationsTest.class
+        try (InputStream stream = new GZIPInputStream(Objects.requireNonNull(DiseaseGeneAssociationsTest.class
                 .getResourceAsStream("/org/p2gx/boqa/core/genes_to_disease.v2025-05-06.txt.gz")))) {
             geneAssociations = DiseaseGeneAssociations.fromStream(stream);
         }
@@ -49,6 +49,18 @@ class PhenotypeOnlyPhenotypeAndGeneAssociationsTest {
     void allGeneIds_containsGenesFromMultipleDiseases() {
         Set<String> allGeneIds = geneAssociations.allGeneIds();
         assertTrue(allGeneIds.containsAll(Set.of("NCBIGene:64170", "NCBIGene:583", "NCBIGene:4976")));
+    }
+
+    @Test
+    void geneIdsForDiseases_returnsGenesOfGivenDiseasesOnly() {
+        // CARD9 and TBC1D7 also have ORPHA diseases, which are not passed here
+        Set<String> geneIds = geneAssociations.geneIdsForDiseases(List.of("OMIM:212050", "OMIM:248000"));
+        assertEquals(Set.of("NCBIGene:64170", "NCBIGene:51256"), geneIds);
+    }
+
+    @Test
+    void geneIdsForDiseases_returnsEmptySet_forDiseasesAbsentFromGeneFile() {
+        assertTrue(geneAssociations.geneIdsForDiseases(List.of("OMIM:100070")).isEmpty());
     }
 
     @Test
