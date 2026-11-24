@@ -167,9 +167,9 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
             List<String> finalAnchorGenes;
             if (anchorGenes.size() > 1) {
                 // Add randomly selected genes to the anchor gene list
-                Set<String> allGeneIds = new HashSet<>(geneAssociations.allGeneIds());
-                allGeneIds.removeAll(Set.copyOf(anchorGenes));
-                List<String> randomGenes = new ArrayList<>(allGeneIds);
+                Set<String> randomGenePool = new HashSet<>(usableGeneIds);
+                randomGenePool.removeAll(Set.copyOf(anchorGenes));
+                List<String> randomGenes = new ArrayList<>(randomGenePool);
                 Collections.shuffle(randomGenes);
                 finalAnchorGenes = new ArrayList<>(anchorGenes);
                 finalAnchorGenes.addAll(randomGenes.subList(0, Math.min(randomGeneCount, randomGenes.size())));
