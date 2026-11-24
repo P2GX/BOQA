@@ -88,6 +88,14 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
 
         LOGGER.info("Anchor genes: " + anchorGenes);
 
+        // genes_to_disease.txt identifies genes only by NCBIGene ID, so other IDs can never be found
+        for (String geneId : anchorGenes) {
+            if (!geneId.matches("NCBIGene:\\d+")) {
+                throw new CommandLine.ParameterException(spec.commandLine(),
+                        "Error: -g expects NCBIGene IDs such as NCBIGene:5781, got " + geneId);
+            }
+        }
+
         LOGGER.info("Starting up BOQA analysis, loading ontology file {} ...", ontologyFile);
         Ontology hpo = OntologyLoader.loadOntology(Paths.get(ontologyFile).toFile());
         LOGGER.debug("Ontology loaded successfully from {}", ontologyFile);
