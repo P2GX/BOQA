@@ -4,21 +4,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.monarchinitiative.phenol.io.OntologyLoader;
-import org.monarchinitiative.phenol.ontology.data.Ontology;
 import org.monarchinitiative.phenol.ontology.data.TermId;
-import org.p2gx.boqa.core.algorithm.OntologyTraverser;
-import org.p2gx.boqa.core.algorithm.OntologyTraverserTest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -27,19 +21,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class PhenopacketDataTest {
 
     private static List<PhenopacketData> examplePpkts = new ArrayList<>();
-    OntologyTraverser ontologyTraverser;
 
     @BeforeAll
     void setUp() throws IOException {
-        try (
-                InputStream ontologyStream = new GZIPInputStream(Objects.requireNonNull(OntologyTraverserTest.class
-                        .getResourceAsStream("/org/p2gx/boqa/core/hp.v2025-05-06.json.gz")))
-        ) {
-            Ontology hpo = OntologyLoader.loadOntology(ontologyStream);
-            this.ontologyTraverser = new OntologyTraverser(hpo);
-        }
-
-
         String[] filenames = {
                 "PMID_30569521_proband.json",
                 "PMID_10580070_A_III-5.json", // no observed terms, only excluded
@@ -55,7 +39,7 @@ class PhenopacketDataTest {
                     throw new IOException("Resource not found: " + filename);
                 }
                 Path ppkt = Path.of(resourceUrl.toURI());
-                examplePpkts.add(new PhenopacketData(ppkt, ontologyTraverser.getHpoOntology()));
+                examplePpkts.add(new PhenopacketData(ppkt));
             } catch (URISyntaxException e) {
                 throw new IOException("Failed to resolve resource URI", e);
             }

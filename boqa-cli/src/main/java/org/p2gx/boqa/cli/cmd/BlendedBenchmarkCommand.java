@@ -187,7 +187,7 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
                 jsonFilePath = phenopacketFile;
             }
 
-            PatientData ppkt = new PhenopacketData(jsonFilePath, hpo);
+            PatientData ppkt = new PhenopacketData(jsonFilePath);
             // Initialize Counter
 
             Counter counter = context.createCounter(ppkt.getObservedTerms());
