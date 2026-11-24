@@ -52,6 +52,18 @@ class PhenotypeOnlyPhenotypeAndGeneAssociationsTest {
     }
 
     @Test
+    void geneIdsForDiseases_returnsGenesOfGivenDiseasesOnly() {
+        // CARD9 and TBC1D7 also have ORPHA diseases, which are not passed here
+        Set<String> geneIds = geneAssociations.geneIdsForDiseases(List.of("OMIM:212050", "OMIM:248000"));
+        assertEquals(Set.of("NCBIGene:64170", "NCBIGene:51256"), geneIds);
+    }
+
+    @Test
+    void geneIdsForDiseases_returnsEmptySet_forDiseasesAbsentFromGeneFile() {
+        assertTrue(geneAssociations.geneIdsForDiseases(List.of("OMIM:100070")).isEmpty());
+    }
+
+    @Test
     void diseaseIdsForGenes_returnsAssociatedDiseases() {
         // NCBIGene:392255 (GDF6) is associated with both OMIM and ORPHA diseases in the gene file
         Set<String> expectedDiseases = Set.of(

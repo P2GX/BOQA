@@ -141,6 +141,21 @@ public class BlendedBenchmarkCommand extends BoqaBenchmarkCommand implements Cal
         AtomicInteger fileCount = new AtomicInteger(0);
         List<PatientAnalysisResult> patientAnalysisResults = new ArrayList<>();
 
+        // Genes with at least one disease that is annotated in the selected databases
+        Set<String> usableGeneIds = geneAssociations.geneIdsForDiseases(diseaseData.getDiseaseIds());
+
+        // Warn about anchor genes that contribute no diseases
+        Set<String> knownGeneIds = geneAssociations.allGeneIds();
+        for (String geneId : anchorGenes) {
+            if (!knownGeneIds.contains(geneId)) {
+                LOGGER.warn("Anchor gene {} not found in {}, so it contributes no diseases",
+                        geneId, diseaseGeneFile);
+            } else if (!usableGeneIds.contains(geneId)) {
+                LOGGER.warn("Anchor gene {} has no disease annotated in the selected databases {}, " +
+                        "so it contributes no diseases", geneId, diseaseDatabases);
+            }
+        }
+
         // Two diseases may blend only if no single gene explains both. The anchors differ per
         // iteration, but the rule does not, so it is built once here.
         BiPredicate<String, String> mayBlendAnchors =
